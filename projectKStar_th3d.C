@@ -3,7 +3,7 @@
 //
 Bool_t kComputeEfficiency=kFALSE;
 const Int_t kNhistosData=6;
-TString macroDir ="/Users/bellini/alice/macro/kstar";
+TString macroDir ="$ASD/ResonAnT/"; //"/Users/bellini/alice/macro/kstar";
 
 void projectKStar_th3d
 (

@@ -3,7 +3,7 @@
 //
 Bool_t kComputeEfficiency=1;
 const Int_t kNhistosData=4;
-TString macroDir ="/Users/bellini/alice/macro/kstar";
+TString macroDir = "$ASD/ResonAnT/"; //"/Users/bellini/alice/macro/kstar";
 
 void projectKStarMCtrue
 (
@@ -101,15 +101,15 @@ void projectKStarMCtrue
    //Double_t pt[] = {1.0, 2.0, 3.0, 4.0, 5.0, 7.0};
   
    //pA analysis
-  //   Double_t cent[]={0., 100.0}; 
-  Double_t cent[]={0., 20., 40., 60., 80., 100.};   
+  Double_t cent[]={0., 400.0}; 
+  //Double_t cent[]={0., 20., 40., 60., 80., 100.};   
    //TOF and TPC standalone analyses
    //Double_t pt[] = {0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 12.0, 14.0, 16.0};
    //Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
    //define binning in pT  - 300MeV bins - binning A 
    //Double_t pt[] = {0.0, 0.15, 0.3, 0.5, 0.8, 1.1, 1.4, 1.7, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
    //binning B
-   Double_t pt[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0};
+  Double_t pt[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0, 20.0};
    //define binning in pT  - 200MeV bins - binning C
    //Double_t pt[] = {0.0, 0.1, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 10.00 };  
    
@@ -135,12 +135,11 @@ void projectKStarMCtrue
    }
 
    TCanvas *c[5];
-   c[0]= new TCanvas(Form("c_0"),Form("cent_0"),1200,600);
-   c[1]= new TCanvas(Form("c_1"),Form("cent_1"),1200,600);
-   c[2]= new TCanvas(Form("c_2"),Form("cent_2"),1200,600);
-   c[3]= new TCanvas(Form("c_3"),Form("cent_3"),1200,600);
-   c[4]= new TCanvas(Form("c_4"),Form("cent_4"),1200,600);
-   
+   for (Int_t icentbin=0; icentbin<ncent;icentbin++){
+     if (ncent<5) {
+       c[icentbin]= new TCanvas(Form("c_%i",icentbin),Form("cent_%i",icentbin),1200,600);
+     }
+   } 
    //set title for legends
    TString titleEff(listName);
    titleEff.ReplaceAll("RsnOut_","");
@@ -165,31 +164,35 @@ void projectKStarMCtrue
      }
      
      //output file
-     TFile *efffile = TFile::Open(Form("efficiency_%s_cent%03.0f-%03.0f.root",listName.Data(),cent[icentbin], cent[icentbin+1]), "RECREATE");
+     TString efffilename = Form("efficiency_%s_cent%03.0f-%03.0f.root",listName.Data(),cent[icentbin], cent[icentbin+1]);
+     TFile *efffile = TFile::Open(efffilename.Data(), "RECREATE");
      //Create histos for efficiency
      TH1F * hTrueCountsPM = new TH1F("hTrueCountsPM","True Counts K+#pi-", npt, pt);
      TH1F * hTrueCountsMP = new TH1F("hTrueCountsMP","True Counts K-#pi+", npt, pt);
      TH1F * hMotherCounts = new TH1F("hMotherCounts","hMotherCounts", npt, pt);
      TH1F * hAntiMotherCounts = new TH1F("hAntiMotherCounts","hAntiMotherCounts", npt, pt);
      
-     TH1F * hEffVsPt = new TH1F("hEffVsPt", "; p_{t} (GeV/c); #epsilon = reco true / generated", npt, pt);
-     hEffVsPt->SetTitle(Form("#epsilon(K*+#bar{K*}), %s %s", titleEff.Data(),centLabel.Data()));
+     TH1F * hEffVsPt = new TH1F("hEffVsPt", "; p_{T} (GeV/#it{c}); #epsilon = reco true / generated", npt, pt);
+     hEffVsPt->SetTitle(Form("#epsilon(K*+#bar{K*}), %s %s", titleEff.Data(), isPP? "(min. bias)": centLabel.Data()));
      hEffVsPt->SetLineColor(histoColor);
      hEffVsPt->SetMarkerColor(histoColor);
+     hEffVsPt->SetLineWidth(2);
+     hEffVsPt->SetMarkerStyle(20);
+     hEffVsPt->SetMarkerSize(0.8);
 
-     TH1F * hEffVsPtKstar = new TH1F("hEffVsPtKstar", "Efficiency for K*; p_{t} (GeV/c); #epsilon = reco true / generated", npt, pt);
+     TH1F * hEffVsPtKstar = new TH1F("hEffVsPtKstar", "Efficiency for K*; p_{T} (GeV/#it{c}); #epsilon = reco true / generated", npt, pt);
      hEffVsPtKstar->SetTitle(Form("#epsilon(K*), %s %s", titleEff.Data(), centLabel.Data()));
      hEffVsPtKstar->SetLineColor(histoColor);
      hEffVsPtKstar->SetMarkerColor(histoColor);
      hEffVsPtKstar->SetMarkerStyle(20);
 
-    TH1F * hEffVsPtAntiKstar = new TH1F("hEffVsPtAntiKstar", "Efficiency for #bar{K*}; p_{t} (GeV/c); #epsilon = reco true / generated", npt, pt);
+    TH1F * hEffVsPtAntiKstar = new TH1F("hEffVsPtAntiKstar", "Efficiency for #bar{K*}; p_{T} (GeV/#it{c}); #epsilon = reco true / generated", npt, pt);
     hEffVsPtAntiKstar->SetTitle(Form("#epsilon(#bar{K*}), %s %s", titleEff.Data(), centLabel.Data()));
      hEffVsPtAntiKstar->SetLineColor(histoColor);
      hEffVsPtAntiKstar->SetMarkerColor(histoColor);
      hEffVsPtAntiKstar->SetMarkerStyle(24);
      
-     TH1F* ratioAKstarOverKstar = new TH1F("hRatioAKstarOverKstar", "ratio; p_{t} (GeV/c); ratio = #epsilon(#bar{K*}) / #epsilon(K*)", npt, pt); 
+     TH1F* ratioAKstarOverKstar = new TH1F("hRatioAKstarOverKstar", "ratio; p_{T} (GeV/#it{c}); ratio = #epsilon(#bar{K*}) / #epsilon(K*)", npt, pt); 
       
      hTrueCountsPM->Sumw2();
      hTrueCountsMP->Sumw2();
@@ -339,6 +342,13 @@ void projectKStarMCtrue
        ratioAKstarOverKstar->Divide(hEffVsPtKstar);
      }
      
+     //Print efficiency plot on canvas
+     TCanvas * ceffo = new TCanvas("ceffo","efficiency", 800,600);
+     ceffo->cd();
+     hEffVsPt->Draw();
+     ceffo->Print(Form("%s.png",efffilename.Data()));
+     ceffo->Delete();
+
      // save into a file
      efffile->cd();
      ptbins->Write("ptbins");
@@ -384,6 +394,8 @@ void projectKStarMCtrue
    centbins->Write("centbins");
    out->Write();
    dummy->Close();
+
+   
    return;
    
 }
@@ -417,7 +429,5 @@ void FillListForCentrality(TList * listIn, TList * listOut, Int_t icentBin)
       }
     }
   } 
-  // Printf("============== Output");
-  // listOut->ls();
   return;
 }

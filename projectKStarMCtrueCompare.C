@@ -3,7 +3,7 @@
 //
 Bool_t kComputeEfficiency=1;
 const Int_t kNhistosData=4;
-TString macroDir ="/Users/bellini/alice/macro/kstar";
+TString macroDir ="$ASD/ResonAnT/"; //"/Users/bellini/alice/macro/kstar";
 
 Color_t color[]={kRed, kOrange, kGreen+2, kMagenta+1, kYellow+2, kBlack};
 Int_t marker[]={20, 21, 28, 22, 23};
