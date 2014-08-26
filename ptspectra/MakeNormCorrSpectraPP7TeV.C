@@ -13,13 +13,13 @@ void MakeNormCorrSpectraPP7TeV(TString spectraFileName = "RAW_best_fit_poly2.roo
 			    )
 {
   const TString effHistName = "hEffVsPt";
-  Float_t trgAndVtxEff_ppMinBias = 1.0; //trigger and vertex reco efficiency for pPb 0-100%
+  Float_t trgAndVtxEff_ppMinBias = 0.852; //trigger and vertex reco efficiency for pPb 0-100%
   Float_t branchingRatio = 0.666;
   Float_t pid_eff_tpc2s = (0.954*0.954);
   Float_t pid_eff_tpc25s = (0.9876*0.9876);
   Float_t pid_eff_tpc3s = (0.999*0.999);
     
-  Float_t nEvents1516[1] = {60451518.};
+  Float_t nEventsCombined1516[1] = {60451518.};
   
   Color_t color[3][5]={ kTeal+3, kSpring+5, kBlue-3, kCyan-3, kAzure-6, //tpc
 			kRed+2, kOrange+6, kViolet-6, kMagenta, kBlue+2, //tof
@@ -70,7 +70,7 @@ void MakeNormCorrSpectraPP7TeV(TString spectraFileName = "RAW_best_fit_poly2.roo
     hraw->GetYaxis()->SetTitle("1/N_{evt}* dN/dp_{T} (0<y_{CMS}<0.5)");
     //hraw->GetYaxis()->SetTitleOffset(1.4);
     hraw->GetXaxis()->SetRangeUser(0.0, 20.);
-    hraw->GetYaxis()->SetRangeUser(1.e-6,2.);
+    hraw->GetYaxis()->SetRangeUser(5.e-7,2.);
     hraw->SetLineColor(color[isTOF][ic]);
     hraw->SetMarkerColor(color[isTOF][ic]);
     hraw->SetMarkerStyle(marker[isTOF][ic]);
@@ -114,7 +114,7 @@ void MakeNormCorrSpectraPP7TeV(TString spectraFileName = "RAW_best_fit_poly2.roo
     
     hcorr->SetTitle(Form("%s", centLabel.Data()));
     hcorr->GetYaxis()->SetTitle(Form("d^{2}#it{N}/(#it{p}_{T}d#it{y}) (GeV/#it{c})^{-1}"));//, correctBR?"* 1/B.R.":""));
-    hcorr->GetYaxis()->SetRangeUser(1e-6,2.);
+    hcorr->GetYaxis()->SetRangeUser(5e-7,2.);
     //hcorr->GetYaxis()->SetTitleOffSet(1.4);
     hcorr->GetXaxis()->SetRangeUser(0.0,19.9);
     hcorr->SetLineColor(color[isTOF][ic]);
