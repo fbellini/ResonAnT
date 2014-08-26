@@ -26,15 +26,10 @@ Color_t colorFunc[]={kBlue, kRed, kGreen+2, kMagenta+1, kYellow+2, kBlack};
 Char_t funcName[5][10]={"BW+POLY2","BW+POLY3", "BW+LAND","BW+POLY1", "BW+EXP"};
 //Char_t centLabel[5][6]={"0-20%","20-40%","40-60%","60-80%","80-100%"};
 
-void MakeRawSpectra(Bool_t save =1,
-                    TString filein="best_fit_poly2.root",
-                    TString fileproj="../_sum_EMnorm1.30-1.50_cut1818_tof2s_train215-216.root",
-                    TString suffix="_BWpoly2",
-                    TString histoTitle = "fit: BW(#Gamma=#Gamma_{PDG})+poly2",
-                    Float_t ptmin=0.0, Float_t ptmax=15.0, Float_t cutChi2=10.0, Bool_t skipLastBin=0)
+void MakeRawSpectra(Bool_t save =1, TString filein="best_fit_poly2.root", TString fileproj="../_sum_EMnorm1.30-1.50_cut1818_tof2s_train215-216.root", TString suffix="_BWpoly2", TString histoTitle = "fit: BW(#Gamma=#Gamma_{PDG})+poly2", Float_t ptmin=0.0, Float_t ptmax=15.0, Float_t cutChi2=10.0)
 {
   //graphics
-  gROOT->LoadMacro("${ASD}/SetGraphicStyle.C");
+  gROOT->LoadMacro("SetGraphicStyle.C");
   SetGraphicStyle(0);
   gStyle->SetTextFont(42);
   gStyle->SetOptStat(0);
@@ -203,8 +198,7 @@ void MakeRawSpectra(Bool_t save =1,
     hSignificanceVsPt[icentbin]->SetTitle(Form("Significance vs p_{T} (%s)",centLabel.Data()));
 
     //stop at pt= 6 GeV7c for 80-100%
-    if (icentbin==4) skipLastBin = kTRUE;
-    if (skipLastBin) ptmax = 6.0;
+    if (icentbin==4) ptmax = 6.0;
 
     for (Int_t ientry=0;ientry<tree->GetEntries();ientry++){
       tree->GetEntry(ientry);

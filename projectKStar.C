@@ -7,11 +7,11 @@ TString macroDir = "$ASD/ResonAnT/"; //"/Users/bellini/alice/macro/kstar";
 Color_t color[6] = {kRed+3, kMagenta+3, kOrange, kGreen+1, kBlue+3, kCyan+3};
 void projectKStar
 (
- const char *nameData = "kstar.root",
- const char *listName = "RsnOut_tpc2s_tof3sveto",
- const char *outName  = "tpc2s_tof3sveto",
+ const char *nameData = "train89.root",
+ const char *listName = "RsnOut_tpc3s_tof3sveto",
+ const char *outName  = "tpc3s_tof3sveto",
  Char_t *icut = "2424",
- Bool_t saveProj = kTRUE,
+ Bool_t saveProj = kFALSE,
  Bool_t isTPC=0,
  Bool_t isPP= 0,
  Bool_t isMC = 0,
@@ -102,24 +102,21 @@ void projectKStar
   /****************************/
   //pA analysis
   /****************************/
-  Double_t cent[]={ 0.0, 400};
+  Double_t cent[]={ 0.0, 100};
   //Double_t cent[]={0.0, 20.0, 40.0, 60.0, 80.0, 100.0};   
   //TOF and TPC standalone analyses - binning 0
-  //Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
+  Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
   //TOF and TPC standalone analyses+high pT
   //Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15., 18.0, 20.0};
   //define binning in pT  - 300MeV bins - binning A 
   //Double_t pt[] = {0.0, 0.15, 0.3, 0.5, 0.8, 1.1, 1.4, 1.7, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
   //define binning in pT  - 200MeV bins - binning B
-  Double_t pt[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0};
+  // Double_t pt[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0};
   //define binning in pT  - 200MeV bins - binning C
   //Double_t pt[] = {0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 12.0, 14.0, 16.0};
   //define binning in pT  - 200MeV bins - binning D
   // Double_t pt[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0 };
-//binning of pp 7 TeV published
-   // Double_t pt[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0, 20.0};
 
-    
   //*/PILE UP REJECTION CHECK
   //Double_t cent[]={ 0.0, 20.0, 40.0, 60.0, 80.0, 100.0};   
   //Double_t pt[] = { 0.0, 1.0, 5.0};
