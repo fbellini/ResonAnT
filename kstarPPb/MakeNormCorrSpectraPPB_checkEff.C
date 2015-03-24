@@ -4,13 +4,13 @@
 //
 
 void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root", 
-			    Int_t train=89100,
+			    Int_t train=89,
 			    Int_t tpcNs = 2,
 			    Int_t tofNsveto = 3,
 			    Int_t isTOF = 2, 
 			    TString suffix = "", 
 			    Bool_t correctBR = 1,
-                Int_t check = 0 //use 0 for normal, use 1 for check with fit of correction, use 2 for fit func in full range
+                Int_t check = 1 //use 0 for normal, use 1 for check with fit of correction, use 2 for fit func in full range
 			    )
 {
   const TString effHistName = "hEffVsPt";
@@ -48,7 +48,7 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
     TString centLabel = Form("%i-%i%%",ic*20,(ic+1)*20);
     Printf("*************************\n*************************\n Spectra %s \n*************************",centLabel.Data());
     TString effFileName;
-    if (check==1)
+    if (check==1) //USE MIN BIAS EFFICIENCY BUT CORRECT FOR MULTI DEP FOR 60-80% and 80-100%
         effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/binB/efficiency_RsnOut_tpc%is_tof%isveto_cent%03i-%03i.root", tpcNs, tofNsveto, 0, 100);
     else
         effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/multi-binB/efficiency_RsnOut_tpc%is_tof%isveto_cent%03i-%03i.root", tpcNs, tofNsveto, ic*20, 20*(ic+1));

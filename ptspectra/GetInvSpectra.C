@@ -10,17 +10,34 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
   TH1D * hm_stat_inv[5];
   TH1D * hm_sys_inv[5];
   
+  h100_stat_inv->GetYaxis()->SetTitle("1/N_{evt}1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-2}]");
+  h100_sys_inv->GetYaxis()->SetTitle("1/N_{evt}1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-2}]");
+  h100_sys_inv->GetYaxis()->SetRangeUser(1e-8, 10.); 
 
-  TCanvas * ccorr = new TCanvas("corr","corrected spectra",600,700);
-  ccorr->cd();
+  TLegend * corrleg2 = new TLegend(0.5,0.72,0.89,0.8);
+  corrleg2->SetBorderSize(0);
+  corrleg2->SetFillColor(kWhite);
+  corrleg2->SetFillStyle(0);
+  corrleg2->AddEntry(h100_stat_inv, Form("ALICE NSD"),"p");
+
+  TCanvas * ccorr2 = new TCanvas("corr2","min bias corrected spectrum",800,600);
+  ccorr2->cd();
   gPad->SetLogy();
+  h100_sys_inv->Draw("E2");
+  h100_stat_inv->Draw("same");
+  corrleg2->Draw();
+  AddPaveText_KStar_pPb("tr");
 
-  gROOT->LoadMacro("$ASD/AddPaveText.C");
-  TLegend * corrleg = new TLegend(0.4,0.55,0.99,0.8,"V0A Multiplicity Classes (Pb side)");
+  //gROOT->LoadMacro("$ASD/AddPaveText.C");
+  TLegend * corrleg = new TLegend(0.4,0.55,0.99,0.8,"V0A Multiplicity Event Classes (Pb side)");
   corrleg->SetBorderSize(0);
   corrleg->SetFillColor(kWhite);
   corrleg->SetFillStyle(0);
   
+  TCanvas * ccorr = new TCanvas("corr","corrected spectra",800,600);
+  ccorr->cd();
+  gPad->SetLogy();
+
   for (Int_t ic = 0; ic<5 ; ic++) {
     TH1D * hm_stat = (TH1D*) fin->Get(Form("hKstar_%i",ic));
     TH1D * hm_sys = (TH1D*) fin->Get(Form("hKstar_%i_sys", ic));
@@ -28,8 +45,8 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
     hm_stat_inv[ic] = (TH1D*) DivideBy2piPt(hm_stat); 
     hm_sys_inv[ic] = (TH1D*) DivideBy2piPt(hm_sys); 
     hm_stat_inv[ic]->SetTitle(Form("%i-%i", 20*ic, 20*(ic+1)));
-    hm_stat_inv[ic]->GetYaxis()->SetTitle("1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) (GeV/#it{c})^{-2}");
-    hm_sys_inv[ic]->GetYaxis()->SetTitle("1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) (GeV/#it{c})^{-2}");
+    hm_stat_inv[ic]->GetYaxis()->SetTitle("1/N_{evt}1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-2}]");
+    hm_sys_inv[ic]->GetYaxis()->SetTitle("1/N_{evt}1/(2#pi#it{p}_{T}) d^{2}#it{N}/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-2}]");
 
     hm_sys_inv[ic]->GetYaxis()->SetRangeUser(1e-8, 1.);
     if (scale2plot) {
@@ -40,7 +57,7 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
       hm_sys_inv[ic]->GetYaxis()->SetRangeUser(1e-8, 10.); 
     }
 
-    corrleg->AddEntry(hm_stat_inv[ic], Form("%i-%i%% x%2.0f", 20*ic, 20*(ic+1), scaleFactor),"lp");
+    corrleg->AddEntry(hm_stat_inv[ic], Form("%i-%i%% x%2.0f", 20*ic, 20*(ic+1), scaleFactor),"p");
    
     ccorr->cd();
     if (ic==0)  hm_sys_inv[ic]->Draw("E2");
@@ -50,7 +67,7 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
   
   ccorr->cd();
   corrleg->Draw();
-  AddPaveText_KStar_pPb("tr");
+  AddPaveText_KStar_pPb("bl");
   return;
 }
 
@@ -65,4 +82,30 @@ TH1D * DivideBy2piPt( TH1D * h)
     dummy->SetBinError(ipt, h->GetBinError(ipt)/factor);
   }
   return dummy;
+}
+
+TPaveText * AddPaveText_KStar_pPb(TString position = "bl"){
+  TString text="ALICE, p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV";
+  TString textks = "#frac{1}{2}(K*^{0}+#bar{K*^{0}}), -0.5 < #it{y} < 0";
+  //TString textcent="V0A Multiplicity Event Classes (Pb side)";
+  TPaveText * pave;
+  if (position.Contains("tl")) pave = new TPaveText(0.12,0.75,0.45,0.89,"NDC");
+  else
+    if (position.Contains("bl")) pave = new TPaveText(0.22,0.22,0.55,0.36,"NDC");
+    else 
+      if (position.Contains("tr")) pave = new TPaveText(0.50,0.80,0.89,0.89,"NDC");
+      else
+	if (position.Contains("br")) pave = new TPaveText(0.55,0.12,0.89,0.26,"NDC");
+  pave->SetTextColor(kBlack);
+  pave->SetTextAlign(12);
+  pave->SetTextFont(42);
+  //pave->SetTextSize(18);
+  pave->SetBorderSize(0);
+  pave->SetFillColor(kWhite);
+  pave->SetFillStyle(0);
+  pave->InsertText(text.Data());
+  pave->InsertText(textks.Data());
+  //pave->InsertText(textcent.Data());
+  pave->Draw();
+  return pave;
 }

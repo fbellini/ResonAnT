@@ -1,17 +1,18 @@
 void syst_contributions_pAmulti(Int_t icent=0, 
-			      TString date="27apr14", 
-			      Int_t barlow = 0, 
-			      TString bg = "EM",
-			      Int_t smooth = 2)
+				TString date="28aug14", 
+				Int_t barlow = 0, 
+				TString bg = "LS",
+				Int_t smooth = 2,
+				Bool_t doFinal = 1 )
 {
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   TString deteco = "Combo";
   Int_t ipid=0;
   //set input name
-  TString fPath = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/systUncert/");
-  TString fPathCorr = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/fit%s_norm%i_BWpoly2_fixedW/", bg.Data(),bg.Contains("EM"));
-  TString corrFile = "CORRECTED_br_best_fit_poly2.root";
+  TString fPath = Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/systUncert/");
+  TString fPathCorr = Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/fit%s_norm%i_BWpoly2_fixedW/", bg.Data(),bg.Contains("EM"));
+  TString corrFile = (doFinal? "CORRCHECK_br_best_fit_poly2.root" : "CORRECTED_br_best_fit_poly2.root");
   TString hCorrYieldName = Form("hCorrected_%i",icent);//,deteco.Data());
   
   //pA analysis
@@ -22,11 +23,12 @@ void syst_contributions_pAmulti(Int_t icent=0,
   TString centLabel=Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
   
   //cosmetics  
-  Color_t color[3][6]={kOrange+7, kPink+6, kGreen+1, kAzure+1, kBlue+3, kBlack, //combined
+  Color_t color[3][6]={kRed, kPink+6, kGreen+1, kViolet-3, kAzure+7, kBlack, //combined final (as the phi)
+		       //kOrange+7, kPink+6, kGreen+1, kAzure+1, kBlue+3, kBlack, //combined prelim
 		       kTeal+3, kSpring+5, kBlue-3, kCyan-3, kAzure-6, kBlack, //tpc
 		       kRed+2, kOrange+6, kViolet-6, kMagenta, kBlue+2, kBlack}; //tof
    
-  Int_t marker[3][6]={21, 22, 32, 28, 24, 20, //combined
+  Int_t marker[3][6]={20, 21, 32, 28, 24, 20, //combined
 		      21, 22, 23, 34, 33, 20, //tpc
 		      25, 26, 32, 28, 27, 24}; //tof
   

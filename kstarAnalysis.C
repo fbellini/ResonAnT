@@ -23,7 +23,7 @@ enum ECompType_t {kSum,
 Char_t * kstarAnalysis(Int_t compType = ECompType_t::kKStar, Char_t* projPath, Char_t*projectionFile="proj_analysisAOD_0-80.root", Float_t emNormInf = 1.3, Float_t emNormSup = 1.5, Int_t ipt=-1, Int_t icent=-1, Bool_t isRebin=0, Float_t scaleEMNormFactor=1.0, Bool_t doNormLS = 0, Bool_t enableCanvas = 0, Bool_t saveImg=0, Bool_t useCorrLS = 0)
 {
   TGaxis::SetMaxDigits(3);
-  gROOT->LoadMacro("/Users/bellini/alice/macro/SetGraphicStyle.C");
+  gROOT->LoadMacro("$ASD/SetGraphicStyle.C");
   SetGraphicStyle(0,0,0);
 
   Bool_t addAntiKstar=kFALSE;
