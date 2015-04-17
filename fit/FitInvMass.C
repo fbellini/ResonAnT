@@ -201,22 +201,21 @@ Double_t BestNormalization
 void FitInvMass
 (
    const char *filein = "proj/kstar.root",
-   EFit        mode = kLike,
+   EFit        mode = kMixing,
    const char *func = "BW+POLY2",
-   Double_t    viewMin = 0.72,
-   Double_t    viewMax = 1.1,
-   Int_t       normMethod = ENorm::kNoNorm,
-   Bool_t      pause = kFALSE,
+   Double_t    viewMin = 0.74,
+   Double_t    viewMax = 1.04,
+   Int_t       normMethod = ENorm::kBestNorm,
+   Bool_t      pause = kTRUE,
    Bool_t      data = kTRUE,
    Int_t       PDG = 313,
    
    Double_t    nsigmaPeak = 7.0,
-   Int_t       nrebin = 2,
+   Int_t       nrebin = 1,
    Int_t       startBin = 0,
    Int_t       stopBin = -1,
    Int_t       centBinID = 0,
-
-   Bool_t      fixGamma  = kFALSE,
+   Bool_t      fixGamma  = kTRUE,
    Double_t    minGamma = 0.5,
    Double_t    maxGamma = 1.5,   
    char *      outdirsuffix = "",
@@ -224,7 +223,8 @@ void FitInvMass
    Double_t    multSigma = 1.0,
    Double_t    minSigma = 0.0,
    Double_t    maxSigma = -999.0,
-   Double_t    nBCpeak = 2.0//,2.35, = 2Gamma
+   Double_t    nBCpeak = 2.0, //,2.35, = 2Gamma
+   Bool_t      scaleByBinWidth = 0
    //Double_t    nBCexclude = 5.0 //3.0
  )
 {
@@ -530,7 +530,7 @@ void FitInvMass
     if (hBG) hSub->Add(hBG, -1.0);
     
     // divide by bin width
-    hSub->Scale(1.0 / hSub->GetBinWidth(2));
+    if (scaleByBinWidth) hSub->Scale(1.0 / hSub->GetBinWidth(2));
     if (nrebin>1) hSub->Rebin(nrebin);
     TString fitopt = "";
     if (mode==kBinCounting || mode==kEMBinCounting) fitopt = "BC";
