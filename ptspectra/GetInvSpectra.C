@@ -37,6 +37,8 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
   TCanvas * ccorr = new TCanvas("corr","corrected spectra",800,600);
   ccorr->cd();
   gPad->SetLogy();
+  //  Float_t scaleFactor = TMath::Power(2.0, (4-ic));
+  Float_t scaleFactor[5] = {2., 1., 1./2.,1./4., 1/8.};
 
   for (Int_t ic = 0; ic<5 ; ic++) {
     TH1D * hm_stat = (TH1D*) fin->Get(Form("hKstar_%i",ic));
@@ -50,14 +52,11 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
 
     hm_sys_inv[ic]->GetYaxis()->SetRangeUser(1e-8, 1.);
     if (scale2plot) {
-      Float_t scaleFactor = TMath::Power(2.0, (4-ic));
-      hm_stat_inv[ic]->Scale(scaleFactor);
-      hm_sys_inv[ic]->Scale(scaleFactor);
-      hm_stat_inv[ic]->SetTitle(Form("%i-%i%% x%2.0f", 20*ic, 20*(ic+1), scaleFactor));
+      hm_stat_inv[ic]->Scale(scaleFactor[ic]);
+      hm_sys_inv[ic]->Scale(scaleFactor[ic]);
+      hm_stat_inv[ic]->SetTitle(Form("%i-%i%% x%3.1f", 20*ic, 20*(ic+1), scaleFactor[ic]));
       hm_sys_inv[ic]->GetYaxis()->SetRangeUser(1e-8, 10.); 
     }
-
-    corrleg->AddEntry(hm_stat_inv[ic], Form("%i-%i%% x%2.0f", 20*ic, 20*(ic+1), scaleFactor),"p");
    
     ccorr->cd();
     if (ic==0)  hm_sys_inv[ic]->Draw("E2");
@@ -65,6 +64,11 @@ void GetInvariantSpectra(TString infile = "prelim_kstar_pPb_smoothSys.root", Boo
     hm_stat_inv[ic]->Draw("same");
   }
   
+   corrleg->AddEntry(hm_stat_inv[0], Form("0-20%% x2"),"p");
+   corrleg->AddEntry(hm_stat_inv[1], Form("20-40%% x1"),"p");
+   corrleg->AddEntry(hm_stat_inv[2], Form("40-60%% x1/2"),"p");
+   corrleg->AddEntry(hm_stat_inv[3], Form("60-80%% x1/4"),"p");
+   corrleg->AddEntry(hm_stat_inv[4], Form("80-100%% x1/8"),"p");
   ccorr->cd();
   corrleg->Draw();
   AddPaveText_KStar_pPb("bl");
