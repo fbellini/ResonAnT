@@ -4,18 +4,20 @@
 //
 
 void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root", 
-			    Int_t train=89,
+			    Int_t train=5455,
 			    Int_t tpcNs = 2,
 			    Int_t tofNsveto = 3,
 			    Int_t isTOF = 2, 
 			    TString suffix = "", 
 			    Bool_t correctBR = 1,
-                Int_t check = 1 //use 0 for normal, use 1 for check with fit of correction, use 2 for fit func in full range
+			    Int_t check = 1, //use 0 for normal, use 1 for check with fit of correction, use 2 for fit func in full range
+			    Int_t normToVisibleXsec=kTRUE //normalizes to vsible cross section
 			    )
 {
   const TString effHistName = "hEffVsPt";
-  Float_t trgAndVtxEff_pPbMinBias = 0.978; //trigger and vertex reco efficiency for pPb 0-100%
-  Float_t trgAndVtxEff_80to100 = (100-5.*2.2)/100.;
+  Float_t trgAndVtxEff_pPbMinBias = 0.964; //trigger and vertex reco efficiency for pPb 0-100%
+  Float_t trgAndVtxEff_60to80 = 0.995; 
+  Float_t trgAndVtxEff_80to100 = 0.945; //(100-5.*2.2)/100.;
   Float_t branchingRatio = 0.666;
   Float_t pid_eff_tpc2s = (0.954*0.954);
   Float_t pid_eff_tpc25s = (0.9876*0.9876);
@@ -24,6 +26,12 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
   Float_t nEventsCombined89[5] = {1.157537e+07, 1.158668e+07, 1.158418e+07, 1.194203e+07, 1.085574e+07}; //aod139 LHC13b,c train 8+9
   Float_t nEventsCombined89100[5] = {57544008., -1.0, -1.0, -1.0, -1.0}; //aod139 LHC13b,c train 8+9   //0-100%
   
+  Float_t nEventsCombined5253[5] = {2.005112e+07, 2.007708e+07, 2.007164e+07, 2.069941e+07, 1.872713e+07}; //aod LHC13b,c train LF_pPb_AOD 52+53
+  Float_t nEventsCombined5253100[5] = {9.962638e+07, -1., -1., -1., -1.}; //aod LHC13b,c train LF_pPb_AOD 52+53
+
+  Float_t nEventsCombined5455[5] = { 1.977694e+07, 1.980292e+07, 1.979871e+07, 2.040816e+07, 1.842773e+07 };
+  Float_t nEventsCombined5455100[5] = { 9.8214448e+07 ,-1.0, -1.0, -1.0, -1.0};
+
   Color_t color[3][5]={ kTeal+3, kSpring+5, kBlue-3, kCyan-3, kAzure-6, //tpc
 			kRed+2, kOrange+6, kViolet-6, kMagenta, kBlue+2, //tof
 			kRed+1, kPink+6, kGreen+1, kAzure+1, kBlue+2 }; //combined tpc3s_tof3sveto
@@ -39,7 +47,7 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
   TCanvas * ceff = new TCanvas("eff","efficiency correction",600,500);
   TCanvas * ccorr = new TCanvas("corr","corrected spectra",600,700);
   TString corrspectraFileName = spectraFileName;
-  corrspectraFileName.ReplaceAll("RAW",Form("CORRCHECK_%s",(correctBR?"br":"NOBR")));
+  corrspectraFileName.ReplaceAll("RAW",Form("CORRCHECK_%s%s",(correctBR?"br":"NOBR"),(normToVisibleXsec?"_normVXS":"")));
   corrspectraFileName.ReplaceAll(".root",Form("%s.root",suffix.Data()));
   TFile * fout = new TFile(corrspectraFileName.Data(),"recreate");
   
@@ -71,11 +79,44 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
       Printf(":::: Normalization by accepted event number from train 8+9");
     } 
 
-    if (train%100 == 0) { //apply correction for vertex and trigger efficiency for p-Pb min bias (0-100%) //nb: this refers to the number of events, thus it multiplies the spectrum 
+    if (train==5253100){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEventsCombined5253100[ic]);
+      Printf(":::: Normalization by accepted event number from train 52+53 - 0-100%");
+    }
+        
+    if (train==5253){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEventsCombined5253[ic]);
+      Printf(":::: Normalization by accepted event number from train 52+53");
+    }
+
+    if (train==5455){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEventsCombined5455[ic]);
+      Printf(":::: Normalization by accepted event number from train 54+55");
+    }
+
+    if (train==5455100){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEventsCombined5455100[ic]);
+      Printf(":::: Normalization by accepted event number from train 54+55 - 0-100%");
+    }
+
+    if (normToVisibleXsec && (train%100==0)) { //apply correction for vertex and trigger efficiency for p-Pb min bias (0-100%) //nb: this refers to the number of events, thus it multiplies the spectrum 
       hraw->Scale(trgAndVtxEff_pPbMinBias);
       Printf(":::: Correction for trigger and vtx reco efficiency for pPb min bias (0-100%) => scaled by %4.3f", trgAndVtxEff_pPbMinBias);
     }
-   
+
+    if (normToVisibleXsec && (ic==3)) {
+      hraw->Scale(trgAndVtxEff_60to80);
+      Printf(":::: Correction for trigger and vtx reco efficiency to normalize to the visible cross section (60-80%) => scaled by %4.3f", trgAndVtxEff_60to80);
+    }
+    else if (normToVisibleXsec && (ic==4)){
+      hraw->Scale(trgAndVtxEff_80to100);
+      Printf(":::: Correction for trigger and vtx reco efficiency to normalize to the visible cross section (80-100%) => scaled by %4.3f", trgAndVtxEff_80to100);
+    }
+    
     hraw->SetTitle(Form("Raw yields %s", centLabel.Data()));
     hraw->GetYaxis()->SetTitle("1/N_{evt}* dN/dp_{T} (0<y_{CMS}<0.5)");
     //hraw->GetYaxis()->SetTitleOffset(1.4);
@@ -96,7 +137,7 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
     if (!heff) return;
     heff->SetTitle(Form("Efficiency (%s)", centLabel.Data()));
     heff->SetName(Form("hCombEff_%i", ic));
-    heff->GetXaxis()->SetRangeUser(0.0,16.0);
+    heff->GetXaxis()->SetRangeUser(0.0, 16.0);
     heff->GetYaxis()->SetRangeUser(0.0, 1.0);
     heff->GetYaxis()->SetTitle("efficiency");
     heff->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -143,12 +184,12 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
     //correct for .p.le antip.le
     hcorr->Scale(0.5); 
     Printf(":::: Yields scaled for 1/2 to get 1/2 d^2N/dydp_t (p.le/antip.le)");
-    
+
     hcorr->SetTitle(Form("%s", centLabel.Data()));
     hcorr->GetYaxis()->SetTitle(Form("d^{2}#it{N}/(#it{p}_{T}d#it{y}) (GeV/#it{c})^{-1}"));//, correctBR?"* 1/B.R.":""));
     hcorr->GetYaxis()->SetRangeUser(1e-6,2.);
     //hcorr->GetYaxis()->SetTitleOffSet(1.4);
-    hcorr->GetXaxis()->SetRangeUser(0.0,14.9);
+    hcorr->GetXaxis()->SetRangeUser(0.0, 14.9.);
     hcorr->SetLineColor(color[isTOF][ic]);
     hcorr->SetMarkerColor(color[isTOF][ic]);
     hcorr->SetMarkerStyle(marker[isTOF][ic]);

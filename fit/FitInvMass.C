@@ -200,10 +200,10 @@ Double_t BestNormalization
 //----------------------------------------------------------------------------------
 void FitInvMass
 (
-   const char *filein = "proj/kstar.root",
+ const char *filein = "/Users/fbellini/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/proj/tpc2s_tof3sveto_centBin00.root",//"proj/kstar.root",
    EFit        mode = kMixing,
    const char *func = "BW+POLY2",
-   Double_t    viewMin = 0.74,
+   Double_t    viewMin = 0.76,
    Double_t    viewMax = 1.04,
    Int_t       normMethod = ENorm::kBestNorm,
    Bool_t      pause = kTRUE,
@@ -212,8 +212,8 @@ void FitInvMass
    
    Double_t    nsigmaPeak = 7.0,
    Int_t       nrebin = 1,
-   Int_t       startBin = 0,
-   Int_t       stopBin = -1,
+   Int_t       startBin = 6,
+   Int_t       stopBin = 7,
    Int_t       centBinID = 0,
    Bool_t      fixGamma  = kTRUE,
    Double_t    minGamma = 0.5,
@@ -468,7 +468,7 @@ void FitInvMass
       
     // combine PM and MP signal and mixing bg, compute like sign bg
     TH1D *hSignal   = SumSignal(hSignalPM, hSignalMP);
-    TH1D *hLike   = BgLike(hLikePP, hLikeMM);
+    TH1D *hLike     = BgLike(hLikePP, hLikeMM);
     TH1D *hMixing   = BgMixing(hMixingPM, hMixingMP);
       
     // compute subtraction

@@ -44,6 +44,9 @@ Int_t  GetNormalizationFactors(TString fileName, TString listNameSuffix = "_tof2
 
   }
   
+  Printf(Form("Normalization array from 0-20 to 80-100%: norm = { %e, %e, %e, %e, %e }",
+	      centCounters[0], centCounters[1], centCounters[2], centCounters[3], centCounters[4]));
+  
   //  Color_t color[5] = {kOrange+6, kOrange, kGreen-5, kCyan-6, kAzure-9};
   Color_t color[5] = {kOrange-9, kYellow-8, kGreen-8, kCyan-6, kAzure-9};
   //hAccEventVsCent->Rebin();

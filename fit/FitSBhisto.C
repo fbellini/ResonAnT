@@ -92,7 +92,7 @@ Int_t FitSB(TH1D * histo,
 {
   //graphical options
   //TGaxis::SetMaxDigits(3);
-  TString macroDir = "$HOME/alice/macro/kstar/fit";
+  TString macroDir = "$HOME/alice/macro/ResonAnT/fit";
   //gROOT->LoadMacro(Form("%s/myFitResult.C+",macroDir.Data()));
   TVirtualFitter::SetDefaultFitter("Minuit");
   
@@ -154,8 +154,8 @@ Int_t FitSB(TH1D * histo,
   //-----------
   // mass 
   //-----------
-   const Double_t pdgM = 0.89595;//GeV
-   const Double_t pdgW = 0.0487;//GeV
+  const Double_t pdgM = 1.5195;       //0.89595;//GeV
+  const Double_t pdgW = 0.0156;      //0.0487;//GeV
    Int_t         nsigmaPeak = 5.0;  
    Double_t      peakLowLim = pdgM - nsigmaPeak * pdgW / 2.35;
    Double_t      peakUpLim  = pdgM + nsigmaPeak * pdgW / 2.35;

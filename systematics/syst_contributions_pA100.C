@@ -1,17 +1,21 @@
-void syst_contributions_pA100(Int_t icent=100, 
-			      TString date="27apr14", 
+void syst_contributions_pA100(Int_t icent=0, 
+			      TString bg = "LS",
+			      TString date="12oct15", 
 			      Int_t barlow = 0, 
-			      TString bg = "EM",
-			      Int_t smooth = 2)
+			      Int_t smooth = 2,
+			      Bool_t doFinal = kTRUE)
 {
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   TString deteco = "Combo";
   Int_t ipid=0;
   //set input name
-  TString fPath = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/0to100_binB/systUncert");
-  TString fPathCorr = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/0to100_binB/systPID/tpc2s_tof3sveto/fit%s_norm%i_BWpoly2_fixedW/", bg.Data(), bg.Contains("EM"));
-  TString corrFile = "CORRECTED_br_best_fit_poly2.root";
+  TString fPath = Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/0to100_binB/systUncert");
+  TString fPathCorr;
+  if (doFinal)  fPathCorr = Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/NSD/central/fit%s_norm%i_BWpoly2_fixedW/", bg.Data(),bg.Contains("EM"));
+  else fPathCorr = Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/0to100_binB/systPID/tpc2s_tof3sveto/fit%s_norm%i_BWpoly2_fixedW/", bg.Data(), bg.Contains("EM"));
+  
+  TString corrFile = (doFinal? "CORRCHECK_br_best_fit_poly2.root" : "CORRECTED_br_best_fit_poly2.root");
   TString hCorrYieldName = Form("hCorrected_%i",icent);//,deteco.Data());
   
   //pA analysis
@@ -19,14 +23,14 @@ void syst_contributions_pA100(Int_t icent=100,
   Double_t pt[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00, 12.0, 15.0};  
   Int_t   npt  = sizeof(pt) / sizeof(pt[0]) - 1;   
   Int_t   ncent  = sizeof(cent) / sizeof(cent[0]) - 1;
-  TString centLabel=Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
+  TString centLabel= "NSD";Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
   
   //cosmetics  
   Color_t color[3][6]={kOrange+7, kPink+6, kGreen+1, kAzure+1, kBlue+3, kBlack, //combined
 		       kTeal+3, kSpring+5, kBlue-3, kCyan-3, kAzure-6, kBlack, //tpc
 		       kRed+2, kOrange+6, kViolet-6, kMagenta, kBlue+2, kBlack}; //tof
    
-  Int_t marker[3][6]={21, 22, 32, 28, 24, 20, //combined
+  Int_t marker[3][6]={20, 22, 32, 28, 24, 20, //combined
 		      21, 22, 23, 34, 33, 20, //tpc
 		      25, 26, 32, 28, 27, 24}; //tof
   
@@ -34,6 +38,14 @@ void syst_contributions_pA100(Int_t icent=100,
   TAxis *ptbins = new TAxis(npt, pt);
   TAxis *centbins = new TAxis(ncent, cent);
   
+  //statistical 
+  TH1F * statunc = new TH1F(Form("statunc_%i",icent),Form("Statistical uncertainty",icent), npt, pt);
+  statunc->SetLineWidth(3);
+  statunc->SetLineColor(kGreen+2);
+  statunc->SetMarkerColor(kGreen+2);
+  statunc->SetLineStyle(1);
+  statunc->SetMarkerStyle(0);
+
   //total 
   TH1F * sum2 = new TH1F(Form("sum2_%i",icent),Form("Total sys. uncert.",icent), npt, pt);
   sum2->SetLineWidth(3);
@@ -44,33 +56,33 @@ void syst_contributions_pA100(Int_t icent=100,
 
   //total uncorrelated wrt pt
   TH1F * sum2_uncorr = new TH1F(Form("sum2_uncorr_%i",icent),Form("Total uncorrelated"), npt, pt);
-  sum2_uncorr->SetLineWidth(2);
+  sum2_uncorr->SetLineWidth(3);
   sum2_uncorr->SetLineColor(kGray+1);
   sum2_uncorr->SetMarkerColor(kGray+1);
   sum2_uncorr->SetLineStyle(1);
   sum2_uncorr->SetMarkerStyle(0); 
   //total uncorrelated with pi
   TH1F * sum2_uncorrPi = new TH1F(Form("sum2_uncorrPi_%i",icent),Form("Sum pt-independent contr., #pi uncorrelated",icent), npt, pt);
-  sum2_uncorrPi->SetLineWidth(1);
+  sum2_uncorrPi->SetLineWidth(2);
   sum2_uncorrPi->SetLineColor(kRed+1);
   sum2_uncorrPi->SetMarkerColor(kRed+1);
-  sum2_uncorrPi->SetLineStyle(1);
+  sum2_uncorrPi->SetLineStyle(3);
   sum2_uncorrPi->SetMarkerStyle(0); 
 
   //total uncorrelated with K
   TH1F * sum2_uncorrKa = new TH1F(Form("sum2_uncorrKa_%i",icent),Form("Sum pt-independent contr., K uncorrelated",icent), npt, pt);
-  sum2_uncorrKa->SetLineWidth(1);
+  sum2_uncorrKa->SetLineWidth(2);
   sum2_uncorrKa->SetLineColor(kBlue+1);
   sum2_uncorrKa->SetMarkerColor(kBlue+1);
-  sum2_uncorrKa->SetLineStyle(1);
+  sum2_uncorrKa->SetLineStyle(4);
   sum2_uncorrKa->SetMarkerStyle(0); 
 
  //total uncorrelated with p
   TH1F * sum2_uncorrPro = new TH1F(Form("sum2_uncorrPro_%i",icent),Form("Sum pt-independent contr., p uncorrelated",icent), npt, pt);
-  sum2_uncorrPro->SetLineWidth(1);
+  sum2_uncorrPro->SetLineWidth(2);
   sum2_uncorrPro->SetLineColor(kGreen+1);
   sum2_uncorrPro->SetMarkerColor(kGreen+1);
-  sum2_uncorrPro->SetLineStyle(1);
+  sum2_uncorrPro->SetLineStyle(5);
   sum2_uncorrPro->SetMarkerStyle(0); 
 
   //pt dependent
@@ -100,6 +112,14 @@ void syst_contributions_pA100(Int_t icent=100,
   trackcuts->SetMarkerStyle(0); 
 
 #if 0 //not a systematic effect
+  //pt independent
+  TH1F * vertexing = new TH1F("vertexing","Vertexing efficiency",npt, pt);
+  vertexing->SetLineWidth(2);
+  vertexing->SetLineColor(kAzure+3);
+  vertexing->SetMarkerColor(kAzure+3);
+  vertexing->SetLineStyle(3);
+  vertexing->SetMarkerStyle(0); 
+
   TH1F * tofmatching = new TH1F("tofmatching","TOF matching",npt, pt);  
   tofmatching->SetLineWidth(3);
   tofmatching->SetLineColor(kGreen+2);
@@ -287,7 +307,8 @@ void syst_contributions_pA100(Int_t icent=100,
   }
 
   //sum correlated contributions in quadrature
-  Double_t syst_ptFullyCorr_sum2 = (2.0*tracking_1trk)*(2.0*tracking_1trk) + trackCuts_rsn*trackCuts_rsn; //tracking^2 + track cuts^2
+  Double_t syst_ptFullyCorr_sum2 = (2.0*tracking_1trk)*(2.0*tracking_1trk);  //tracking^2
+  // + trackCuts_rsn*trackCuts_rsn; + track cuts^2
   
   //estimate uncertainty per each pt bin
   for (Int_t ii = 0;ii<npt;ii++){
@@ -313,6 +334,11 @@ void syst_contributions_pA100(Int_t icent=100,
     //correlated and uncorrelated uncertainties for particle ratios
     Double_t uncorrelPi2 = 0.0; //uncert. uncorrelated with pi uncert. ^2
     Double_t uncorrelKa2 = 0.0;  //uncert. uncorrelated with K uncert. ^2
+
+   //track cuts
+    ptuncorr2+=(trackCuts_rsn*trackCuts_rsn);
+    uncorrelPi2+=(trackCuts_rsn*trackCuts_rsn);
+    uncorrelKa2+=(trackCuts_rsn*trackCuts_rsn);
     
     //fit range
     if (range_syst>0.0) {
@@ -437,12 +463,13 @@ void syst_contributions_pA100(Int_t icent=100,
   TH1F * data_Wsyst_Wstat_uncorrKa = (TH1F*) data->Clone(Form("%s%i_syst_Wstat_uncorrKa",hCorrYieldName.Data(),icent));
   TH1F * data_Wsyst_Wstat_uncorrPro = (TH1F*) data->Clone(Form("%s%i_syst_Wstat_uncorrPro",hCorrYieldName.Data(),icent));
 
-  for (Int_t ii = 1;ii<npt;ii++){   
+  for (Int_t ii = 1;ii<npt+1;ii++){   
     Int_t ibin = ii;
     Double_t yd = data->GetBinContent(ibin);
     Double_t yd_stat = data->GetBinError(ibin);
     Double_t perc = sum2->GetBinContent(ibin);
     Double_t yd_syst = yd*perc/100.;
+    statunc->SetBinContent(ibin, (yd>0? (yd_stat*100.0/yd) : 0.0));
     data_Wsyst->SetBinContent(ibin,yd);
     data_Wsyst->SetBinError(ibin, yd_syst);
     data_Wsyst_Wstat->SetBinContent(ibin,yd);
@@ -513,7 +540,11 @@ void syst_contributions_pA100(Int_t icent=100,
   autolegry->SetLineColor(kWhite);
   autolegry->SetTextFont(42);
   autolegry->SetNColumns(2); 
-  //color data
+  //color data  TLegend * autolegry = (TLegend*)gPad->BuildLegend(0.25,0.65,0.88,0.88, Form("V0A multiplicity class %s",centLabel.Data()));
+  autolegry->SetFillColor(kWhite);
+  autolegry->SetLineColor(kWhite);
+  autolegry->SetTextFont(42);
+  autolegry->SetNColumns(2); 
   data->SetMarkerColor(color[ipid][icent]+1);
   data->SetLineColor(color[ipid][icent]+1);
   data->SetMarkerStyle(marker[ipid][icent]);
@@ -604,12 +635,33 @@ void syst_contributions_pA100(Int_t icent=100,
   data_Wsyst_Wstat_uncorrPro->SetMarkerStyle(0);
   data_Wsyst_Wstat_uncorrPro->SetTitle(Form("%s (#sqrt{syst^{2}+stat^{2}}, p uncorr.)",centLabel.Data()));
 
+  TCanvas *cunc=new TCanvas("cunc","Summary of uncertainty vs p_{t}", 750,600);
+  cunc->cd();
+  sum2->Draw();
+  sum2_uncorr->Draw("HIST same");
+  sum2_uncorrPi->Draw("HIST same");
+  sum2_uncorrKa->Draw("HIST same");
+  statunc->Draw("HIST same");
+  TLegend * autolegry2 = (TLegend*)gPad->BuildLegend(0.25,0.65,0.88,0.88);
+  autolegry2->SetFillColor(kWhite);
+  autolegry2->SetLineColor(kWhite);
+  autolegry2->SetTextFont(42);
+  autolegry2->SetNColumns(1); 
+  autolegry2->Draw();
+
   //save to out file
   TString outfilename;
   if (barlow>0) outfilename = Form("finalWsyst_%s_B%i_%s_%i.root", bg.Data(),barlow, date.Data(),icent);
   else outfilename = Form("finalWsyst_%s_%s_%i.root", bg.Data(), date.Data(),icent);
   if (smooth>0) outfilename.ReplaceAll("finalWsyst",Form("finalWsyst_smooth%i",smooth));
-  
+
+  TString imagefilename2;
+  if (barlow>0) imagefilename2 = Form("summaryUncert_%s_B%i_cent%i_%s", bg.Data(), barlow, icent, date.Data()) ;
+  else imagefilename2 = Form("summaryUncert_%s_cent%i_%s", bg.Data(), icent, date.Data());
+  if (smooth>0) imagefilename2.ReplaceAll("summaryUncert", Form("summaryUncert_smooth%i",smooth));
+  cunc->SaveAs(Form("%s.png", imagefilename2.Data()));
+  cunc->SaveAs(Form("%s.C", imagefilename2.Data()));  
+
   TFile * fout = new TFile(outfilename.Data(),"recreate");
   fout->cd();
   material->Write();
@@ -627,6 +679,7 @@ void syst_contributions_pA100(Int_t icent=100,
   bgnorm->Write();
   function->Write();
   hadrint->Write();
+  statunc->Write();
   data->Write();
   sum2->Write();
   sum2_uncorr->Write();
@@ -642,6 +695,8 @@ void syst_contributions_pA100(Int_t icent=100,
   data_Wsyst_Wstat_uncorrKa->Write();
   data_Wsyst_uncorrPro->Write();
   data_Wsyst_Wstat_uncorrPro->Write();
+
+  cunc->Write();
   cs->Write();
   fout->Close(); 
   

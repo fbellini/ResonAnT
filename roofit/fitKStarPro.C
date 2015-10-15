@@ -42,23 +42,23 @@ gSystem->Load("libRooFit");
 
 //--------------------------------------------------
 void fitKStarPro(
-	      TString infilename="sub_aod49_kstar.root", 
-	      TString outdirname = "roofit/", /* / mandatory*/
+	      TString infilename="sub_kstar.root", 
+	      TString outdirname = "./", /* / mandatory*/
 	      Bool_t isRebin=kFALSE,
 	      Bool_t useChi2 = kTRUE,
 	      Int_t backgndType=EbackgndType::kUnlikeME, 
 	      TString fitfunction="POLY2",
-	      Int_t selCentBin=-1,
-	      Int_t istartptbin=2, 
-	      Int_t istopptbin= 14, 
-	      Int_t canvasSplit = 4, 
-	      Double_t massRangeMin = 0.74, 
+	      Int_t selCentBin=0,
+	      Int_t istartptbin=12, 
+	      Int_t istopptbin= 13, 
+	      Int_t canvasSplit = 1, 
+	      Double_t massRangeMin = 0.7, 
 	      Double_t massRangeMax = 1.1, 
 	      Bool_t printAll = 0,
-	      Bool_t isShowFullRrange = 0,
+	      Bool_t isShowFullRrange = 1,
 	      Float_t cutMassMin= 0.0,
 	      Float_t cutMassMax= 2.0,
-	      Bool_t isWconst = kFALSE,
+	      Bool_t isWconst = kTRUE,
 	      Float_t cutWidthMin= -1.,
 	      Float_t cutWidthMax= -1.,
 	      Bool_t isResVconst = kTRUE,

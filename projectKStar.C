@@ -102,7 +102,7 @@ void projectKStar
   /****************************/
   //pA analysis
   /****************************/
-  Double_t cent[]={ 0.0, 100};
+  Double_t cent[]={ 0.0, 100.0};
   //Double_t cent[]={0.0, 20.0, 40.0, 60.0, 80.0, 100.0};   
   //TOF and TPC standalone analyses - binning 0
   //Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };

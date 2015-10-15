@@ -1,4 +1,4 @@
-void CombineEMLSsys( TString centLabel = "0-100%", TString suffix = "28apr14_0")
+void CombineEMLSsys( TString centLabel = "0-100%", TString suffix = "28apr14_0", Int_t cent = 0)
 {
 
   TString em_name=Form("finalWsyst_smooth2_EM_%s.root", suffix.Data());
@@ -11,8 +11,8 @@ void CombineEMLSsys( TString centLabel = "0-100%", TString suffix = "28apr14_0")
   TString hbgNorm_name("bgNorm");
   TString hfunction_name("function");
   TString hhadrint_name("hadrint");
-  TString hsum2_0_name("sum2_0");
-  TString hsum2_uncorr_0_name("sum2_uncorr_0");
+  TString hsum2_0_name=Form("sum2_%i",cent);
+  TString hsum2_uncorr_0_name=Form("sum2_uncorr_%i",cent);
 
   TFile * fls = TFile::Open(ls_name.Data(),"read"); if (!fls) { Printf("No LS file found"); return;}
   TFile * fem = TFile::Open(em_name.Data(),"read"); if (!fem) { Printf("No EM file found"); return;}
@@ -66,7 +66,7 @@ void CombineEMLSsys( TString centLabel = "0-100%", TString suffix = "28apr14_0")
   hsum2_0[2]->SetTitle("Total systematic uncertainty");
   hsum2_0[2]->GetYaxis()->SetTitle("relative uncert. (%)");
   hsum2_0[2]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  hsum2_0[2]->GetYaxis()->SetRangeUser(0.1, 20);
+  hsum2_0[2]->GetYaxis()->SetRangeUser(0.1, 20.);
   hsum2_0[2]->GetXaxis()->SetRangeUser(0.0, 14.9);
   
   hsum2_0[2]->Draw("hist");
@@ -103,27 +103,49 @@ void CombineEMLSsys( TString centLabel = "0-100%", TString suffix = "28apr14_0")
   cs->Write();
   fout->Close(); 
   
-  Printf("::::::::::::::: Average hmaterial uncert: %4.2f", GetAverageUncert(hmaterial[2]));
-  Printf("::::::::::::::: Average htracking uncert: %4.2f", GetAverageUncert(htracking[2]));
-  Printf("::::::::::::::: Average htrackcuts uncert: %4.2f", GetAverageUncert(htrackcuts[2]));
-  Printf("::::::::::::::: Average hPID uncert: %4.2f", GetAverageUncert(hPID[2]));
-  Printf("::::::::::::::: Average hrange uncert: %4.2f", GetAverageUncert(hrange[2]));
-  Printf("::::::::::::::: Average htracking uncert: %4.2f", GetAverageUncert(htracking[2]));
-  Printf("::::::::::::::: Average hbgNorm uncert: %4.2f", GetAverageUncert(hbgNorm[2]));
-  Printf("::::::::::::::: Average hfunction uncert: %4.2f", GetAverageUncert(hfunction[2]));
-  Printf("::::::::::::::: Average hhadrint uncert: %4.2f", GetAverageUncert(hhadrint[2]));
-  Printf("::::::::::::::: Average hsum2_0 uncert: %4.2f", GetAverageUncert(hsum2_0[2]));
-  Printf("::::::::::::::: Average sum2_uncorr_0 uncert: %4.2f", GetAverageUncert(hsum2_uncorr_0[2]));
+  Int_t ibin4GeV = htracking[0]->GetXaxis()->FindBin(3.95);
+  Int_t ibin15GeV = htracking[0]->GetXaxis()->FindBin(14.9);
 
+  Printf("::::::::::::::: BELOW 4GeV/c");
+  Printf(" Average htracking uncert: %4.2f", GetAverageUncert(htracking[2], 1, ibin4GeV));
+  Printf(" Average htrackcuts uncert: %4.2f", GetAverageUncert(htrackcuts[2], 1, ibin4GeV));
+  Printf(" Average hPID uncert: %4.2f", GetAverageUncert(hPID[2], 1, ibin4GeV));
+  Printf(" Average hmaterial uncert: %4.2f", GetAverageUncert(hmaterial[2], 1, ibin4GeV));
+  Printf(" Average hhadrint uncert: %4.2f", GetAverageUncert(hhadrint[2], 1, ibin4GeV));
+  Printf(" Average hrange uncert: %4.2f", GetAverageUncert(hrange[2], 1, ibin4GeV));
+  Printf(" Average hbgNorm uncert: %4.2f", GetAverageUncert(hbgNorm[2], 1, ibin4GeV));
+  Printf(" Average hfunction uncert: %4.2f", GetAverageUncert(hfunction[2], 1, ibin4GeV));
+  Printf(" Average hsum2_0 uncert: %4.2f", GetAverageUncert(hsum2_0[2], 1, ibin4GeV));
+  Printf(" Average sum2_uncorr_0 uncert: %4.2f", GetAverageUncert(hsum2_uncorr_0[2], 1, ibin4GeV));
+  
+  Printf("::::::::::::::: ABOVE 4GeV/c");
+  Printf(" Average htracking uncert: %4.2f", GetAverageUncert(htracking[2], ibin4GeV+1, ibin15GeV));
+  Printf(" Average htrackcuts uncert: %4.2f", GetAverageUncert(htrackcuts[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hPID uncert: %4.2f", GetAverageUncert(hPID[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hmaterial uncert: %4.2f", GetAverageUncert(hmaterial[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hhadrint uncert: %4.2f", GetAverageUncert(hhadrint[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hrange uncert: %4.2f", GetAverageUncert(hrange[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hbgNorm uncert: %4.2f", GetAverageUncert(hbgNorm[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hfunction uncert: %4.2f", GetAverageUncert(hfunction[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average hsum2_0 uncert: %4.2f", GetAverageUncert(hsum2_0[2],ibin4GeV+1, ibin15GeV));
+  Printf(" Average sum2_uncorr_0 uncert: %4.2f", GetAverageUncert(hsum2_uncorr_0[2],ibin4GeV+1, ibin15GeV));
+  
   return;
 }
 
 
-Float_t GetAverageUncert(TH1D* h)
+Float_t GetAverageUncert(TH1D* h, Int_t ibinmin=0, Int_t ibinmax=-1)
 {
   TH1F * tmp = new TH1F("tmp","tmp", 100., 0., 100.);
-  for (Int_t i=1; i<h->GetNbinsX()+1;i++){
-    tmp->Fill(h->GetBinContent(i));
+  if (ibinmax<ibinmin) { 
+    ibinmin=1; 
+    ibinmax=h->GetNbinsX();
+    Printf("ibinmin = %i", "ibinmax = %i", ibinmin,ibinmax);
+  }
+  for (Int_t i=ibinmin; i<ibinmax+1;i++){
+    if (h->GetBinContent(i)>0)
+      tmp->Fill(h->GetBinContent(i));
+    else Printf("Warning: bin content of bin %i is ZERO and I skip it",i);
   }
   Float_t mean = tmp->GetMean();
   delete tmp;

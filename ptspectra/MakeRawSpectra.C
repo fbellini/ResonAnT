@@ -46,7 +46,7 @@ void MakeRawSpectra(Bool_t save =1,
   if (!f) return;
   //get bins
   TAxis *ptbins = (TAxis*)f->Get("ptbins");
-  Int_t npt = ptbins->GetNbins();
+  Int_t npt = ptbins->GetNbins()-1;
   const Int_t dimpt = npt+1;
   Double_t pt[dimpt];
   for (Int_t k=0; k<dimpt;k++){

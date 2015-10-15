@@ -13,7 +13,7 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
 			    )
 {
   const TString effHistName = "hEffVsPt";
-  Float_t trgAndVtxEff_pPbMinBias = 0.978; //trigger and vertex reco efficiency for pPb 0-100%
+  Float_t trgAndVtxEff_pPbMinBias = 0.964; //trigger and vertex reco efficiency for pPb 0-100%
   Float_t trgAndVtxEff_80to100 = (100-5.*2.2)/100.;
   Float_t branchingRatio = 0.666;
   Float_t pid_eff_tpc2s = (0.954*0.954);
@@ -65,26 +65,26 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
     
     switch (isTOF) {
     case 0 :
-      if (train==215216) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb82/eff/efficiency_RsnOut_tof2s_centBin0%i.root",ic);
-      if (train==231232) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb99/eff/efficiency_RsnOut_tof25s_centBin0%i.root",ic);
+      if (train==215216) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb82/eff/efficiency_RsnOut_tof2s_centBin0%i.root",ic);
+      if (train==231232) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb99/eff/efficiency_RsnOut_tof25s_centBin0%i.root",ic);
       break;
       
     case 1 :
-      if (train==215216) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb82/eff/efficiency_RsnOut_quality2011_centBin0%i.root",ic);
-      // if (train==12) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/LF_pPb_1-2/LSvsEMpng_binningOld/eff/efficiency_RsnOut_comb_cent000-100.root  ",ic);
-      //effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_centBin0%i.root",ic);//combined
+      if (train==215216) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_CF_pPb82/eff/efficiency_RsnOut_quality2011_centBin0%i.root",ic);
+      // if (train==12) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_1-2/LSvsEMpng_binningOld/eff/efficiency_RsnOut_comb_cent000-100.root  ",ic);
+      //effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_centBin0%i.root",ic);//combined
       break;
       
     case 2:
-      if (train==12100) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_cent000-100.root  ");
-      if (train==12) effFileName    = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_cent%03i-%03i.root",20*ic, 20*(ic+1));
-      if (train==67100) effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_tpc3s_tof3sveto_cent000-100.root");
-      if (train==67) effFileName    = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_tpc3s_tof3sveto_cent%03i-%03i.root",20*ic, 20*(ic+1));
+      if (train==12100) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_cent000-100.root  ");
+      if (train==12) effFileName    = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_comb_cent%03i-%03i.root",20*ic, 20*(ic+1));
+      if (train==67100) effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_tpc3s_tof3sveto_cent000-100.root");
+      if (train==67) effFileName    = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/efficiency_RsnOut_tpc3s_tof3sveto_cent%03i-%03i.root",20*ic, 20*(ic+1));
       if (train==89100) {
-	effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/binB/efficiency_RsnOut_tpc%is_tof%isveto_cent000-100.root", tpcNs, tofNsveto);
+	effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/binB/efficiency_RsnOut_tpc%is_tof%isveto_cent000-100.root", tpcNs, tofNsveto);
       }
       if (train==89) {
-	effFileName = Form("/Users/bellini/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/multi-binB/efficiency_RsnOut_tpc%is_tof%isveto_cent%03i-%03i.root", tpcNs, tofNsveto, ic*20, 20*(ic+1));
+	effFileName = Form("$HOME/alice/resonances/kstar_pA5.02TeV/MC_LF_pPb/eff_train12-20/multi-binB/efficiency_RsnOut_tpc%is_tof%isveto_cent%03i-%03i.root", tpcNs, tofNsveto, ic*20, 20*(ic+1));
       }
       break;
       

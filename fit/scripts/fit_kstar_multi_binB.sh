@@ -12,7 +12,7 @@ main()
 	wmax=1.5
 	mrange=7.0  #default = 7.0
 #Nmax=0
-	export FITPATH="/Users/bellini/alice/macro/kstar/fit/FitInvMass.C"
+	export FITPATH="$HOME/alice/macro/ResonAnT/fit/FitInvMass.C"
 #	export KSTARFITMACRO="FitInvMass.C"
 	
 	#set default background function to poly2
@@ -47,9 +47,9 @@ main()
 	    fi
 	done
 	ls fit/${pid}_*/*.root > fit/fitResults.txt
-	root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
+	root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
 # ls fit/${pid}_centBin0${cent}*/*.root > fit/fitResults_cent${cent}.txt
-# root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"
+# root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"
 	if [ $bg -eq 4 ] 
 	then
 	    mv fit bcEM_norm${norm}_${sigFit}${resBg}
@@ -65,12 +65,12 @@ main()
 		    then
 			mv fit fitLS_norm${norm}_${sigFit}${resBg}_fixedW
 			cd fitLS_norm${norm}_${sigFit}${resBg}_fixedW
-			root -l -b -q "${ASD}/kstar/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"LSB, ${sigFit}(#Gamma=#Gamma_{PDG})+${resBg}\")"
+			root -l -b -q "$HOME/alice/macro/ResonAnT/ptspectra/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"LSB, ${sigFit}(#Gamma=#Gamma_{PDG})+${resBg}\")"
 			cd ..
 		    else
 			mv fit fitLS_norm${norm}_${sigFit}${resBg}_freeW
 			cd fitLS_norm${norm}_${sigFit}${resBg}_freeW
-			root -l -b -q "${ASD}/kstar/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"LSB, ${sigFit}(${wmin}#Gamma_{PDG}#leq#Gamma#leq${wmax}#Gamma_{PDG})+${resBg}\")"
+			root -l -b -q "$HOME/alice/macro/ResonAnT/ptspectra/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"LSB, ${sigFit}(${wmin}#Gamma_{PDG}#leq#Gamma#leq${wmax}#Gamma_{PDG})+${resBg}\")"
 			cd ..
 		    fi
 		else
@@ -78,12 +78,12 @@ main()
 		    then
 			mv fit fitEM_norm${norm}_${sigFit}${resBg}_fixedW
 		    	cd fitEM_norm${norm}_${sigFit}${resBg}_fixedW
-			root -l -b -q "${ASD}/kstar/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"MEB, ${sigFit}(#Gamma=#Gamma_{PDG})+${resBg}\")"
+			root -l -b -q "$HOME/alice/macro/ResonAnT/ptspectra/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"MEB, ${sigFit}(#Gamma=#Gamma_{PDG})+${resBg}\")"
 			cd ..
 		    else
 			mv fit fitEM_norm${norm}_${sigFit}${resBg}_freeW
 			cd fitEM_norm${norm}_${sigFit}${resBg}_freeW
-			root -l -b -q "${ASD}/kstar/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"MEB, ${sigFit}(${wmin}#Gamma_{PDG}#leq#Gamma#leq${wmax}#Gamma_{PDG})+${resBg}\")"
+			root -l -b -q "$HOME/alice/macro/ResonAnT/ptspectra/MakeRawSpectra.C(kTRUE,\"best_fit_${resBg}.root\",\"../proj_2424_${pid}.root\",\"${sigFit}${resBg}\",\"MEB, ${sigFit}(${wmin}#Gamma_{PDG}#leq#Gamma#leq${wmax}#Gamma_{PDG})+${resBg}\")"
 			cd ..
 		    fi
 		fi
@@ -165,7 +165,7 @@ main()
 		
 		if [ $icent -eq 0 ]
 		then
-		    root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.74, 1.06, ${norm}, 0, 1, 313, ${mrange}, 1, 20, 21, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
+		    root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.74, 1.04, ${norm}, 0, 1, 313, ${mrange}, 1, 20, 21, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
 		else
 		    root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.76, 1.02, ${norm}, 0, 1, 313, ${mrange}, 1, 20, 21, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
 		fi
@@ -184,7 +184,17 @@ main()
 			fi
 		    fi
 		else	
-		    root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.74, 1.04, ${norm}, 0, 1, 313, ${mrange}, 1, 21, 22, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
+		    if [ $icent -eq 2 ]
+		    then
+			root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.76, 1.04, ${norm}, 0, 1, 313, ${mrange}, 1, 21, 22, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
+		    else
+			# if [ $icent -eq 1 ]
+			# then
+			#     root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.76, 1.06, ${norm}, 0, 1, 313, ${mrange}, 1, 21, 22, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
+			# else		
+			root -q -l -b "${FITPATH}(\"proj/${pid}_centBin0${icent}.root\", ${bg}, \"${sigFit}+${resBg}\", 0.76, 1.04, ${norm}, 0, 1, 313, ${mrange}, 1, 21, 22, ${icent}, ${fixgamma}, ${wmin}, ${wmax})"
+			# fi
+		    fi
 		fi
 	    fi	    
 	else #like-sign bg and all the others
@@ -284,9 +294,9 @@ main()
 			fi
 		    done
 		    ls fit/${pid}_*/*.root > fit/fitResults.txt
-		    root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
+		    root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
 #		    ls fit/${pid}_centBin0${cent}*/*.root > fit/fitResults_cent${cent}.txt
-#		    root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"
+#		    root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"
 		    
 		    if [ $fixgamma -eq 1 ] 
 		    then
@@ -329,9 +339,9 @@ main()
 			fi
 		    done
 		    ls fit/${pid}_*/*.root > fit/fitResults.txt
-		    root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
+		    root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
 # ls fit/${pid}_centBin0${cent}*/*.root > fit/fitResults_cent${cent}.txt
-# root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"		
+# root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"		
 		    if [ $fixgamma -eq 1 ] 
 		    then
 			mv fit fitLS_norm${norm}_${sigFit}${resBg}_fixedW_l${left}_r${right}
@@ -795,9 +805,9 @@ if [ $bg -eq 0 ]  #event mixing
 		    done
 		    
 		    ls fit/${pid}_*/*.root > fit/fitResults.txt
-		    root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
+		    root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}.root\",\"fit/fitResults.txt\")"
 # ls fit/${pid}_centBin0${cent}*/*.root > fit/fitResults_cent${cent}.txt
-# root -l -b -q "/Users/bellini/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"		
+# root -l -b -q "$HOME/alice/macro/localMergeFiles.C(\"fit/best_fit_${resBg}_cent${cent}.root\",\"fit/fitResults_cent${cent}.txt\")"		
 		    if [ $fixgamma -eq 1 ] 
 		    then
 			mv fit fitLS_norm${norm}_${sigFit}${resBg}_fixedW_l${left}_r${right}

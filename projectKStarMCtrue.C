@@ -101,8 +101,8 @@ void projectKStarMCtrue
    //Double_t pt[] = {1.0, 2.0, 3.0, 4.0, 5.0, 7.0};
   
    //pA analysis
-  Double_t cent[]={0., 100.0}; 
-  //Double_t cent[]={0., 20., 40., 60., 80., 100.};   
+  //Double_t cent[]={0., 100.0}; 
+  Double_t cent[]={0., 20., 40., 60., 80., 100.};   
    //TOF and TPC standalone analyses
    //Double_t pt[] = {0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 12.0, 14.0, 16.0};
    //Double_t pt[] = { 0.0, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.00 };
@@ -139,7 +139,7 @@ void projectKStarMCtrue
 
    TCanvas *c[5];
    for (Int_t icentbin=0; icentbin<ncent;icentbin++){
-     if (ncent<5) {
+     if (ncent<6) {
        c[icentbin]= new TCanvas(Form("c_%i",icentbin),Form("cent_%i",icentbin),1200,600);
      }
    } 

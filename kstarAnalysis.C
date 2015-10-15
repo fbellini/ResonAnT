@@ -12,15 +12,21 @@ const Double_t kBigNumber=1E10;
 const Double_t kSmallNumber=1E-10;
 const Double_t invMassBinWidth=0.01; //GeV/c^2
 
-TString macroDir = "/Users/bellini/alice/macro/kstar";
+TString macroDir = "/Users/fbellini/alice/macro/ResonAnT";
 TString corrFactorLSfile = "/Users/bellini/alice/resonances/myKstar/check_LSwithMixingBg/correctionLSfromMix.root";
 enum ECompType_t {kSum,
 		  kHalfSum,
 		  kKStar,
-		  kAntiKStar
-                  };
+		  kAntiKStar};
 
-Char_t * kstarAnalysis(Int_t compType = ECompType_t::kKStar, Char_t* projPath, Char_t*projectionFile="proj_analysisAOD_0-80.root", Float_t emNormInf = 1.3, Float_t emNormSup = 1.5, Int_t ipt=-1, Int_t icent=-1, Bool_t isRebin=0, Float_t scaleEMNormFactor=1.0, Bool_t doNormLS = 0, Bool_t enableCanvas = 0, Bool_t saveImg=0, Bool_t useCorrLS = 0)
+Char_t * kstarAnalysis(Int_t compType = ECompType_t::kSum, 
+		       Char_t* projPath = ".", 
+		       Char_t*projectionFile="proj_tpc2s_tof3sveto_centBin00.root", 
+		       Float_t emNormInf = -1.0, Float_t emNormSup = -1.0, 
+		       Int_t ipt=-1, Int_t icent=0,
+		       Bool_t isRebin=0, 
+		       Float_t scaleEMNormFactor=1.0, Bool_t doNormLS = 0, 
+		       Bool_t enableCanvas = 0, Bool_t saveImg=0, Bool_t useCorrLS = 0)
 {
   TGaxis::SetMaxDigits(3);
   gROOT->LoadMacro("$ASD/SetGraphicStyle.C");
@@ -28,9 +34,7 @@ Char_t * kstarAnalysis(Int_t compType = ECompType_t::kKStar, Char_t* projPath, C
 
   Bool_t addAntiKstar=kFALSE;
   if  ((compType == ECompType_t::kSum)||(compType == ECompType_t::kHalfSum)) addAntiKstar=kTRUE;
-  //
-  //performs background subtraction
-  //n
+ 
   gStyle->SetTextFont(42);
   TFile * f= TFile::Open(Form("%s/%s",projPath,projectionFile));
   if (!f) return;
@@ -38,9 +42,7 @@ Char_t * kstarAnalysis(Int_t compType = ECompType_t::kKStar, Char_t* projPath, C
   Int_t nPtBins = ptbins->GetNbins();
   TAxis *centbins = (TAxis*)f->Get("centbins");
   Int_t nCentBins = centbins->GetNbins();
-    
-  //gROOT->LoadMacro(Form("%s/subtractKStarBackgnd.C",macroDir.Data()));
-  
+      
   Bool_t nextBin;
   Short_t display = 1;
   if (ipt>=0 && icent>=0) display = 1;  
