@@ -16,8 +16,8 @@ void MakeNormCorrSpectraPPB(TString spectraFileName = "RAW_best_fit_poly2.root",
 {
   const TString effHistName = "hEffVsPt";
   Float_t trgAndVtxEff_pPbMinBias = 0.964; //trigger and vertex reco efficiency for pPb 0-100%
-  Float_t trgAndVtxEff_60to80 = 0.995; 
-  Float_t trgAndVtxEff_80to100 = 0.945;
+  Float_t trgAndVtxEff_60to80 = 0.990; 
+  Float_t trgAndVtxEff_80to100 = 0.940;
   Float_t branchingRatio = 0.666;
   Float_t pid_eff_tpc2s = (0.954*0.954);
   Float_t pid_eff_tpc25s = (0.9876*0.9876);
