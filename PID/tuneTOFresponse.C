@@ -1,11 +1,11 @@
 void systTOFresponse(Float_t minSigma = -2.0, Float_t maxSigma=2.0)
 {
   gStyle->SetOptTitle(0);
-  tuneTOFresponse(0.9, minSigma,  maxSigma, kBlue, 0);
-  tuneTOFresponse(0.8, minSigma,  maxSigma, kRed, 1 );
-  tuneTOFresponse(0.85, minSigma,  maxSigma, kMagenta-4, 1);
-  tuneTOFresponse(0.95, minSigma,  maxSigma, kGreen+1, 1);
-  tuneTOFresponse(1.0, minSigma,  maxSigma, kBlack, 1);
+  //Color_t colar[5] = {kGreen+2, kSpring+5, kTeal-7, kAzure+7, kBlue-4};
+  Color_t colar[5] = {kMagenta+2, kViolet+5, kRed, kOrange-3, kOrange};
+  for (int i=0;i<5;i++){
+    tuneTOFresponse(0.9+0.05*i, minSigma,  maxSigma, colar[i], (i>0));
+  }
   return;
 } 
 Float_t tuneTOFresponse(Float_t paramTail = 0.9, Float_t minSigma, Float_t maxSigma, Color_t color = kBlue, Bool_t drawsame = 0) 

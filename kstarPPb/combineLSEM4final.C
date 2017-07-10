@@ -128,7 +128,7 @@ void combineLSEM4final(Bool_t useSmoothed=1, Bool_t plotPreliminary=0)
       else
 	finMultiCorrEM[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/preliminary/finalWsyst_EM_27apr14_%i.root", ic));
     } else {
-      finMultiCorrEM[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_EM_12oct15_%i.root", ic));
+      finMultiCorrEM[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_EM_19nov15_%i.root", ic));
       // finMultiCorrEM[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_EM_01jul15_%i.root", ic));
       //	finMultiCorrEM[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/final_sept14/finalWsyst_smooth2_EM_28aug14_%i.root", ic));
     }
@@ -143,7 +143,7 @@ void combineLSEM4final(Bool_t useSmoothed=1, Bool_t plotPreliminary=0)
 	finMultiCorrLS[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/preliminary/finalWsyst_LS_27apr14_%i.root", ic));
       if (!finMultiCorrLS[ic]) Printf("cannot open file multi EM.");
     } else {
-      finMultiCorrLS[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_LS_12oct15_%i.root", ic));
+      finMultiCorrLS[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_LS_19nov15_%i.root", ic));
       //finMultiCorrLS[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/output_LF5455/multi/finalWsyst_smooth2_LS_01jul15_%i.root", ic));
       //finMultiCorrLS[ic] = TFile::Open(Form("$HOME/alice/resonances/kstar_pA5.02TeV/LF_pPb_8-9/multi_binB/final_sept14/finalWsyst_smooth2_LS_28aug14_%i.root", ic));
     }

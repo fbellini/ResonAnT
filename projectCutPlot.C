@@ -1,3 +1,5 @@
+void checkRsnQA(TString filename="/Users/fbellini/alice/resonances/kstar_pA5.02TeV/LF_pPb17-21/train1920.root"){}
+
 TH1 * projectCutPlot(TString filename="/Users/fbellini/alice/resonances/kstar_pA5.02TeV/LF_pPb17-21/train1920.root",
                     TString foldername="RsnOut_cut5",
                     TString plot="dcaxy",
