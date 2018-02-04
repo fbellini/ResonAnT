@@ -8,6 +8,10 @@ Starting from projected histogram per centrality bins and pt bins:
 - display
 
 */
+
+#include "/Users/fbellini/alice/macros/SetStyle.C"
+#include "/Users/fbellini/alice/macros/MakeUp.C"
+
 const Double_t kBigNumber=1E10;
 const Double_t kSmallNumber=1E-10;
 
@@ -21,62 +25,55 @@ Float_t  GetRangeValuesNormalizationFactor(TH1D* hist=NULL, TH1D* histRef=NULL, 
 TH1D*    normValuesInterval(TH1D* hist=NULL, TH1D* histRef=NULL, Double_t valueMin=1.3, Double_t valueMax=1.5, Double_t factor=1., Double_t *outputFactor = 0);
 TH1D*    subtractBackgnd(TH1D* hist=NULL, TH1D* hist2=NULL);
 
+
+enum EHistStyle {kSig = 0,
+		 kLSBPP,
+		 kLSBMM,
+		 kLSB,
+		 kLSBnorm,
+		 kLSBsub,
+		 kMEB,
+		 kMEBnorm,
+		 kMEBsub};
+
 Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root", 
-			 Float_t emNormInf = 1.050, Float_t emNormSup = 1.150, 
+			 Float_t emNormInf = 1.10, Float_t emNormSup = 1.150, 
 			 Int_t ipt=-1, Int_t icent= -1,
-			 Bool_t isRebin = 1, 
+			 Double_t desiredIMbinWidth = 0.004, //in GeV/cˆ2
 			 Float_t scaleEMNormFactor = 1.0, Bool_t doNormLS = 0, 
 			 Bool_t enableCanvas = 1, Bool_t saveImg = 0, Bool_t useCorrLS = 0)
 {
+  //general - set style
   TGaxis::SetMaxDigits(3);
   gStyle->SetTextFont(42);
+  SetStyle();
 
-  TFile * f= TFile::Open(projectionFile.Data());
+  //histo make up settings
+  Float_t Marker_Size = 1.3;
+  Float_t Marker_Style[] = {    20,      24,      25,     21,     21,     20,       28,      28,     24};
+  Color_t color[]        = {kBlack, kOrange, kCyan+2, kRed-1, kRed+1, kBlack, kAzure-7, kBlue+1, kGray+3};
+
+  // open input file
+  TFile * f = TFile::Open(projectionFile.Data());
   if (!f) return 1;
 
+  TList * lUnlikePM = (TList *) f->Get("hUnlikePM");
+  TList * lLikePP   = (TList *) f->Get("hLikePP");
+  TList * lLikeMM   = (TList *) f->Get("hLikeMM");
+  TList * lMixingPM = (TList *) f->Get("hMixingPM");
+  
+  // get axes
   TAxis *ptbins = (TAxis*)f->Get("ptbins");
-  Int_t nPtBins = ptbins->GetNbins();
+  const Int_t nPtBins = ptbins->GetNbins();
   TAxis *centbins = (TAxis*)f->Get("centbins");
-  Int_t nCentBins = centbins->GetNbins();
-      
-  Bool_t nextBin;
-  Short_t display = 1;
-  if (ipt>=0 && icent>=0) display = 1;  
-  if (ipt<0 && icent>=0) display = 2;
-  if (ipt>=0 && icent<0) display = 3;
-  if (!enableCanvas) display = 0;
+  const Int_t nCentBins = centbins->GetNbins();
 
-  TCanvas * cdisplay[2];
-  Char_t prefix[2][3]={"EM","LS"};
-  
-  switch (display)
-    {
-    case 1:
-      for (Int_t j=0;j<2;j++){ 
-	cdisplay[j] = new TCanvas(Form("display_%s",prefix[j]), Form("%s bg - pt bin %i - centrality bin %i", prefix[j], ipt,icent),600,600);
-	cdisplay[j]->Divide(2,1);
-      }
-      break;
-    case 2:
-      for (Int_t j=0;j<2;j++){ 
-	cdisplay[j] = new TCanvas(Form("cent%i_%s",icent,prefix[j]), Form("%s bg - centrality bin %i", prefix[j],icent),1000,650);
-	cdisplay[j]->Divide(nPtBins/3,3);
-      }
-      break;
-    case 3:
-      for (Int_t j=0;j<2;j++){ 
-	cdisplay[j] = new TCanvas(Form("pt%i_%s",ipt,prefix[j]), Form("%s bg - pt bin %i", prefix[j], ipt),1000,650);
-	cdisplay[j]->Divide(3,2);
-      }
-      break;
-    default:
-      cdisplay[0] = 0x0;
-      cdisplay[1] = 0x0;
-      break;
-    }
-  
+  Bool_t nextBin = kFALSE;
+
+  //---------------------
+  // create output
+  //---------------------
   TString fout_name = Form("sub_norm%3.2f-%3.2f_%s", emNormInf,emNormSup, projectionFile.Data());
-  
   TFile * fout = new TFile(fout_name.Data(),"recreate");
   ptbins->Write("ptbins");
   centbins->Write("centbins");
@@ -85,6 +82,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
   Double_t normfactor_em[1],normfactor_ls[1];
   Float_t ptinf=0.0, ptsup=0.0, centinf=0.0, centsup=0.0;
   Int_t treept=-1, treecent=-1;
+  
   TTree *ntree = new TTree("ntree","normFactors");
   ntree->Branch("factor_em", &normfactor_em[0], "factor/D");
   ntree->Branch("factor_ls", &normfactor_ls[0], "factor/D");
@@ -97,22 +95,60 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
   ntree->Branch("cent_sup", &centsup, "cent_sup/F");
   ntree->Branch("cent_bin", &treecent, "cent_bin/I");
 
+  //canvas for display
+  TCanvas * cdisplay[2][nCentBins];
+  Char_t prefix[2][5]={"sub","dist"};
+
+  for (Int_t cc=0; cc<nCentBins; cc++){ 
+    for (Int_t j=0; j<2; j++){ 
+      cdisplay[j][cc] = NULL; 
+      if (!enableCanvas) continue;
+    
+      //display all cent and all pt
+      if (icent<0 && ipt<0) {
+	cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",cc,prefix[j]), Form("%sB - cent bin %i", prefix[j], cc), 1200, 900);
+	cdisplay[j][cc]->Divide(2,5);
+      }
+      
+      //display selected cent and all pt
+      if (icent>=0 && cc==icent) {
+	if (ipt<0) {
+	  cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",icent, prefix[j]), Form("%sB - cent bin %i", prefix[j], icent), 1200, 900);
+	  cdisplay[j][cc]->Divide(2,5);
+	} else {
+	  cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",icent, prefix[j]), Form("%sB - cent bin %i", prefix[j], icent), 800, 600);
+	}
+      }
+      
+      //display selected pt for all cent
+      if (ipt>=0) {
+	if (icent<0) {
+	  cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",icent, prefix[j]), Form("%sB - cent bin %i", prefix[j], icent), 800, 600);
+	} else {
+	  if (cc==icent){
+	    cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",icent, prefix[j]), Form("%sB - cent bin %i", prefix[j], icent), 800, 600);
+	  }
+	}
+      } //if pt
+    }// loop on bg
+  }// loop on cent
+
   for (Int_t icentbin=0;icentbin<nCentBins;icentbin++){
     //if only one bin selected skip the others
     if ((icent>=0) && (icentbin!=icent)) continue;
-    
+  
     for (Int_t iptbin=0;iptbin<nPtBins;iptbin++){
       //if only one bin selected skip the others      
       if ((ipt>0) && (iptbin!=ipt)) continue;
       
       Printf("*************************************************");
-      Printf("*********** cent %i - pt %i **************", icentbin, iptbin);
+      Printf("************** cent %i - pt %i ******************", icentbin, iptbin);
       Printf("*************************************************");
 
-      Double_t lowPt=ptbins->GetBinLowEdge(iptbin+1);
-      Double_t upPt=ptbins->GetBinLowEdge(iptbin+2);
-      Double_t lowC=centbins->GetBinLowEdge(icentbin+1);
-      Double_t upC=centbins->GetBinLowEdge(icentbin+2);
+      Double_t lowPt = ptbins->GetBinLowEdge(iptbin+1);
+      Double_t upPt = ptbins->GetBinLowEdge(iptbin+2);
+      Double_t lowC = centbins->GetBinLowEdge(icentbin+1);
+      Double_t upC = centbins->GetBinLowEdge(icentbin+2);
   
       //assign variables for norm factors tree
       ptinf=lowPt;
@@ -123,52 +159,42 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
       treecent=icentbin;
 
       //get input histos
-      TString hs1_name=Form("Data_UnlikePM_ptBin%02i_centBin%02i",iptbin,icentbin);
-      TString hb1em_name=Form("Data_MixingPM_ptBin%02i_centBin%02i",iptbin,icentbin);
-      TString hb1ls_name=Form("Data_LikePP_ptBin%02i_centBin%02i",iptbin,icentbin);
-      TString hb2ls_name=Form("Data_LikeMM_ptBin%02i_centBin%02i",iptbin,icentbin);
-
-      //get invariant mass binning and rebin if requested
-      Double_t invMassBinWidth = ((TH1D*) f->Get(hs1_name.Data()))->GetXaxis()->GetBinWidth(1);
-      
+      TString hs1_name   = Form("hUnlikePM_ptBin%02i_centBin%02i",iptbin,icentbin);
+      TString hb1em_name = Form("hMixingPM_ptBin%02i_centBin%02i",iptbin,icentbin);
+      TString hb1ls_name = Form("hLikePP_ptBin%02i_centBin%02i",iptbin,icentbin);
+      TString hb2ls_name = Form("hLikeMM_ptBin%02i_centBin%02i",iptbin,icentbin);
+    
       // signal
-      TH1D * hs1 = (TH1D*) f->Get(hs1_name.Data())->Clone();
-      TH1D * hs = (TH1D*)hs1->Clone("");
-      Printf("Signal+background SE phi: %s",hs->GetName());
-      hs->SetNameTitle(Form("Signal_ptBin%02i_centBin%02i",iptbin,icentbin),
-		       Form("S+Bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
-
-      // mixed-event background
-      TH1D * hb1em = (TH1D*) f->Get(hb1em_name.Data())->Clone();
-      TH1D * hbem = (TH1D*)hb1em->Clone();
-      Printf("EM background for phi: %s",hbem->GetName());
-      hbem->SetNameTitle(Form("Mixing_ptBin%02i_centBin%02i",iptbin,icentbin),
-			 Form("EM bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
-
-      // like-sign background
-      TH1D * hb1ls = (TH1D*) f->Get(hb1ls_name.Data())->Clone();
-      TH1D * hb2ls = (TH1D*) f->Get(hb2ls_name.Data())->Clone();
-      TH1D * hbls = (TH1D*) BgLike(hb1ls, hb2ls);
-      Printf("LS background for phi: %s",hbls->GetName());
-      hbls->SetNameTitle(Form("Like_ptBin%02i_centBin%02i",iptbin,icentbin), 
-			 Form("LS bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      TH1D * hs = (TH1D*) ((TH1D*) lUnlikePM->FindObject(hs1_name.Data()))->Clone(Form("Signal_ptBin%02i_centBin%02i",iptbin,icentbin));
+      hs->SetTitle(Form("USP: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      if (hs) Printf("Signal+background SE phi: %s",hs->GetName());
+      else return 2;
       
-      //rebin 
-      if (isRebin) {
-	hs->Rebin(4);
-	hbem->Rebin(4);
-	hbls->Rebin(4);
-      }
-      
-      //signal make up
+      Beautify(hs, color[EHistStyle::kSig], 1, 1, Marker_Style[EHistStyle::kSig], Marker_Size);
       TH1D * hs_bis = (TH1D*) hs->Clone();
       TH1D * hs_tris = (TH1D*) hs->Clone();
-      HistoMakeUp(hs,20);  
-      HistoMakeUp(hs_bis, 20);  
-      HistoMakeUp(hs_tris, 20);  
+
+      // mixed-event background
+      TH1D * hbem = (TH1D*) ((TH1D*) lMixingPM->FindObject(hb1em_name.Data()))->Clone(Form("Mixing_ptBin%02i_centBin%02i",iptbin,icentbin));
+      hbem->SetTitle(Form("EM bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      if (hbem) Printf("EM background for phi: %s",hbem->GetName());
+      else return 3;
+      Beautify(hbem, color[EHistStyle::kMEB], 1, 1, Marker_Style[EHistStyle::kMEB], Marker_Size);
       
-      Int_t inorm1 =  hbem->GetXaxis()->FindBin(1.1);
-      Int_t inorm2 =  hbem->GetXaxis()->FindBin(1.2);
+      // like-sign background
+      TH1D * hb1ls = (TH1D*) ((TH1D*) lLikePP->FindObject(hb1ls_name.Data()))->Clone(Form("LikePP_ptBin%02i_centBin%02i",iptbin,icentbin));
+      TH1D * hb2ls = (TH1D*) ((TH1D*) lLikeMM->FindObject(hb2ls_name.Data()))->Clone(Form("LikeMM_ptBin%02i_centBin%02i",iptbin,icentbin));
+      TH1D * hbls = (TH1D*) BgLike(hb1ls, hb2ls);
+      hbls->SetNameTitle(Form("Like_ptBin%02i_centBin%02i",iptbin,icentbin), 
+			 Form("LS bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      if (hbls) Printf("LS background for phi: %s",hbls->GetName());
+      else return 4;
+      Beautify(hb1ls, color[EHistStyle::kLSBPP], 1, 1, Marker_Style[EHistStyle::kLSBPP], Marker_Size);
+      Beautify(hb2ls, color[EHistStyle::kLSBMM], 1, 1, Marker_Style[EHistStyle::kLSBMM], Marker_Size);
+      Beautify(hbls, color[EHistStyle::kLSB], 1, 1, Marker_Style[EHistStyle::kLSB], Marker_Size);
+
+      Int_t inorm1 =  hbem->GetXaxis()->FindBin(emNormInf);
+      Int_t inorm2 =  hbem->GetXaxis()->FindBin(emNormSup);
       
       //MEB make up
       TH1D * hbem_norm;
@@ -180,11 +206,11 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
 	normfactor_em[0]=norm_best_factor;
       } else {
 	hbem_norm = (TH1D*) normValuesInterval(hbem, hs, emNormInf, emNormSup, scaleEMNormFactor, normfactor_em); 
-	Printf(":::: EM Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_em);
+	Printf(":::: EM Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_em[0]);
       }
       hbem_norm->SetName(Form("norm_%s", hbem->GetName()));
-      HistoMakeUp(hbem_norm, 1);  
-      
+      Beautify(hbem_norm, color[EHistStyle::kMEBnorm], 1, 1, Marker_Style[EHistStyle::kMEBnorm], Marker_Size);
+
       //LSB make up
       TH1D * hbls_norm = (TH1D*) hbls->Clone(Form("norm_%s", hbls->GetName()));
       if (doNormLS) {
@@ -195,156 +221,102 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
 	  normfactor_ls[0] = norm_best_factor;      
 	} else {
 	  hbls_norm = (TH1D*) normValuesInterval(hbls, hs, emNormInf, emNormSup, scaleEMNormFactor, normfactor_ls); 
-	  Printf(":::: LS Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_ls);
+	  Printf(":::: LS Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_ls[0]);
 	}
+	hbls_norm->SetName(Form("norm_%s", hbls->GetName()));
       }
-      hbls_norm->SetName(Form("norm_%s", hbls->GetName()));
-      HistoMakeUp(hbls,1);
-      HistoMakeUp(hbls_norm,1);
+      Beautify(hbls_norm, color[EHistStyle::kLSBnorm], 1, 1, Marker_Style[EHistStyle::kLSBnorm], Marker_Size);
+
+      //get invariant mass binning and rebin if requested
+      Double_t invMassBinWidth = ((TAxis*) hs->GetXaxis())->GetBinWidth(1);
+      Int_t rebinFactor = desiredIMbinWidth / invMassBinWidth;
       
-      fout->cd();
-      hs->Write();
-      hbem->Write();
-      hbem_norm->Write();
-      hbls->Write();
-      hbls_norm->Write();
-      
+      if (rebinFactor>0) {
+	Printf(":::: REBINNING: Minv bin width: %4.3f --> %4.3f via rebin by factor %i", invMassBinWidth, desiredIMbinWidth, rebinFactor);
+	hs->Rebin(rebinFactor);
+	hs_bis->Rebin(rebinFactor);
+	hs_tris->Rebin(rebinFactor);
+	hbem->Rebin(rebinFactor);
+	hbem_norm->Rebin(rebinFactor);
+	hbls->Rebin(rebinFactor);
+	hbls_norm->Rebin(rebinFactor);
+      }
+
       /***************************************************************************
 	 EVENT MIXING BACKGROUND
 	 background subtraction formula: sub = s-b
-	 s = ls_pm + ls_mp       (only if K*+anti-K* is enabled, otherwise only one of the two ls)
+	 s = ls_pm + ls_mp      
 	 b = (em_pm + em_mp)*0.5      
       ***************************************************************************/
       TH1D * sub_em =(TH1D*) subtractBackgnd(hs, hbem_norm);
+      if (!sub_em) return 5;
       sub_em->SetName(Form("sub_%s",hbem_norm->GetName()));
       sub_em->SetTitle(Form("S+res.Bg (EM): %4.2f<#it{p}_{T}<%5.2fGeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
-      HistoMakeUp(sub_em,28);
+      Beautify(sub_em, color[EHistStyle::kMEBsub], 1, 1, Marker_Style[EHistStyle::kMEBsub], Marker_Size);
       //fill normalization tree
       ntree->Fill();
-      
-      //save to file
-      fout->cd();
-      sub_em->Write();
+
+      sub_em->GetXaxis()->SetRangeUser(sub_em->GetXaxis()->GetBinLowEdge(1), emNormInf);
 
       //draw
-      switch (display){
-      case 1:
-	cdisplay[0]->cd();
-	hs_tris->Draw();
-	hbem_norm->Draw("same");
-	sub_em->Draw("same");
-	break;
-      case 2:
-	cdisplay[0]->cd(iptbin+1);
-	hs_tris->Draw();
-	hbem_norm->Draw("same");
-	sub_em->Draw("same");
-	break;
-      case 3:
-      cdisplay[0]->cd(icentbin+1);
-	hs_tris->Draw();
-	hbem_norm->Draw("same");
-	sub_em->Draw("same");
-	break;
-      default:
-	break;
+      if (cdisplay[0][icentbin]){
+	if (icent>0 && ipt>0) cdisplay[0][icentbin]->cd();
+	else cdisplay[0][icentbin]->cd(iptbin+1);
+	sub_em->Draw();
       }
+
+      
       /***************************************************************************
 	LIKE SIGN BACKGROUND
 	background subtraction formula: sub = s-b
-	s = ls_pm + ls_mp       (only if K*+anti-K* is enabled, otherwise only one of the two ls)
+	s = ls_pm + ls_mp   
 	b = Sqrt (ls_pp * ls_mm)
       ***************************************************************************/      
-       //correct by EM +-/++ and -+/-- factors 
-      /*
-	TString corrFactorLSfile = "/Users/bellini/alice/resonances/myPhi/check_LSwithMixingBg/correctionLSfromMix.root";
-	if (useCorrLS){
-	TFile * fcorr = TFile::Open(corrFactorLSfile.Data(),"read");
-	Printf("========== CORRECTION FOR LS BG FROM EM USED \n reading correction factors from file %s", corrFactorLSfile.Data());
-	TH1D * corrp = (TH1D*) fcorr->Get("corrp");
-	TH1D * corrm = (TH1D*) fcorr->Get("corrm");
-	hb1ls->Multiply(corrp);
-	hb2ls->Multiply(corrm);
-	TH1D* hb1ls_copy = (TH1D*)hb1ls->Clone(Form("corrected_%s",hb1ls->GetName()));
-	TH1D* hb2ls_copy = (TH1D*)hb2ls->Clone(Form("corrected_%s",hb2ls->GetName()));
-	TH1D* hs1_copy = (TH1D*)hs1->Clone(Form("subCorrLS_%s",hs1->GetName()));
-	TH1D* hs2_copy = (TH1D*)hs2->Clone(Form("subCorrLS_%s",hs2->GetName()));
-	if (isRebin) {
-	  hb1ls_copy->Rebin(2);
-	  hb2ls_copy->Rebin(2);
-	  hs1_copy->Rebin(2);
-	  hs2_copy->Rebin(2);
-	}
-	hs1_copy->Add(hb1ls_copy,-1);
-	hs2_copy->Add(hb2ls_copy,-1);
-	fout->cd();
-	hb1ls_copy->Write();
-	hb2ls_copy->Write();
-	hs1_copy->Write();
-	hs2_copy->Write();
-      }
-      */
       //subtract
-      TH1D * sub_ls =(TH1D*) subtractBackgnd(hs_bis, hbls_norm);
+      TH1D * sub_ls = (TH1D*) subtractBackgnd(hs_bis, hbls_norm);
+      if (!sub_ls) return 6;
       sub_ls->SetName(Form("sub_%s",hbls_norm->GetName()));
-      HistoMakeUp(sub_ls, 20);
       sub_ls->SetTitle(Form("S+Res.bg(LS): %4.2f<#it{p}_{T}<%5.2fGeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      Beautify(sub_ls, color[EHistStyle::kLSBsub], 1, 1, Marker_Style[EHistStyle::kLSBsub], Marker_Size);
+
+      sub_ls->GetXaxis()->SetRangeUser(sub_ls->GetXaxis()->GetBinLowEdge(1), emNormInf);
+      
+      //draw
+      if (cdisplay[1][icentbin]){
+	if (icent>0 && ipt>0) cdisplay[1][icentbin]->cd();
+	else cdisplay[1][icentbin]->cd(iptbin+1);
+	sub_ls->Draw("same");
+      }
+
       //save to file
       fout->cd();
+      hs->Write();
+      hbem->Write();
+      hbls->Write();
+      hbem_norm->Write();
+      hbls_norm->Write();
+      sub_em->Write();
       sub_ls->Write();
           
-      //draw
-      switch (display){
-      case 1:
-	cdisplay[1]->cd();
-	hs_tris->Draw();
-	hbls->Draw("same");
-	hbls_norm->Draw("same");
-	sub_ls->Draw("same");
-	break;
-      case 2:
-	cdisplay[1]->cd(iptbin+1);
-	hs_tris->Draw();
-	hbls->Draw("same");
-	hbls_norm->Draw("same");
-	sub_ls->Draw("same");
-	break;
-      case 3:
-      cdisplay[1]->cd(icentbin+1);
-	hs_tris->Draw();
-	hbls->Draw("same");
-	hbls_norm->Draw("same");
-	sub_ls->Draw("same");
-	break;
-      default:
-	break;
-      }
-    }
-    
-    if (cdisplay[0]){
+      /*
+      cout << "Continue? (1/0)" << endl;
+      cin >> nextBin;
+      switch (nextBin) 
+	{
+	case 1:
+	  continue;
+	default:
+	  return 0;
+	}
+      */
+    } //loop over pt
     fout->cd();
-    cdisplay[0]->Write();
-    if (saveImg) cdisplay[0]->SaveAs(Form("%s_canvas.png",cdisplay[0]->GetName()));
-    }
-    if (cdisplay[1]){
-      fout->cd();
-      cdisplay[1]->Write();
-      if (saveImg) cdisplay[1]->SaveAs(Form("%s_canvas.png",cdisplay[1]->GetName()));
-    }
-    cdisplay[1]->Update();
-    cout << "Continue? (1/0)" << endl;
-    cin >> nextBin;
-     switch (nextBin) 
-       {
-       case 1:
-     	 continue;
-       default:
-     	 return 0;
-       }
-  }
+    cdisplay[1][icentbin]->Write();
+  }//loop over centrality
+
   fout->cd();
   ntree->Write();
-  Printf("========================================= Succesfully saved output file %s",fout->GetName());
+  Printf(":::: Succesfully saved output file %s",fout->GetName());
   return 0;
 }
 
@@ -581,6 +553,7 @@ Float_t GetRangeValuesNormalizationFactor(TH1D* hist, TH1D* histRef, Double_t va
   }
   
   Int_t ibinmin,ibinmax;
+  Double_t invMassBinWidth = ((TAxis*) hist->GetXaxis())->GetBinWidth(1);
   
   if ((valueMin<=kSmallNumber) || (valueMin>=valueMax)) {
     valueMin = hist->GetXaxis()->GetBinLowEdge(1);
@@ -645,7 +618,7 @@ TH1D* subtractBackgnd(TH1D* hist, TH1D* hist2)
 {
   //hist - hist2
   if ((!hist)||(!hist2)){
-    printf("subtractBackgnd - ERROR: invalid histgram address passed to base subtraction function\n");
+    printf("subtractBackgnd - ERROR: invalid histogram address passed to base subtraction function\n");
     return 0x0;
   }
   
@@ -653,7 +626,7 @@ TH1D* subtractBackgnd(TH1D* hist, TH1D* hist2)
   Int_t nbinsRef=hist2->GetXaxis()->GetNbins();
   
   if (nbins!=nbinsRef){
-    printf("subtractBackgnd - ERROR: histgrams have different binning. Doing nothing.\n");
+    printf("subtractBackgnd - ERROR: histograms have different binning. Doing nothing.\n");
     return 0x0;    
   }
   
