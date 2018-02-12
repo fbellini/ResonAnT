@@ -5,8 +5,6 @@
 #include "TFile.h"
 
 
-void FillListForCentrality(TList * listIn, TList * listOut, Int_t icentBin);
-
 void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
 		     TString outName  = "phi",
 		     const char *listName = "RsnOut_default",
@@ -17,7 +15,6 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   //graphics for display
   gStyle->SetOptStat("1111");
   gStyle->SetTextFont(42);
-  
   //generalia
   const Int_t kNhistosData = 4;
   outName.Append(binning.Data());
@@ -25,12 +22,12 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   //------------------------------
   //define binning
   //------------------------------
-  Double_t centA[] = {0.0, 30.0, 60.0, 90.0};   
-  Double_t centB[]  = {0.0, 20.0, 40.0, 60.0, 80.0};
-  Double_t   pt1[] = {0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 6.0, 7.0, 10.00};
-  Double_t   pt2[] = {0.3, 0.5,  1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.00};
-  Double_t   pt3[] = {0.3, 0.5,  0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.00};
-
+  Double_t centA[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
+  Double_t centB[] = {0.0, 20.0, 40.0, 60.0, 80.0};
+  Double_t   pt1[] = {0.0, 0.3, 0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0};//, 6.0, 8.0, 10.0};
+  Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0};//, 7.0, 10.0};
+  Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0};//, 6.0, 8.0, 10.0};
+  
   Int_t   npt  = 0;
   Int_t   ncent  = 0;
   TAxis *ptbins = 0;
@@ -72,7 +69,10 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   hInput[2] = (TH3F*)listData->FindObject("PhiXeXeData_LikeMM_tpc3s");
   hInput[3] = (TH3F*)listData->FindObject("PhiXeXeData_Mixing_tpc3s");
 
-  if (!hInput[0] || !hInput[1] || !hInput[2] || !hInput[3]) { Printf("Invalid histogram requested as input. Doing nothing."); return;}
+  if (!hInput[0] || !hInput[1] || !hInput[2] || !hInput[3]) {
+    Printf("Invalid histogram requested as input. Doing nothing.");
+    return;
+  }
 
   // rename
   hInput[0]->SetName("hUnlikePM");
@@ -157,8 +157,11 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   fileOut->Close();
   
   Printf(":::: Output written in %s", fileOut->GetName());
+
+
   return;
-   
+  
+  
 }
 
 

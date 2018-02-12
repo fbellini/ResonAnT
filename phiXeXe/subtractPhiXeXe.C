@@ -40,16 +40,37 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
 			 Float_t emNormInf = 1.10, Float_t emNormSup = 1.150, 
 			 Int_t ipt=-1, Int_t icent= -1,
 			 Double_t desiredIMbinWidth = 0.004, //in GeV/cˆ2
-			 Float_t scaleEMNormFactor = 1.0, Bool_t doNormLS = 0, 
-			 Bool_t enableCanvas = 1, Bool_t saveImg = 0, Bool_t useCorrLS = 0)
+			 Float_t scaleEMNormFactor = 1.0,
+			 Bool_t isDisplayDist = 0,
+		     	 Bool_t doNormLS = 0, 
+			 Bool_t enableCanvas = 1,
+			 Bool_t saveImg = 0,
+			 Bool_t useCorrLS = 0)
 {
   //general - set style
-  TGaxis::SetMaxDigits(3);
+   // initial setup
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
   gStyle->SetTextFont(42);
-  SetStyle();
-
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(0.02);
+  gStyle->SetPadTopMargin(0.02);
+  gStyle->SetPadBottomMargin(0.12);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetLineWidth(1);
+  gStyle->SetLabelOffset(0.005,"yx");
+  gStyle->SetLabelSize(0.06,"xyz");
+  gStyle->SetTitleSize(0.07,"xyz");
+  gStyle->SetTitleOffset(1.1,"y");
+  gStyle->SetTitleOffset(1.,"x");
+  gStyle->SetEndErrorSize(0); //sets in #of pixels the lenght of the tick at the end of the error bar
+  gStyle->SetTitleAlign(33);
+  gStyle->SetTitleX(.95);
+  gStyle->SetTitleY(.95);
+  
   //histo make up settings
-  Float_t Marker_Size = 1.3;
+  Float_t Marker_Size = .8;
   Float_t Marker_Style[] = {    20,      24,      25,     21,     21,     20,       28,      28,     24};
   Color_t color[]        = {kBlack, kOrange, kCyan+2, kRed-1, kRed+1, kBlack, kAzure-7, kBlue+1, kGray+3};
 
@@ -73,7 +94,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
   //---------------------
   // create output
   //---------------------
-  TString fout_name = Form("sub_norm%3.2f-%3.2f_%s", emNormInf,emNormSup, projectionFile.Data());
+  TString fout_name = Form("sub_norm%2.1f-%2.1f_%s", emNormInf,emNormSup, projectionFile.Data());
   TFile * fout = new TFile(fout_name.Data(),"recreate");
   ptbins->Write("ptbins");
   centbins->Write("centbins");
@@ -107,7 +128,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
       //display all cent and all pt
       if (icent<0 && ipt<0) {
 	cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",cc,prefix[j]), Form("%sB - cent bin %i", prefix[j], cc), 1200, 900);
-	cdisplay[j][cc]->Divide(2,5);
+	cdisplay[j][cc]->Divide(4,3);
       }
       
       //display selected cent and all pt
@@ -251,8 +272,9 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
       TH1D * sub_em =(TH1D*) subtractBackgnd(hs, hbem_norm);
       if (!sub_em) return 5;
       sub_em->SetName(Form("sub_%s",hbem_norm->GetName()));
-      sub_em->SetTitle(Form("S+res.Bg (EM): %4.2f<#it{p}_{T}<%5.2fGeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      sub_em->SetTitle(Form("MEB, %4.2f < #it{p}_{T} < %5.2fGeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{#pi#pi} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       Beautify(sub_em, color[EHistStyle::kMEBsub], 1, 1, Marker_Style[EHistStyle::kMEBsub], Marker_Size);
+      SetLabels(sub_em, 0.05, 0.05, 1.1, 1.1);
       //fill normalization tree
       ntree->Fill();
 
@@ -262,6 +284,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
       if (cdisplay[0][icentbin]){
 	if (icent>0 && ipt>0) cdisplay[0][icentbin]->cd();
 	else cdisplay[0][icentbin]->cd(iptbin+1);
+	sub_em->GetYaxis()->SetRangeUser(sub_em->GetMinimum()*1.1, sub_em->GetMaximum()*2.);
 	sub_em->Draw();
       }
 
@@ -276,18 +299,24 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
       TH1D * sub_ls = (TH1D*) subtractBackgnd(hs_bis, hbls_norm);
       if (!sub_ls) return 6;
       sub_ls->SetName(Form("sub_%s",hbls_norm->GetName()));
-      sub_ls->SetTitle(Form("S+Res.bg(LS): %4.2f<#it{p}_{T}<%5.2fGeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+      sub_ls->SetTitle(Form("LSB, %4.2f < #it{p}_{T} < %5.2fGeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{#pi#pi} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       Beautify(sub_ls, color[EHistStyle::kLSBsub], 1, 1, Marker_Style[EHistStyle::kLSBsub], Marker_Size);
+      SetLabels(sub_ls, 0.05, 0.05, 1.1, 1.1);
 
       sub_ls->GetXaxis()->SetRangeUser(sub_ls->GetXaxis()->GetBinLowEdge(1), emNormInf);
-      
+      sub_ls->GetYaxis()->SetRangeUser(sub_ls->GetMinimum()*1.1, sub_ls->GetMaximum()*2.);
+
       //draw
       if (cdisplay[1][icentbin]){
 	if (icent>0 && ipt>0) cdisplay[1][icentbin]->cd();
 	else cdisplay[1][icentbin]->cd(iptbin+1);
 	sub_ls->Draw("same");
+	sub_em->Draw("same");
+	fout->cd();
+	cdisplay[1][icentbin]->Write();
+	cdisplay[1][icentbin]->Print(Form(""));
       }
-
+      
       //save to file
       fout->cd();
       hs->Write();
@@ -310,8 +339,6 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_20180123_RsnOut.root",
 	}
       */
     } //loop over pt
-    fout->cd();
-    cdisplay[1][icentbin]->Write();
   }//loop over centrality
 
   fout->cd();
