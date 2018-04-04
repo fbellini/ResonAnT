@@ -7,7 +7,7 @@
 
 void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
 		     TString outName  = "phi",
-		     const char *listName = "RsnOut_default",
+		     TString listNameSuffix = "tpc2s_tof3sveto",
 		     TString binning  = "B2",
 		     Bool_t isMC = 0,
 		     Bool_t saveSeparatelyByCent = 0)
@@ -24,9 +24,10 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   //------------------------------
   Double_t centA[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
   Double_t centB[] = {0.0, 20.0, 40.0, 60.0, 80.0};
-  Double_t   pt1[] = {0.0, 0.3, 0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0};//, 6.0, 8.0, 10.0};
-  Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0};//, 7.0, 10.0};
-  Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0};//, 6.0, 8.0, 10.0};
+  Double_t centC[] = {0.0, 30.0, 60.0, 90.0};   
+  Double_t   pt1[] = {0.0, 0.3, 0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
+  Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
+  Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};
   
   Int_t   npt  = 0;
   Int_t   ncent  = 0;
@@ -51,23 +52,28 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
     if (binning.Contains("B")) {
       ncent = sizeof(centB) / sizeof(centB[0]) - 1;
       centbins = new TAxis(ncent, centB);
-    }
-
+    } else
+      if (binning.Contains("C")) {
+	ncent = sizeof(centC) / sizeof(centC[0]) - 1;
+	centbins = new TAxis(ncent, centC);
+      }
+  
+  
   //------------------------------
   // open input file
   //------------------------------
   TFile *fileData = TFile::Open(nameData);
   if (!fileData || !fileData->IsOpen()) { Printf("Invalid file passed as input. Doing nothing."); return;}
   
-  TList *listData = listData = (TList*)fileData->Get(listName);
+  TList *listData = listData = (TList*)fileData->Get(Form("RsnOut_%s", listNameSuffix.Data()));
   if (!listData) { Printf("Invalid list passed as input. Doing nothing."); return;}
     
   //get input histograms
   TH3F* hInput[kNhistosData] = {0,0,0,0}; 
-  hInput[0] = (TH3F*)listData->FindObject("PhiXeXeData_Unlike_tpc3s");
-  hInput[1] = (TH3F*)listData->FindObject("PhiXeXeData_LikePP_tpc3s");
-  hInput[2] = (TH3F*)listData->FindObject("PhiXeXeData_LikeMM_tpc3s");
-  hInput[3] = (TH3F*)listData->FindObject("PhiXeXeData_Mixing_tpc3s");
+  hInput[0] = (TH3F*)listData->FindObject(Form("PhiXeXeData_Unlike%s",listNameSuffix.Data()));
+  hInput[1] = (TH3F*)listData->FindObject(Form("PhiXeXeData_LikePP%s",listNameSuffix.Data()));
+  hInput[2] = (TH3F*)listData->FindObject(Form("PhiXeXeData_LikeMM%s",listNameSuffix.Data()));
+  hInput[3] = (TH3F*)listData->FindObject(Form("PhiXeXeData_Mixing%s",listNameSuffix.Data()));
 
   if (!hInput[0] || !hInput[1] || !hInput[2] || !hInput[3]) {
     Printf("Invalid histogram requested as input. Doing nothing.");
@@ -84,8 +90,8 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   //------------------------------
   //output
   //------------------------------
-  gSystem->Exec(Form("mkdir %s", outName.Data()));
-  TFile *fileOut = new TFile(Form("%s/proj_%s", outName.Data(), nameData),"RECREATE");
+  gSystem->Exec(Form("mkdir %s_%s", outName.Data(), listNameSuffix.Data()));
+  TFile *fileOut = new TFile(Form("%s_%s/proj_%s.root", outName.Data(), listNameSuffix.Data(), binning.Data()),"RECREATE");
   //TList *out = new TList();
   fileOut->cd();
   ptbins->Write("ptbins");
@@ -114,10 +120,13 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
     
     if (binning.Contains("A1")) projector.MultiProjPtCent(npt, pt1, ncent, centA,  hInput[i], out);
     else if (binning.Contains("B1")) projector.MultiProjPtCent(npt, pt1, ncent, centB,  hInput[i], out);
+    else if (binning.Contains("C1")) projector.MultiProjPtCent(npt, pt1, ncent, centC,  hInput[i], out);
     else if (binning.Contains("A2")) projector.MultiProjPtCent(npt, pt2, ncent, centA,  hInput[i], out);
     else if (binning.Contains("B2")) projector.MultiProjPtCent(npt, pt2, ncent, centB,  hInput[i], out);
+    else if (binning.Contains("C2")) projector.MultiProjPtCent(npt, pt2, ncent, centC,  hInput[i], out);
     else if (binning.Contains("A3")) projector.MultiProjPtCent(npt, pt3, ncent, centA,  hInput[i], out);
     else if (binning.Contains("B3")) projector.MultiProjPtCent(npt, pt3, ncent, centB,  hInput[i], out);
+    else if (binning.Contains("C3")) projector.MultiProjPtCent(npt, pt3, ncent, centC,  hInput[i], out);
   }
   Printf(":::: Projected according to binning strategy %s", binning.Data());
 
