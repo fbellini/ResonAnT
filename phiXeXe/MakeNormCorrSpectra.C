@@ -6,11 +6,9 @@
 TPaveText * AddPaveTextXeXe();
 TPaveText * AddPaveTextStatOnly();
 
-void MakeNormCorrSpectra(TString spectraFileName = "RAW_ana0221_default.root",                    
-			    Int_t tpcNs = 2,
-                            Int_t tofNsveto = 3,
-                            TString suffix = "",
-                            Bool_t correctBR = 1)
+void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",                    
+			 TString suffix = "",
+			 Bool_t correctBR = 1)
 {
 
   //graphics
@@ -35,6 +33,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_ana0221_default.root",
     
   Float_t nEvents_ana0221[3] = {2.866550e+05, 2.870050e+05, 2.872150e+05}; //ana0221
   Float_t nEvents_ana0301[3] = { 2.361130e+05, 2.354870e+05, 2.359310e+05};
+  Float_t nEvents_ana0406[3] = { 4.367050e+05, 4.367330e+05, 4.367250e+05};
   Int_t centBinning[4] = {0, 30, 60, 90}; 
     
   gStyle->SetOptTitle(0);
@@ -53,15 +52,20 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_ana0221_default.root",
     Printf("\n\n\n*************************\n Spectra %s \n*************************",centLabel.Data());
     
     TString effFileName = "";
-    TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim";
-    if (spectraFileName.Contains("ana0221")) {
+    TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation";
+    if (effFilePath.Contains("ana0221")) {
       effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc"; // no trailing /
       effFileName = "eff_C3_tpc2s_tof3sveto.root";
     } else
-      if (spectraFileName.Contains("ana0301")) {
+      if (effFilePath.Contains("ana0301")) {
 	effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana03011mc"; // no trailing /
 	effFileName = "eff_C3_tpc2sPtDep_tof3sveto.root";
       }
+      else
+	if (effFilePath.Contains("ana0406")) {
+	  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation"; // no trailing /
+	  effFileName = "eff_C3_tpc2sPtDep_tof2sveto5smism.root";
+	}
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));
     TFile *fraw = TFile::Open(spectraFileName.Data());
@@ -79,16 +83,19 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_ana0221_default.root",
     hraw->SetLineWidth(1);
         
     //normalise by event number
-    if (spectraFileName.Contains("ana0221")){
+    if (effFilePath.Contains("ana0221")){
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0221[ic]);
       Printf(":::: Normalization by accepted event number for ana0221");
-    } else if (spectraFileName.Contains("ana0301")){
+    } else if (effFilePath.Contains("ana0301")){
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0301[ic]);
       Printf(":::: Normalization by accepted event number for ana0301");
+    } else if (effFilePath.Contains("ana0406")){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEvents_ana0406[ic]);
+      Printf(":::: Normalization by accepted event number for ana0406");
     }
-    
     
     TH1F * hcorr = (TH1F*) hraw->Clone(Form("hCorrected_%i",ic));
     hcorr->GetYaxis()->SetTitle("1/N_{evt} d#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");

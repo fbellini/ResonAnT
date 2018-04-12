@@ -200,15 +200,15 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
     
       // signal
       TH1D * hs = (TH1D*) ((TH1D*) lUnlikePM->FindObject(hs1_name.Data()))->Clone(Form("Signal_ptBin%02i_centBin%02i",iptbin,icentbin));
-      hs->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+      hs->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       if (hs) Printf("Signal+background SE phi: %s",hs->GetName());
       else return 2;
       
       Beautify(hs, color[EHistStyle::kSig], 1, 2, Marker_Style[EHistStyle::kSig], Marker_Size);
       TH1D * hs_bis = (TH1D*) hs->Clone();
-      hs_bis->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+      hs_bis->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       TH1D * hs_tris = (TH1D*) hs->Clone();
-      hs_tris->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+      hs_tris->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       // mixed-event background
       TH1D * hbem = (TH1D*) ((TH1D*) lMixingPM->FindObject(hb1em_name.Data()))->Clone(Form("Mixing_ptBin%02i_centBin%02i",iptbin,icentbin));
       hbem->SetTitle(Form("EM bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
@@ -303,7 +303,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
       TH1D * sub_em =(TH1D*) subtractBackgnd(hs, hbem_norm);
       if (!sub_em) return 5;
       sub_em->SetName(Form("sub_%s",hbem_norm->GetName()));
-      sub_em->SetTitle(Form("MEB, %4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+      sub_em->SetTitle(Form("MEB, %4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       Beautify(sub_em, color[EHistStyle::kMEBsub], 1, 1, Marker_Style[EHistStyle::kMEBsub], Marker_Size);
       SetLabels(sub_em, 0.05, 0.05, 1.1, 1.1);
       //fill normalization tree
@@ -320,7 +320,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
       TH1D * sub_ls = (TH1D*) subtractBackgnd(hs_bis, hbls_norm);
       if (!sub_ls) return 6;
       sub_ls->SetName(Form("sub_%s",hbls_norm->GetName()));
-      sub_ls->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}); counts / (%4.3f GeV/#it{c})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+      sub_ls->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
       Beautify(sub_ls, color[EHistStyle::kLSBsub], 1, 1, Marker_Style[EHistStyle::kLSBsub], Marker_Size);
       SetLabels(sub_ls, 0.05, 0.05, 1.1, 1.1);
 

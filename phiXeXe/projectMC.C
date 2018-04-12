@@ -8,10 +8,11 @@
 void GetEfficiencyFromBinnedMinv(TH1F* trueMinv=NULL, TH1F* momMinv=NULL, Float_t* effAndErr=NULL);
 void GetGausSigma(TH1F * htmp = NULL, Float_t * sigmaAndErr = 0, Float_t absRange = 0.01);
 void GetSigmaRMS(TH1F * htmp = NULL, Float_t * sigmaAndErr = 0, Int_t absRange = 3);
+Float_t GetTruncationCorrection(Int_t absRange = 3);
 
-void projectMC(TString nameData = "ana0221mc_RsnOut.root",
-	       TString listName = "RsnOut_tpc2s_tof3sveto",
-	       TString cutLabel  = "tpc2s_tof3sveto",
+void projectMC(TString nameData = "LHC17j7_RsnOut.root",
+	       TString listName = "RsnOut_tpc2sPtDep_tof2sveto5smism",
+	       TString cutLabel  = "tpc2sPtDep_tof2sveto5smism",
 	       TString binning  = "C3",
 	       Color_t customColor = kBlack)
 {
@@ -403,8 +404,9 @@ void projectMC(TString nameData = "ana0221mc_RsnOut.root",
 	hResVsPt[i]->SetBinError(iptbin, sigmaAndErr[1]);
 	//range
 	GetSigmaRMS(htmp, sigmaAndErr, i+2);       
-	hResVsPtRMS[i]->SetBinContent(iptbin, sigmaAndErr[0]);
-	hResVsPtRMS[i]->SetBinError(iptbin, sigmaAndErr[1]);
+	hResVsPtRMS[i]->SetBinContent(iptbin, sigmaAndErr[0]/GetTruncationCorrection(i+2));
+	hResVsPtRMS[i]->SetBinError(iptbin, sigmaAndErr[1]/GetTruncationCorrection(i+2));
+	Printf("::::: Trunctation correction factor = 1./%f",GetTruncationCorrection(i+2));
       } //end loop on pt
 
       fres->cd();
@@ -548,4 +550,14 @@ void GetSigmaRMS(TH1F * htmp, Float_t * sigmaAndErr, Int_t absRange)
   sigmaAndErr[1] = htmp->GetRMSError();
   htmp->GetXaxis()->SetRange(); 
   return;
+}
+
+Float_t GetTruncationCorrection(Int_t absRange)
+{
+  Float_t x;
+  TF1 g1("g1", "TMath::Gaus(x,[0],[1])", -10., 10.);
+  g1.SetParameter(0, 0.0);
+  g1.SetParameter(1, 1.0);
+  Float_t variance = g1.Variance(-absRange, absRange);
+  return TMath::Sqrt(variance);
 }

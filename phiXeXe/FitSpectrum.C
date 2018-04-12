@@ -11,23 +11,29 @@
 // retrieve reference values in the database PDG
 TDatabasePDG *pdg = TDatabasePDG::Instance();
 
-void FitSpectrum(TString infile = "", Int_t centrality = 0);
+void FitSpectrum(TString infile = "", Int_t centrality = 0, Double_t rangefitMin = 0.05,  Double_t rangefitMax = 5.0);
 void FitSpectrum(TH1D *data_stat = 0x0,
 		 TH1D *data_syst = 0x0,
 		 TString particle = "phi",
 		 TString system = "Xe-Xe",
 		 TString function = "bgbw",
-		 Double_t rangefitMin = 0.0001, //lower boundary of fit range
-		 Double_t rangefitMax = 10.0,//upper boundary of fit range
+		 Double_t rangefitMin = 0.05, //lower boundary of fit range
+		 Double_t rangefitMax = 5.0,//upper boundary of fit range
 		 Bool_t refitCentral = 1,
 		 Bool_t useOfficialMacro = 0
 		 );
 
 
-void FitSpectrum(TString infile, Int_t centrality=-1){
+void FitSpectrum(TString infile,
+		 Int_t centrality,
+		 Double_t rangefitMin, //lower boundary of fit range
+		 Double_t rangefitMax//upper boundary of fit range
+		 )
+{
   
   if (infile.IsNull())
-    infile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0221/phiC3_tpc2s_tof3sveto/norm1.05-1.10/fit_Mixing_VOIGTpoly1_FixRes/fit_r0.990-1.070/CORRECTED_br_ana0221_fitResult.root";
+    //infile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0221/phiC3_tpc2s_tof3sveto/norm1.05-1.10/fit_Mixing_VOIGTpoly1_FixRes/fit_r0.990-1.070/CORRECTED_br_ana0221_fitResult.root";
+    infile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/levyfit/CORRECTED_br_fitResult.root";
     
   TFile * fin = TFile::Open(infile.Data());
   if (!fin) return;
@@ -40,12 +46,12 @@ void FitSpectrum(TString infile, Int_t centrality=-1){
     if (centrality>=0 && ic!=centrality) continue;
     hstat[ic] = (TH1D *) fin->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
-    hsys[ic] = (TH1D *) hstat[ic]->Clone(); //FIXME
     //hack tmp for assigning sys uncert to 10%
+    hsys[ic] = (TH1D *) hstat[ic]->Clone(); //FIXME
     for (int j = 1; j < hsys[ic]->GetNbinsX()+1; j++){
       hsys[ic]->SetBinError(j, 0.02*hsys[ic]->GetBinContent(j));
     }
-    FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), "bgbw", 0.5, 10., 1, 0);
+    FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), "bgbw", rangefitMin, rangefitMax, 1, 0);
   }
 
   return;
@@ -275,7 +281,8 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   c1->Divide(2,1);
   c1->cd(1);
   gPad->SetLogy();
-  data_tot->Draw("same"); 
+  data_tot->Draw("same");
+  myBGBlastWave->Draw("same");
   c1->cd(2);
   paveYieldMean->Draw("same");
   if (refitCentral) paveFitParams->Draw("same");

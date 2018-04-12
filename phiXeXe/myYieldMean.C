@@ -71,11 +71,11 @@ TH1 * YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_
     min=minfit;	
 
   /* set integration step for function */
-  Double_t integrationStep = 1.0E-02;
+  Double_t integrationStep = 1.0E-03;
 
   /* set many iterations when fitting the data so we don't
      stop minimization with MAX_CALLS */
-  TVirtualFitter::SetMaxIterations(1000000);
+  TVirtualFitter::SetMaxIterations(100000);
 
   /* create output histo */
   Double_t integral, mean;

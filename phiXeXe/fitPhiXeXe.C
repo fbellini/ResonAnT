@@ -21,17 +21,19 @@ TF1 * GetRELBWpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TH1D * GetHistoWithoutPeak(TH1D * h = NULL, Double_t peakMin = 1.010, Double_t peakMax = 1.030);
 void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 0, Bool_t useRMS = 0, Bool_t returnErr = 0);
+void runFitRangeSys(Int_t selCentBin = 0, Double_t integrationTolerance = 1.0e-4, TString inName = "sub_C3.root", TString imgFormat = "png");
 
 //TO DO: add customised fit ranges for each pt bin
-//TO DO: finx new implementation of summed functions
+//TO DO: fix new implementation of summed functions
 
-Int_t fitPhiXeXe(TString inName = "sub_C3.root",
-		 TString imgFormat = "png",
-		 TString bgType = "Mixing", //alternative "Mixing"
-		 Int_t selCentBin = 0, 
-		 Int_t selPtBin = -1,
+Int_t fitPhiXeXe(Int_t selCentBin = 0, 
 		 Double_t fitMin = 0.994,
 		 Double_t fitMax = 1.050,
+		 TString bgType = "Mixing", //alternative "Mixing"
+		 Double_t integrationTolerance = 1.0e-4,
+		 TString inName = "sub_C3.root",
+		 TString imgFormat = "png",
+		 Int_t selPtBin = -1,
 		 Double_t desiredIMbinWidth = 0.002,
 		 TString fcnSignal = "VOIGT", 
 		 TString fcnBg = "poly1",
@@ -41,7 +43,9 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
 		 Double_t maxWidth = 0.01,
 		 Double_t minRes = -1.0,
 		 Double_t maxRes = -1.0,
-		 Bool_t useRmsRes = 0)
+		 Bool_t   useRmsRes = 0,
+		 Double_t nsigmaPeakBC = 3.0
+		 )
 {
 
   SetStyle();
@@ -60,7 +64,8 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   //-----------------------
   //open resolution file
   //-----------------------
-  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
+  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation/res_C3_tpc2sPtDep_tof2sveto5smism.root";
+    //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
   TFile * finRes = TFile::Open(resolFileName.Data(),"read");
   if (!resolFileName || !finRes || !finRes->IsOpen()) {
     Printf("Invalid input file or impossible to open: %s", resolFileName.Data());
@@ -80,6 +85,7 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   //-------------------------------
   TString folderName = Form("fit_%s_%s%s", bgType.Data(), fcnSignal.Data(), fcnBg.Data());
   if (fcnSignal.Contains("VOIGT") && (minRes<=0.0) && (maxRes<=0.0)) folderName.Append("_FixRes");
+  if (nsigmaPeakBC != 5.0) folderName.Append(Form("_BC%2.1f",nsigmaPeakBC));
   gSystem->Exec(Form("mkdir %s", folderName.Data()));
   gSystem->Exec(Form("mkdir %s/fit_r%4.3f-%4.3f", folderName.Data(), fitMin, fitMax));
   TString foutName = Form("%s/fit_r%4.3f-%4.3f/result_c%i.root", folderName.Data(), fitMin, fitMax, selCentBin);
@@ -91,9 +97,11 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   TH1D  *hgamma = new TH1D("gamma", "width; #it{p}_{T} (GeV/#it{c}); #Gamma (GeV/#it{c}^{2})" , nPtBins, ptbins->GetXbins()->GetArray());
   TH1D  *hsigma = new TH1D("sigma", "resolution; #it{p}_{T} (GeV/#it{c}); #sigma_{Voigt} (GeV/#it{c}^{2})", nPtBins, ptbins->GetXbins()->GetArray());
   TH1D  *hchi2  = new TH1D("chi2oNDF" , "chi2/ndf; #it{p}_{T} (GeV/#it{c}); #chi^{2}/ndf" , nPtBins, ptbins->GetXbins()->GetArray());
-  TH1D  *hrawIntegral = new TH1D("rawIntegral",Form("raw yields, %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T} (GeV/#it{c})^{-1})", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
-  TH1D  *hrawBC = new TH1D("rawBC",Form("raw yields (BC), %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T} (GeV/#it{c})^{-1})", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
-  TH1D  *hBgIntegral = new TH1D("bgIntegral", Form("Res. bg., %s; #it{p}_{T} (GeV/#it{c}); d#it{B}_{raw}/(d#it{y}d#it{p}_{T} (GeV/#it{c})^{-1})", centLabel.Data()) , nPtBins, ptbins->GetXbins()->GetArray());
+  TH1D  *hrawIntegral = new TH1D("rawIntegral",Form("raw yields, %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
+  TH1D  *hrawBC = new TH1D("rawBC",Form("raw yields (BC), %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
+  TH1D  *htailBC = new TH1D("tailBC",Form("yields in tails (from fit), %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
+  TH1D  *htailBCfrac = new TH1D("tailBCfrac",Form("yields in tails / yield total from BC + tails, %s; #it{p}_{T} (GeV/#it{c}); d#it{N}_{raw}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", centLabel.Data()), nPtBins, ptbins->GetXbins()->GetArray());
+  TH1D  *hBgIntegral = new TH1D("bgIntegral", Form("Res. bg., %s; #it{p}_{T} (GeV/#it{c}); d#it{B}_{raw}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", centLabel.Data()) , nPtBins, ptbins->GetXbins()->GetArray());
   TH1D * hSoverB  = new TH1D("hSoverB",Form("S/B, %s", centLabel.Data()),  nPtBins, ptbins->GetXbins()->GetArray());
   TH1D * hSignif  = new TH1D("hSignif",Form("S/#sqrt{(S+B)} in #pm3#sigma, %s", centLabel.Data()),  nPtBins, ptbins->GetXbins()->GetArray());
 
@@ -103,6 +111,8 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   Beautify(hchi2, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
   Beautify(hrawIntegral, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
   Beautify(hrawBC, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
+  Beautify(htailBC, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
+  Beautify(htailBCfrac, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
   Beautify(hBgIntegral, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
   Beautify(hSoverB, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
   Beautify(hSignif, color[selCentBin], 1, 2, marker[selCentBin], 1.0);
@@ -171,15 +181,19 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   Double_t      massResErr = 0.00001;
 
   //-----------------------
-  //define ranges for bin counting and significance 
+  //define ranges for significance 
   //-----------------------
-  Double_t      nsigmaPeak = 5.0;
-  Double_t      peakMin = pdgMass - nsigmaPeak * pdgWidth / 2.35;
-  Double_t      peakMax = pdgMass + nsigmaPeak * pdgWidth / 2.35;
   Double_t      nsigma4Signif = 3.0;
   Double_t      peakMinSignif = pdgMass - nsigma4Signif * pdgWidth / 2.35;
   Double_t      peakMaxSignif = pdgMass + nsigma4Signif * pdgWidth / 2.35;
 
+  //-----------------------
+  //define ranges for bin counting 
+  //-----------------------
+  Double_t      peakMin = pdgMass - nsigmaPeakBC * pdgWidth / 2.35;
+  Double_t      peakMax = pdgMass + nsigmaPeakBC * pdgWidth / 2.35;
+  Double_t      KKthreshold = 2 * 0.493677;
+  
   //Fix parameters if requested
   if ((minMass<=0.0) || (maxMass<=0.0))
     fitFcn->FixParameter(1, pdgMass);
@@ -191,7 +205,6 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   else 
     fitFcn->SetParLimits(2, minWidth, maxWidth);
 
-  Double_t integrationTolerance = 1.0e-4;
   
   for (Int_t ibin = 2; ibin<nPtBins; ibin++){     
     if (selPtBin>0 && ibin!=selPtBin) continue;
@@ -336,13 +349,17 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
     Double_t binCountTotal[2] = {0.0, 0.0};
     Double_t binCountSignal[2] = {0.0, 0.0};
     Double_t bgIntegral4BC[2] = {0.0, 0.0};
+    Double_t binCountTails[2] = {0.0, 0.0};
     
-     integralTotal[0] = fitFcn->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
+    integralTotal[0] = fitFcn->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
     integralTotal[1] = fitFcn->IntegralError(fitMin, fitMax, result->GetParams(), cov.GetMatrixArray(), integrationTolerance)/desiredIMbinWidth;
     //func->IntegralError(x1,x2,r->GetParams(), cov->GetMatrixArray()->GetSub(4, 5, 4, 5, ""));  
 
-    integralSignal[0] = signalFcn->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
-    integralSignal[1] = signalFcn->IntegralError(fitMin, fitMax, parsig, sigCovElements, integrationTolerance)/desiredIMbinWidth;
+    Double_t unphysYield = signalFcn->Integral(0.0, KKthreshold, integrationTolerance);
+    Double_t unphysYieldErr = signalFcn->IntegralError(0.0, KKthreshold, parsig, sigCovElements, integrationTolerance);
+
+    integralSignal[0] = (signalFcn->Integral(fitMin, fitMax, integrationTolerance) - unphysYield)/desiredIMbinWidth;
+    integralSignal[1] = (signalFcn->IntegralError(fitMin, fitMax, parsig, sigCovElements, integrationTolerance) + unphysYieldErr)/desiredIMbinWidth;
 
     integralBg[0] = fitBg->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
     integralBg[1] = fitBg->IntegralError(fitMin, fitMax, parbg, bgCovElements, integrationTolerance)/desiredIMbinWidth;
@@ -352,9 +369,16 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
     bgIntegral4BC[0] = fitBg->Integral(peakMin, peakMax, integrationTolerance);
     bgIntegral4BC[1] = fitBg->IntegralError(peakMin, peakMax, parbg, bgCovElements, integrationTolerance);
 
-    binCountSignal[0] = binCountTotal[0] - bgIntegral4BC[0];
-    binCountSignal[1] = TMath::Sqrt(TMath::Power(binCountTotal[1], 2.0) + TMath::Power(bgIntegral4BC[1], 2.0));
-
+    Double_t tailLeft = signalFcn->Integral(KKthreshold, peakMin, integrationTolerance)/desiredIMbinWidth;
+    Double_t tailRight = signalFcn->Integral(peakMax, 1.1, integrationTolerance)/desiredIMbinWidth;
+    Double_t tailLeftErr = signalFcn->IntegralError(KKthreshold, peakMin, parsig, sigCovElements, integrationTolerance)/desiredIMbinWidth;
+    Double_t tailRightErr = signalFcn->IntegralError(peakMax, 1.1, parsig, sigCovElements, integrationTolerance)/desiredIMbinWidth;
+    
+    binCountTails[0] = tailLeft + tailRight;
+    binCountTails[1] = tailLeftErr + tailRightErr;//linear sum of correlated uncertainties
+    
+    binCountSignal[0] = binCountTotal[0] - bgIntegral4BC[0] + binCountTails[0];
+    binCountSignal[1] = binCountTotal[1] + bgIntegral4BC[1] + binCountTails[1];
 
     Double_t signal3sigma = signalFcn->Integral(peakMinSignif, peakMaxSignif, integrationTolerance);
     Double_t bg3sigma = fitBg->Integral(peakMinSignif, peakMaxSignif, integrationTolerance);
@@ -373,7 +397,9 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
     hrawIntegral->SetBinContent(ibin+1,integralSignal[0]/ptBinWidth); hrawIntegral->SetBinError(ibin+1,integralSignal[1]/ptBinWidth); 
     hBgIntegral->SetBinContent(ibin+1,integralBg[0]/ptBinWidth);  hBgIntegral->SetBinError(ibin+1,integralBg[1]/ptBinWidth); 
     hrawBC->SetBinContent(ibin+1,binCountSignal[0]/ptBinWidth);  hrawBC->SetBinError(ibin+1,binCountSignal[1]/ptBinWidth); 
-
+    htailBC->SetBinContent(ibin+1,binCountTails[0]/ptBinWidth);  htailBC->SetBinError(ibin+1,binCountTails[1]/ptBinWidth);
+    htailBCfrac->SetBinContent(ibin+1, binCountTails[0]/binCountSignal[0]); htailBCfrac->SetBinError(ibin+1, 0.0);
+    
     hSoverB->SetBinContent(ibin+1,SoverB);  hSoverB->SetBinError(ibin+1,0.0);
     hSignif->SetBinContent(ibin+1,significance3sigma);  hSignif->SetBinError(ibin+1,0.0);
   
@@ -388,6 +414,7 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
     pr->AddText(Form("Raw (fit) = %.4e +/- %.4e", integralSignal[0], integralSignal[1]));
     pr->AddText(Form("Tot (BC) = %.4e +/- %.4e", binCountTotal[0], binCountTotal[1]));
     pr->AddText(Form("Raw (BC) = %.4e +/- %.4e", binCountSignal[0], binCountSignal[1]));
+    pr->AddText(Form("Tails (L+R) = %.4e +/- %.4e", binCountTails[0], binCountTails[1]));
     pr->AddText(Form("Bg (fit) = %.4e +/- %.4e", integralBg[0], integralBg[1]));
   
     for (Int_t j = 0; j< nTotPars; j++) {
@@ -424,6 +451,8 @@ Int_t fitPhiXeXe(TString inName = "sub_C3.root",
   hchi2->Write();
   hrawIntegral->Write();
   hrawBC->Write();
+  htailBC->Write();
+  htailBCfrac->Write();
   hBgIntegral->Write();
   hSoverB->Write();
   hSignif->Write();
@@ -744,3 +773,27 @@ Float_t GetResolutionFromFilePt(TFile * resFile, Int_t centbin, Int_t ptbin, Int
 //     id++;
 //   }
 // }
+
+
+//************************************************************************
+//************************************************************************
+//************************************************************************
+void runFitRangeSys(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR[4] = {0.992, 0.994, 0.996, 0.998};
+  Float_t highFitR[4] = {1.050, 1.060, 1.070, 1.100};
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    for (int i = 0; i<4; i++){
+      for (int j = 0; j<4; j++){
+	fitPhiXeXe(ic, lowFitR[i], highFitR[j], "Mixing", integrationTolerance, inName.Data(), imgFormat.Data());
+      }
+    }
+  }
+  return;
+}
+
