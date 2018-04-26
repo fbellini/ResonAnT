@@ -1,7 +1,8 @@
 #include "/Users/fbellini/alice/macros/SetStyle.C"
 #include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/fitSlices.C"
 
-void qaPhiXeXe(Int_t nCuts = 0)
+void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
 {
   gStyle->SetOptStat(10);
   gStyle->SetPadRightMargin(0.1);
@@ -53,11 +54,11 @@ void qaPhiXeXe(Int_t nCuts = 0)
     listName = "RsnOut_tpc2sPtDep_tof3s";
   }
 
-  TFile * fin = new TFile("RsnOut.root");
+  TFile * fin = new TFile(finname.Data());
   if (!fin) return;
   TList * lin = (TList*) fin->Get(listName.Data());
   if (!lin) return;
-  
+
   TH2F * hTPCpidQual = (TH2F*) lin->FindObject("cutQ_bit5.TPC_nsigmaK_VsPtpc_pTPC_K");
   hTPCpidQual->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV#it{c})");
   hTPCpidQual->GetYaxis()->SetTitle("N#sigma_{K}^{TPC}");
@@ -85,7 +86,8 @@ void qaPhiXeXe(Int_t nCuts = 0)
   hTOFpidQual->GetXaxis()->SetTitleSize(0.06);
   hTOFpidQual->GetXaxis()->SetLabelSize(0.06);
   hTOFpidQual->GetXaxis()->SetRangeUser(0.1, 11.0);
-
+  fitSlices(hTPCpidQual);
+  
   TH2F * hTOFpidCut = (TH2F*) lin->FindObject("cutKa.TOF_nsigmaK_vsP_p_K");
   hTOFpidCut->GetXaxis()->SetTitle("#it{p} (GeV#it{c})");
   hTOFpidCut->GetYaxis()->SetTitle("N#sigma_{K}^{TOF}");
@@ -95,17 +97,63 @@ void qaPhiXeXe(Int_t nCuts = 0)
   hTOFpidCut->GetXaxis()->SetTitleSize(0.06);
   hTOFpidCut->GetXaxis()->SetLabelSize(0.06);
   hTOFpidCut->GetXaxis()->SetRangeUser(0.1, 11.0);
+
+  TF1 fg("fg","gaus",-2.,2.); // fit range +- 6 sigma
+  TLine l;
+  TObjArray arrTPC;
+  TObjArray arrTOF;
+  fg.SetParameters(1,0,1);
+  hTPCpidQual->FitSlicesY(&fg,0,-1,0,"NQR",&arrTPC);
+
+  TH1 *hMtpc=(TH1*)arrTPC.At(1);
+  hMtpc->SetMarkerStyle(20);
+  hMtpc->SetMarkerSize(.5);
+
+  TH1 *hStpc=(TH1*)arrTPC.At(2);
+  hStpc->SetMarkerStyle(20);
+  hStpc->SetMarkerSize(.5);
+  hStpc->SetMarkerColor(kRed);
+  hStpc->SetLineColor(kRed);
+  
+
+  hTOFpidQual->FitSlicesY(&fg,0,-1,0,"NQR",&arrTOF);
+  TH1 *hMtof=(TH1*)arrTOF.At(1);
+  hMtof->SetMarkerStyle(20);
+  hMtof->SetMarkerSize(.5);
+  
+  TH1 *hStof=(TH1*)arrTOF.At(2);
+  hStof->SetMarkerStyle(20);
+  hStof->SetMarkerSize(.5);
+  hStof->SetMarkerColor(kRed);
+  hStof->SetLineColor(kRed);
+  hMtof->Draw("sames");
+  hStof->Draw("sames");
+  
   
   TCanvas * c = new TCanvas("c", "c", 1200, 800);
   c->Divide(2,2);
   c->cd(1); hTPCpidQual->Draw("colz");
+  hMtpc->DrawClone("sames");
+  hStpc->DrawClone("sames");
+  l.SetLineColor(kBlack);
+  l.DrawLine(.1,0,10,0);
+  l.SetLineColor(kRed);
+  l.DrawLine(.1,1,10,1);
   gPad->SetLogz();gPad->SetLogx();
+  
   c->cd(2); hTPCpidCut->Draw("colz");
   gPad->SetLogz();gPad->SetLogx();
 
   c->cd(3); hTOFpidQual->Draw("colz");
+  hMtof->DrawClone("sames");
+  hStof->DrawClone("sames");
+  l.SetLineColor(kBlack);
+  l.DrawLine(.1,0,10,0);
+  l.SetLineColor(kRed);
+  l.DrawLine(.1,1,10,1);
   gPad->SetLogz();gPad->SetLogx();
-
+ 
+  
   c->cd(4); hTOFpidCut->Draw("colz"); 
   gPad->SetLogz();gPad->SetLogx();
 

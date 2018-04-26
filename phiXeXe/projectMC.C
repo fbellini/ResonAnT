@@ -9,11 +9,14 @@ void GetEfficiencyFromBinnedMinv(TH1F* trueMinv=NULL, TH1F* momMinv=NULL, Float_
 void GetGausSigma(TH1F * htmp = NULL, Float_t * sigmaAndErr = 0, Float_t absRange = 0.01);
 void GetSigmaRMS(TH1F * htmp = NULL, Float_t * sigmaAndErr = 0, Int_t absRange = 3);
 Float_t GetTruncationCorrection(Int_t absRange = 3);
+Double_t Voigt( Double_t *x, Double_t * par);
+TF1 * GetVOIGT(Double_t fitMin, Double_t fitMax);
 
 void projectMC(TString nameData = "LHC17j7_RsnOut.root",
-	       TString listName = "RsnOut_tpc2sPtDep_tof2sveto5smism",
-	       TString cutLabel  = "tpc2sPtDep_tof2sveto5smism",
+	       TString listName = "RsnOut_tpc2sPtDep_tof3sveto5smism",
+	       TString cutLabel  = "tpc2sPtDep_tof3sveto5smism",
 	       TString binning  = "C3",
+	       Bool_t doEffOnly = 0,
 	       Color_t customColor = kBlack)
 {
    // initial setup
@@ -63,9 +66,9 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   TH3F * hMother =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_Mother%s", cutLabel.Data()));
   if (!hMother) return;
   TH3F * hMotherY =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_MotherY%s", cutLabel.Data()));
-  if (!hMotherY) return;
-  TH3F * hPhaseSpace =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_PhaseSpace%s", cutLabel.Data()));
-  if (!hPhaseSpace) return;
+  if (!hMotherY && !doEffOnly) return;
+  // TH3F * hPhaseSpace =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_PhaseSpace%s", cutLabel.Data()));
+  // if (!hPhaseSpace) return;
 
   TCanvas * cev = new TCanvas("cev","events", 800,600);
   cev->cd(); gPad->SetLogy();
@@ -139,16 +142,17 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   projectorTH3_InvMass_Centrality_Pt projector;
 
   TH3F * hInput[] = {hTrueIn, hMother, hTrueYIn, hMotherY};
-  hInput[0]->SetName("True");
-  hInput[1]->SetName("Mother");
-  hInput[2]->SetName("TrueY");
-  hInput[3]->SetName("MotherY");
+  if (hInput[0]) hInput[0]->SetName("True");
+  if (hInput[1]) hInput[1]->SetName("Mother");
+  if (hInput[2]) hInput[2]->SetName("TrueY");
+  if (hInput[3]) hInput[3]->SetName("MotherY");
 
   //---------------------------------
   //efficiency vs pt
   //---------------------------------
   //project pt vs cent
   for (Int_t i = 0; i < 2; i++) {
+    if (!hInput[i]) continue;
     projector.SetPrefix(hInput[i]->GetName());
     TList * out = (i==0? out = lTrue : out = lMother);    
     if (binning.Contains("A")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centA,  hInput[i], out);
@@ -167,7 +171,7 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
 
   for (Int_t icentbin = 0; icentbin<ncent+1;icentbin++){
 
-    TString centLabel = Form("(%2.0f-%02.0f%%)", centbins->GetBinLowEdge(icentbin+1), centbins->GetBinLowEdge(icentbin+2));   
+    TString centLabel = Form("(%2.0f-%02.0f %%)", centbins->GetBinLowEdge(icentbin+1), centbins->GetBinLowEdge(icentbin+2));   
     //Create histos for efficiency
     TH1F * hTrueCountsPM = new TH1F(Form("hTrueCounts%i",icentbin),"True Counts", npt, selectedPtBinning);
     TH1F * hMotherCounts = new TH1F(Form("hMotherCounts%i",icentbin),"hMotherCounts", npt, selectedPtBinning);
@@ -192,7 +196,7 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
       TH1F * htmp;
       if (icentbin == ncent) htmp = (TH1F*) lTrue->FindObject(Form("Truemb_ptBin%02i_centBin00", iptbin-1));
       else htmp = (TH1F*) lTrue->FindObject(Form("True_ptBin%02i_centBin%02i", iptbin-1, icentbin));
-      Beautify(htmp, kOrange+2, 1, 2, 20, 1.0);
+      Beautify(htmp, kBlack, 1, 2, 20, 1.0);
       Double_t ntrue = htmp->Integral();
       Double_t ntrueerr = TMath::Sqrt(ntrue);				       
       hTrueCountsPM->SetBinContent(iptbin, ntrue);
@@ -237,7 +241,7 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
     gPad->SetBottomMargin(0.15);
     TString opt = (icentbin>0 ? "same" : "");
     hEffVsPt->GetYaxis()->SetNdivisions(509);
-    hEffVsPt->GetXaxis()->SetRangeUser(0.001, selectedPtBinning[npt]);
+    hEffVsPt->GetXaxis()->SetRangeUser(0.0001, selectedPtBinning[npt]);
     hEffVsPt->Draw(opt.Data());
     
     // save into a file
@@ -271,70 +275,79 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   cratio->cd();
   legeff->Draw();
   cratio->Print(efffilename.Prepend("ratio2MB"));
-  
+
+  efffile->cd();
+  lMother->Write("Mother");
+  lTrue->Write("True");
+
+  if (doEffOnly) return;
   //---------------------------------
   // efficiency vs y
   //---------------------------------
   //Project pt vs Y
-  projector.SetPrefix(hInput[2]->GetName());
-  projector.MultiProjPtCent(npt, selectedPtBinning, nrap, rap,  hTrueYIn, lTrueY);
-  projector.SetPrefix(hInput[3]->GetName());
-  projector.MultiProjPtCent(npt, selectedPtBinning, nrap, rap,  hMotherY, lMotherY);
-  if (!lTrueY || !lMotherY) {
-    Printf("invalid lists");
-    return;    
-  } else {
-    efffile->cd();
-    lMotherY->Write();
-    lTrueY->Write();
-  }
-  //display
-  TCanvas * ceffy = new TCanvas("ceffy","efficiency", 800,600);
+  // projector.SetPrefix(hInput[2]->GetName());
+  // projector.MultiProjPtCent(npt, selectedPtBinning, nrap, rap,  hTrueYIn, lTrueY);
+  // projector.SetPrefix(hInput[3]->GetName());
+  // projector.MultiProjPtCent(npt, selectedPtBinning, nrap, rap,  hMotherY, lMotherY);
+  // if (!lTrueY || !lMotherY) {
+  //   Printf("invalid lists");
+  //   return;    
+  // } else {
+  //   efffile->cd();
+  //   lMotherY->Write();
+  //   lTrueY->Write();
+  // }
+  // //display
+  // TCanvas * ceffy = new TCanvas("ceffy","efficiency", 800,600);
 
-  //get efficiency vs y and pt
-  for (Int_t irapbin = 0; irapbin<nrap;irapbin++){
+  // //get efficiency vs y and pt
+  // for (Int_t irapbin = 0; irapbin<nrap;irapbin++){
     
-    TString rapLabel = Form("(%2.1f < #it{y} < %2.1f)", rap[irapbin], rap[irapbin+1]);
-    TH1F * hEffVsY = new TH1F(Form("hEffVsY%i", irapbin), "; #it{p}_{T} (GeV/#it{c}); A #times #varepsilon", npt, selectedPtBinning);
-    hEffVsY->SetTitle(Form("#epsilon_{#phi}, %s %s", cutLabel.Data(), rapLabel.Data()));
-    hEffVsY->GetYaxis()->SetRangeUser(0.0,1.0);
-    Beautify(hEffVsY, color[irapbin], 1, 2, marker[irapbin], 1.0);
+  //   TString rapLabel = Form("(%2.1f < #it{y} < %2.1f)", rap[irapbin], rap[irapbin+1]);
+  //   TH1F * hEffVsY = new TH1F(Form("hEffVsY%i", irapbin), "; #it{p}_{T} (GeV/#it{c}); A #times #varepsilon", npt, selectedPtBinning);
+  //   hEffVsY->SetTitle(Form("#epsilon_{#phi}, %s %s", cutLabel.Data(), rapLabel.Data()));
+  //   hEffVsY->GetYaxis()->SetRangeUser(0.0,1.0);
+  //   Beautify(hEffVsY, color[irapbin], 1, 2, marker[irapbin], 1.0);
     
-    Float_t effAndErr[2] = {0.,0.};
-    //loop over pt bins
-    for (Int_t iptbin = 1; iptbin<npt+1; iptbin++){
-      TH1F *  htmp = (TH1F*) lTrueY->FindObject(Form("TrueY_ptBin%02i_centBin%02i", iptbin-1, irapbin));
-      TH1F *  htmp2 = (TH1F*) lMotherY->FindObject(Form("MotherY_ptBin%02i_centBin%02i", iptbin-1, irapbin));
-      GetEfficiencyFromBinnedMinv(htmp, htmp2, effAndErr);
-      hEffVsY->SetBinContent(iptbin, effAndErr[0]);
-      hEffVsY->SetBinError(iptbin, effAndErr[1]);
-    }
-    //show
-    ceffy->cd();
-    TString opt = (irapbin>0 ? "same" : "");
-    hEffVsY->Draw(opt.Data());
-    //save to file
-    efffile->cd();
-    hEffVsY->Write();
-  }
-  TLegend * legeffY = (TLegend*) gPad->BuildLegend(0.6, 0.75, 0.92, 0.98);
-  legeffY->SetFillStyle(1001); legeffY->SetFillColor(kWhite);
-  ceffy->Print(efffilename.ReplaceAll("ratio2MB","rapidity"));
+  //   Float_t effAndErr[2] = {0.,0.};
+  //   //loop over pt bins
+  //   for (Int_t iptbin = 1; iptbin<npt+1; iptbin++){
+  //     TH1F *  htmp = (TH1F*) lTrueY->FindObject(Form("TrueY_ptBin%02i_centBin%02i", iptbin-1, irapbin));
+  //     TH1F *  htmp2 = (TH1F*) lMotherY->FindObject(Form("MotherY_ptBin%02i_centBin%02i", iptbin-1, irapbin));
+  //     GetEfficiencyFromBinnedMinv(htmp, htmp2, effAndErr);
+  //     hEffVsY->SetBinContent(iptbin, effAndErr[0]);
+  //     hEffVsY->SetBinError(iptbin, effAndErr[1]);
+  //   }
+  //   //show
+  //   ceffy->cd();
+  //   TString opt = (irapbin>0 ? "same" : "");
+  //   hEffVsY->Draw(opt.Data());
+  //   //save to file
+  //   efffile->cd();
+  //   hEffVsY->Write();
+  // }
+  // TLegend * legeffY = (TLegend*) gPad->BuildLegend(0.6, 0.75, 0.92, 0.98);
+  // legeffY->SetFillStyle(1001); legeffY->SetFillColor(kWhite);
+  // ceffy->Print(efffilename.ReplaceAll("ratio2MB","rapidity"));
  
   //---------------------------------
   // mass, pt and y resolution
   //---------------------------------
-  Color_t rescol[4] = {kOrange, kMagenta+2, kCyan+1, kBlue};
-  Float_t massResolRange[4] = {0.002, 0.003, 0.004, 0.005};
-
   //display
   TCanvas * cres = new TCanvas("cres","pt, y resolution", 800,600);
   cres->Divide(1,2);
 
+  TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 800,600);
+  cresMethods->Divide(2,2);
+
+  TCanvas * cresGausCent = new TCanvas("cresGausCent","mass resolution, Gaussian fit", 800,600);
+  TCanvas * cresRMSCent = new TCanvas("cresRMSCent","mass resolution, RMS", 800,600);
+  TCanvas * cresVMCCent = new TCanvas("cresVMCCent","mass resolution, Voigt fit to MC true", 800,600);
+
   TCanvas * cres_cent[4];
   for (Int_t icent = 0; icent<4; icent++) {
     cres_cent[icent] = new TCanvas(Form("cres_cent%i",icent),"resolution", 1000,600);
-    cres_cent[icent]->Divide(2,1);
+    cres_cent[icent]->Divide(2,2);
   }
   
   //Get input
@@ -376,66 +389,177 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   TH1F * htmp = NULL;
   Float_t sigmaAndErr[2] = {0., 0.};
   TString opt = "";
+  Color_t rescol[4] = {kRed+2, kSpring+2, kBlue+1, kGray+3};
+  Float_t massResolRange[4] = {0.002, 0.003, 0.004, 0.005};
+  Float_t fitLowRange[4] = {1.008, 1.007, 1.006, 1.005};
+  Float_t fitHighRange[4] = {1.032, 1.033, 1.034, 1.035};
+
+  TF1* fitFcn = GetVOIGT(1.00, 1.1);// norm, mean, res, width
+  fitFcn->SetParLimits(1, 1.0, 1.030);
+  fitFcn->SetParLimits(2, 0.001, 0.01);//0.004266); // width fixed to the pdg value
+  fitFcn->SetParLimits(3, 0.001, 0.01);//0.004266); // width fixed to the pdg value
+  fitFcn->SetParameter(3, 0.004266); // width fixed to the pdg value
+  if (!fitFcn) return;
   
   for (Int_t icent = 0; icent<ncent+1;icent++){
     Printf ("\n\n Centrality bin %i -------------------------", icent);
     TH1F * hResVsPt[4];
     TH1F * hResVsPtRMS[4];
-    TString centLabel = Form("%2.0f-%2.0f%", centC[icent], centC[icent+1]);
+    TH1F * hResVsPtVMC[4];
+    TH1F * hMassVsPtVMC[4];
+    TH1F * hWidthVsPtVMC[4];
+    TString centLabel = Form("%2.0f-%2.0f %%", centC[icent], centC[icent+1]);
     if (icent == ncent) centLabel = "0-90%";
     
-    for (Int_t i = 0; i<4; i++){  
+    for (Int_t i = 0; i<4; i++){
+      hMassVsPtVMC[i] = new TH1F(Form("hMassVsPtVMC%i_r%i", icent, i), "; #it{p}_{T} (GeV/#it{c}); M_{#phi, VMC} (GeV/#it{c}^{2})", npt, selectedPtBinning);
+      hMassVsPtVMC[i]->SetTitle(Form("M_{#phi,VMC}, Fit %4.3f<#it{M}<%4.3f", fitLowRange[i], fitHighRange[i]));
+      Beautify(hMassVsPtVMC[i], rescol[icent]-i, 1, 2, marker[i], 1.0);
+      
+      hWidthVsPtVMC[i] = new TH1F(Form("hWidthVsPtVMC%i_r%i", icent, i), "; #it{p}_{T} (GeV/#it{c}); #Gamma_{#phi, VMC} (GeV/#it{c}^{2})", npt, selectedPtBinning);
+      hWidthVsPtVMC[i]->SetTitle(Form("#Gamma_{#phi,VMC}, Fit %4.3f<#it{M}<%4.3f", fitLowRange[i], fitHighRange[i]));
+      Beautify(hWidthVsPtVMC[i], rescol[icent]-i, 1, 2, marker[i], 1.0);
+
+      hResVsPtVMC[i] = new TH1F(Form("hResVsPtVMC%i_r%i", icent, i), "; #it{p}_{T} (GeV/#it{c}); #sigma_{#phi, VMC} (GeV/#it{c}^{2})", npt, selectedPtBinning);
+      hResVsPtVMC[i]->SetTitle(Form("#sigma_{#phi,VMC}, Fit %4.3f<#it{M}<%4.3f", fitLowRange[i], fitHighRange[i]));
+      Beautify(hResVsPtVMC[i], rescol[icent]-i, 1, 2, marker[i], 1.0);
+      
       hResVsPt[i] = new TH1F(Form("hResVsPt%i_res%i", icent, i), "; #it{p}_{T} (GeV/#it{c}); #sigma_{#phi, Gaus} (GeV/#it{c}^{2})", npt, selectedPtBinning);
       hResVsPt[i]->SetTitle(Form("#sigma_{#phi,Gaus}, |#Delta#it{M}| < %4.3f", massResolRange[i]));
-      Beautify(hResVsPt[i], kTeal+5-i, 1, 2, marker[i], 1.0);
+      Beautify(hResVsPt[i], rescol[icent]-i, 1, 2, marker[i], 1.0);
       
       hResVsPtRMS[i] = new TH1F(Form("hResVsPtRMS%i_r%i", icent, i), "; #it{p}_{T} (GeV/#it{c}); #sigma_{#phi, RMS} (GeV/#it{c}^{2})", npt, selectedPtBinning);
-      hResVsPtRMS[i]->SetTitle(Form("#sigma_{#phi,RMS}, |#Delta#it{M}| < %i#sigma_ext", i+2));
-      Beautify(hResVsPtRMS[i], kViolet-3-i, 1, 2, marker[i], 1.0);
-   
+      hResVsPtRMS[i]->SetTitle(Form("#sigma_{#phi,RMS}, |#Delta#it{M}| < %i#sigma_{ext}", i+2));
+      Beautify(hResVsPtRMS[i], rescol[icent]-i, 1, 2, marker[i], 1.3);
+      
       //loop over pt bins
       for (Int_t iptbin = 1; iptbin<npt+1; iptbin++){
 	if (icent == ncent) htmp = (TH1F*) lResolution->FindObject(Form("MassResCmb_ptBin%02i_centBin%02i", iptbin-1, 0));
 	else htmp = (TH1F*) lResolution->FindObject(Form("MassResC_ptBin%02i_centBin%02i", iptbin-1, icent));
 	Beautify(htmp, kAzure+7-iptbin, 1, 2, 1, 1.0);	
-	//gaussian fit
+
+	//get resolution from gaussian fit of mrec - mgen
 	GetGausSigma(htmp, sigmaAndErr, massResolRange[i]);       
 	hResVsPt[i]->SetBinContent(iptbin, sigmaAndErr[0]);
 	hResVsPt[i]->SetBinError(iptbin, sigmaAndErr[1]);
-	//range
+
+	//get resolution from RMS of mrec - mgen, by also correcting for the truncated tails
 	GetSigmaRMS(htmp, sigmaAndErr, i+2);       
 	hResVsPtRMS[i]->SetBinContent(iptbin, sigmaAndErr[0]/GetTruncationCorrection(i+2));
 	hResVsPtRMS[i]->SetBinError(iptbin, sigmaAndErr[1]/GetTruncationCorrection(i+2));
-	Printf("::::: Trunctation correction factor = 1./%f",GetTruncationCorrection(i+2));
+	Printf("::::: Truncation correction factor = 1./%f",GetTruncationCorrection(i+2));
+
+	//voigtian fit of true distribution
+	if (icent < 3) htmp = (TH1F*) lTrue->FindObject(Form("True_ptBin%02i_centBin%02i", iptbin-1, icent));
+	else htmp = (TH1F*) lTrue->FindObject(Form("Truemb_ptBin%02i_centBin00", iptbin-1));
+
+	if (!htmp) {
+	  // Printf(":::: WARNING : no input to fit Voigt with!");
+	  hMassVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+	  hWidthVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+	  hResVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+	} else {
+	  Printf("here!!!");
+	  TFitResultPtr result = htmp->Fit(fitFcn, "SBRNQ", "", fitLowRange[i],fitHighRange[i]);
+	  //Printf("mean = %f, \n sigma = %f, \n res = %f", fitFcn->GetParameter(1),fitFcn->GetParameter(2), fitFcn->GetParameter(3));
+	  hMassVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(1));
+	  hWidthVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(3));
+	  hResVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(2));
+	  
+	  hMassVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(1));
+	  hWidthVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(3));
+	  hResVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(2));
+	}
       } //end loop on pt
 
       fres->cd();
       hResVsPt[i]->Write();
       hResVsPtRMS[i]->Write();
+      hResVsPtVMC[i]->Write();
+      hMassVsPtVMC[i]->Write();
+      hWidthVsPtVMC[i]->Write();
       
       //draw
-      cres_cent[icent]->cd(1);
-      hResVsPt[i]->GetYaxis()->SetRangeUser(0.001, 0.0043);
       if (i>0) opt = "same";
+      cres_cent[icent]->cd(1);
+      hResVsPt[i]->GetYaxis()->SetRangeUser(0.0001, 0.0045);
       hResVsPt[i]->Draw(opt.Data());
+
       cres_cent[icent]->cd(2);
-      hResVsPtRMS[i]->GetYaxis()->SetRangeUser(0.001, 0.0043);
+      hResVsPtRMS[i]->GetYaxis()->SetRangeUser(0.0001, 0.0045);
       hResVsPtRMS[i]->Draw(opt.Data());
+
+      cres_cent[icent]->cd(3);
+      hResVsPtVMC[i]->GetYaxis()->SetRangeUser(0.0001, 0.0045);
+      hResVsPtVMC[i]->Draw(opt.Data());
+
+      cres_cent[icent]->cd(4);
+      hMassVsPtVMC[i]->GetYaxis()->SetRangeUser(1.018, 1.022);
+      hMassVsPtVMC[i]->Draw(opt.Data());
+      
       opt = "";      
     } //end loop on range
 
+    if (icent>0) opt = "same";
+    cresGausCent->cd();
+    hResVsPt[0]->Draw(opt.Data());
+    hResVsPt[3]->Draw("same");
+    cresRMSCent->cd();
+    hResVsPtRMS[0]->Draw(opt.Data());
+    hResVsPtRMS[3]->Draw("same");
+    cresVMCCent->cd();
+    hResVsPtVMC[0]->Draw(opt.Data());
+    hResVsPtVMC[3]->Draw("same");
+
+    cresMethods->cd(icent+1);
+    hResVsPt[1]->Draw(opt.Data());
+    hResVsPtRMS[1]->Draw("same");
+    hResVsPtVMC[1]->Draw("same");
+    
+    //draw legends
     cres_cent[icent]->cd(1);
-    TLegend * legRes = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data());
+    TLegend * legRes = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data(), "p");
     legRes->SetFillStyle(0);
     legRes->SetBorderSize(0);
     cres_cent[icent]->cd(2);
-    TLegend * legRes2 = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data());
+    TLegend * legRes2 = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data(), "p");
     legRes2->SetFillStyle(0);
     legRes2->SetBorderSize(0);
+    cres_cent[icent]->cd(3);
+    TLegend * legRes3 = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data(), "p");
+    legRes3->SetFillStyle(0);
+    legRes3->SetBorderSize(0);
     TString resSave = Form("%s_cent%i.pdf", fres->GetName(), icent);
     resSave.ReplaceAll(".root","");
-    cres_cent[icent]->Print(resSave.Data());
-  }//end loop on centrality    
+    cres_cent[icent]->Print(resSave.Data());    
+  }//end loop on centrality
+
+  cresGausCent->cd();
+  TLegend * legResG = (TLegend*) gPad->BuildLegend(0.2, 0.7, 0.7, 0.9, "", "p");
+  legResG->SetFillStyle(0);
+  legResG->SetBorderSize(0);
+  legResG->SetNColumns(2);
+  legResG->SetTextSize(0.035);
+  cresGausCent->Print("centDep_GaussRes.pdf");
+
+  cresRMSCent->cd();
+  TLegend * legResR = (TLegend*) gPad->BuildLegend(0.2, 0.7, 0.7, 0.9, "", "p");
+  legResR->SetFillStyle(0);
+  legResR->SetBorderSize(0);
+  legResR->SetNColumns(2);
+  legResR->SetTextSize(0.035);
+  cresRMSCent->Print("centDep_RMSRes.pdf");
+
+  cresVMCCent->cd();
+  TLegend * legResV = (TLegend*) gPad->BuildLegend(0.2, 0.7, 0.8, 0.9, "", "p");
+  legResV->SetFillStyle(0);
+  legResV->SetBorderSize(0);
+  legResV->SetNColumns(2);
+  legResV->SetTextSize(0.025);
+  cresVMCCent->Print("centDep_VMCRes.pdf");
+
+
+  
 
   //loop on rapidity bins
   for (Int_t irapbin = 0; irapbin<nrap;irapbin++){
@@ -478,12 +602,14 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
     }
     
     //save to file
-    fres->cd();
-    hPtResVsPt->Write();
-    hPtResVsPtRMS->Write();
-    hYResVsPt->Write();
-    hYResVsPtRMS->Write();
-
+    /*
+      fres->cd();
+      hPtResVsPt->Write();
+      hPtResVsPtRMS->Write();
+      hYResVsPt->Write();
+      hYResVsPtRMS->Write();
+    */
+    
     //show
     TString opt = ""; 
     opt = (irapbin>0 ? "same" : "");
@@ -528,7 +654,7 @@ void GetGausSigma(TH1F * htmp, Float_t * sigmaAndErr, Float_t absRange)
   if (htmp->GetEntries()<1) {
     sigmaAndErr[0] = 0; sigmaAndErr[1] = 0;
   }
-  htmp->Fit("gaus","S0R","", -absRange, absRange);
+  htmp->Fit("gaus","S0RQ","", -absRange, absRange);
   TF1* fitg = (TF1*) htmp->GetFunction("gaus");
   sigmaAndErr[0] = (fitg ? fitg->GetParameter(2) : 0.0);
   sigmaAndErr[1] = (fitg ? fitg->GetParError(2) : 0.0);
@@ -560,4 +686,22 @@ Float_t GetTruncationCorrection(Int_t absRange)
   g1.SetParameter(1, 1.0);
   Float_t variance = g1.Variance(-absRange, absRange);
   return TMath::Sqrt(variance);
+}
+
+
+//-----------------------------------------
+//Signal peak: Voigtian peak function
+//-----------------------------------------
+Double_t Voigt( Double_t *x, Double_t * par)
+{
+  return par[0] * TMath::Voigt(x[0]-par[1], par[2], par[3]);
+}
+
+
+//-----------------------------------------
+TF1 * GetVOIGT(Double_t fitMin, Double_t fitMax)
+{
+  TF1* fitFcn = new TF1("VOIGTpoly0", Voigt, fitMin, fitMax, 4);
+  fitFcn->SetParNames("Norm","Mass","Width", "Resolution"); 
+  return fitFcn;
 }

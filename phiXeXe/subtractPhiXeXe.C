@@ -36,18 +36,18 @@ enum EHistStyle {kSig = 0,
 		 kMEBnorm,
 		 kMEBsub};
 
-Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root", 
-			 Float_t emNormInf = 1.05,
-			 Float_t emNormSup = 1.15, 
-			 Double_t desiredIMbinWidth = 0.002, //in GeV/cˆ2
-			 Int_t ipt = -1,
-			 Int_t istartpt = 1,
-			 Int_t icent = -1,
-			 Float_t scaleEMNormFactor = 1.0,
-		     	 Bool_t doNormLS = 0, 
-			 Bool_t enableCanvas = 1,
-			 Bool_t isDisplayDist = 1,
-			 Bool_t displayEMonly = 0)
+Int_t subtractPhiXeXe(TString projectionFile="proj_C3.root", 
+		      Float_t emNormInf = 1.07,
+		      Float_t emNormSup = 1.1, 
+		      Double_t desiredIMbinWidth = 0.002, //in GeV/cˆ2
+		      Int_t ipt = -1,
+		      Int_t istartpt = 1,
+		      Int_t icent = -1,
+		      Float_t scaleEMNormFactor = 1.0,
+		      Bool_t doNormLS = 0, 
+		      Bool_t enableCanvas = 1,
+		      Bool_t isDisplayDist = 1,
+		      Bool_t displayEMonly = 0)
 {
   //general - set style
    // initial setup
@@ -217,17 +217,24 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
       Beautify(hbem, color[EHistStyle::kMEB], 1, 2, Marker_Style[EHistStyle::kMEB], Marker_Size);
       
       // like-sign background
-      TH1D * hb1ls = (TH1D*) ((TH1D*) lLikePP->FindObject(hb1ls_name.Data()))->Clone(Form("LikePP_ptBin%02i_centBin%02i",iptbin,icentbin));
-      TH1D * hb2ls = (TH1D*) ((TH1D*) lLikeMM->FindObject(hb2ls_name.Data()))->Clone(Form("LikeMM_ptBin%02i_centBin%02i",iptbin,icentbin));
-      TH1D * hbls = (TH1D*) BgLike(hb1ls, hb2ls);
-      hbls->SetNameTitle(Form("Like_ptBin%02i_centBin%02i",iptbin,icentbin), 
-			 Form("LS bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
-      if (hbls) Printf("LS background for phi: %s",hbls->GetName());
-      else return 4;
-      Beautify(hb1ls, color[EHistStyle::kLSBPP], 1, 1, Marker_Style[EHistStyle::kLSBPP], Marker_Size);
-      Beautify(hb2ls, color[EHistStyle::kLSBMM], 1, 1, Marker_Style[EHistStyle::kLSBMM], Marker_Size);
-      Beautify(hbls, color[EHistStyle::kLSB], 1, 1, Marker_Style[EHistStyle::kLSB], Marker_Size);
-
+      TH1D * hb1ls = 0x0;
+      TH1D * hb2ls = 0x0;
+      TH1D * hbls = 0x0;
+      TH1D * hbls_norm = 0x0;
+      
+      if (lLikePP && lLikeMM) {
+	hb1ls = (TH1D*) ((TH1D*) lLikePP->FindObject(hb1ls_name.Data()))->Clone(Form("LikePP_ptBin%02i_centBin%02i",iptbin,icentbin));
+	hb2ls = (TH1D*) ((TH1D*) lLikeMM->FindObject(hb2ls_name.Data()))->Clone(Form("LikeMM_ptBin%02i_centBin%02i",iptbin,icentbin));
+	hbls = (TH1D*) BgLike(hb1ls, hb2ls);
+	hbls->SetNameTitle(Form("Like_ptBin%02i_centBin%02i",iptbin,icentbin), 
+			   Form("LS bg: %4.2f<#it{p}_{T}<%5.2f GeV/#it{c} (%2.0f-%2.0f%%)",lowPt,upPt,lowC,upC));
+	if (hbls) Printf("LS background for phi: %s",hbls->GetName());
+	else return 4;
+	Beautify(hb1ls, color[EHistStyle::kLSBPP], 1, 1, Marker_Style[EHistStyle::kLSBPP], Marker_Size);
+	Beautify(hb2ls, color[EHistStyle::kLSBMM], 1, 1, Marker_Style[EHistStyle::kLSBMM], Marker_Size);
+	Beautify(hbls, color[EHistStyle::kLSB], 1, 1, Marker_Style[EHistStyle::kLSB], Marker_Size);
+      }
+      
       Int_t inorm1 =  hbem->GetXaxis()->FindBin(emNormInf);
       Int_t inorm2 =  hbem->GetXaxis()->FindBin(emNormSup);
       
@@ -247,21 +254,23 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
       Beautify(hbem_norm, color[EHistStyle::kMEBnorm], 1, 2, Marker_Style[EHistStyle::kMEBnorm], Marker_Size);
 
       //LSB make up
-      TH1D * hbls_norm = (TH1D*) hbls->Clone(Form("norm_%s", hbls->GetName()));
-      if (doNormLS) {
-	if ((emNormInf<=0) || (emNormSup<=0)) {
-	  Double_t norm_best_factor = BestNormalization(hs, hbls_norm, 0.005, 0.500, 0.001, inorm1, inorm2);
-	  hbls_norm->Scale(norm_best_factor);
-	  Printf(":::: LS Best normalization by factor = %5.3f", norm_best_factor);
-	  normfactor_ls[0] = norm_best_factor;      
-	} else {
-	  hbls_norm = (TH1D*) normValuesInterval(hbls, hs, emNormInf, emNormSup, scaleEMNormFactor, normfactor_ls); 
-	  Printf(":::: LS Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_ls[0]);
+      if (lLikePP && lLikeMM) {
+	hbls_norm = (TH1D*) hbls->Clone(Form("norm_%s", hbls->GetName()));
+	if (doNormLS) {
+	  if ((emNormInf<=0) || (emNormSup<=0)) {
+	    Double_t norm_best_factor = BestNormalization(hs, hbls_norm, 0.005, 0.500, 0.001, inorm1, inorm2);
+	    hbls_norm->Scale(norm_best_factor);
+	    Printf(":::: LS Best normalization by factor = %5.3f", norm_best_factor);
+	    normfactor_ls[0] = norm_best_factor;      
+	  } else {
+	    hbls_norm = (TH1D*) normValuesInterval(hbls, hs, emNormInf, emNormSup, scaleEMNormFactor, normfactor_ls); 
+	    Printf(":::: LS Normalization in [%3.2f,%3.2f] by factor = %5.3f", emNormInf, emNormSup, normfactor_ls[0]);
+	  }
+	  hbls_norm->SetName(Form("norm_%s", hbls->GetName()));
 	}
-	hbls_norm->SetName(Form("norm_%s", hbls->GetName()));
+	Beautify(hbls_norm, color[EHistStyle::kLSBnorm], 1, 2, Marker_Style[EHistStyle::kLSBnorm], Marker_Size);
       }
-      Beautify(hbls_norm, color[EHistStyle::kLSBnorm], 1, 2, Marker_Style[EHistStyle::kLSBnorm], Marker_Size);
-
+      
       //get invariant mass binning and rebin if requested
       Double_t invMassBinWidth = ((TAxis*) hs->GetXaxis())->GetBinWidth(1);
       Int_t rebinFactor = 2; //desiredIMbinWidth / invMassBinWidth;
@@ -273,10 +282,12 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
 	hs_tris->Rebin(rebinFactor);
 	hbem->Rebin(rebinFactor);
 	hbem_norm->Rebin(rebinFactor);
-	hbls->Rebin(rebinFactor);
-	hbls_norm->Rebin(rebinFactor);
+	if (lLikePP && lLikeMM) {
+	  hbls->Rebin(rebinFactor);
+	  hbls_norm->Rebin(rebinFactor);
+	}
       }
-
+      
       //draw
       if (isDisplayDist && cdisplay[0][icentbin]){
 	if (icent>0 && ipt>0) cdisplay[0][icentbin]->cd();
@@ -289,7 +300,7 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
 	hs_tris->GetYaxis()->SetNdivisions(509);
 	hs_tris->GetXaxis()->SetTitleSize(0.07);
 	hs_tris->GetXaxis()->SetLabelSize(0.06);
-	hbls_norm->Draw("hist same");
+	if (lLikePP && lLikeMM) hbls_norm->Draw("hist same");
 	hbem_norm->Draw("hist same");
       }
 
@@ -317,29 +328,31 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
 	b = Sqrt (ls_pp * ls_mm)
       ***************************************************************************/      
       //subtract
-      TH1D * sub_ls = (TH1D*) subtractBackgnd(hs_bis, hbls_norm);
-      if (!sub_ls) return 6;
-      sub_ls->SetName(Form("sub_%s",hbls_norm->GetName()));
-      sub_ls->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
-      Beautify(sub_ls, color[EHistStyle::kLSBsub], 1, 1, Marker_Style[EHistStyle::kLSBsub], Marker_Size);
-      SetLabels(sub_ls, 0.05, 0.05, 1.1, 1.1);
-
-      sub_ls->GetXaxis()->SetRangeUser(sub_ls->GetXaxis()->GetBinLowEdge(1), 1.1);
-      sub_ls->GetYaxis()->SetRangeUser(sub_ls->GetMinimum()*1.1, sub_ls->GetMaximum()*1.5);
+      TH1D * sub_ls = 0x0;
+      if (lLikePP && lLikeMM) {
+	sub_ls = (TH1D*) subtractBackgnd(hs_bis, hbls_norm);
+	if (!sub_ls) return 6;
+	sub_ls->SetName(Form("sub_%s",hbls_norm->GetName()));
+	sub_ls->SetTitle(Form("%4.2f < #it{p}_{T} < %5.2f GeV/#it{c} (%2.0f-%2.0f%%); #it{M}_{KK} (GeV/#it{c}^{2}); counts / (%4.3f GeV/#it{c}^{2})",lowPt,upPt,lowC,upC, desiredIMbinWidth));
+	Beautify(sub_ls, color[EHistStyle::kLSBsub], 1, 1, Marker_Style[EHistStyle::kLSBsub], Marker_Size);
+	SetLabels(sub_ls, 0.05, 0.05, 1.1, 1.1);
+	  
+	sub_ls->GetXaxis()->SetRangeUser(sub_ls->GetXaxis()->GetBinLowEdge(1), 1.1);
+	sub_ls->GetYaxis()->SetRangeUser(sub_ls->GetMinimum()*1.1, sub_ls->GetMaximum()*1.5);	  
+	sub_ls->GetYaxis()->SetTitleSize(0.07);
+	sub_ls->GetYaxis()->SetTitleOffset(0.87);
+	sub_ls->GetYaxis()->SetLabelSize(0.06);
+	sub_ls->GetYaxis()->SetNdivisions(509);
+	sub_ls->GetXaxis()->SetTitleSize(0.07);
+	sub_ls->GetXaxis()->SetLabelSize(0.06);
+      }
       sub_em->GetXaxis()->SetRangeUser(sub_em->GetXaxis()->GetBinLowEdge(1), 1.1);
 
-      sub_ls->GetYaxis()->SetTitleSize(0.07);
-      sub_ls->GetYaxis()->SetTitleOffset(0.87);
-      sub_ls->GetYaxis()->SetLabelSize(0.06);
-      sub_ls->GetYaxis()->SetNdivisions(509);
-      sub_ls->GetXaxis()->SetTitleSize(0.07);
-      sub_ls->GetXaxis()->SetLabelSize(0.06);
-	
       //draw
       if (cdisplay[1][icentbin]){
 	if (icent>0 && ipt>0) cdisplay[1][icentbin]->cd();
 	else cdisplay[1][icentbin]->cd(iptbin+1-istartpt);
-	if (!displayEMonly) sub_ls->Draw("same");
+	if (lLikePP && lLikeMM && !displayEMonly) sub_ls->Draw("same");
 	sub_em->Draw("same");
       }
       
@@ -347,12 +360,13 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
       fout->cd();
       hs->Write();
       hbem->Write();
-      hbls->Write();
       hbem_norm->Write();
-      hbls_norm->Write();
       sub_em->Write();
-      sub_ls->Write();
-          
+      if (lLikePP && lLikeMM) {
+	hbls->Write();
+	hbls_norm->Write();
+	sub_ls->Write();
+      }
       /*
       cout << "Continue? (1/0)" << endl;
       cin >> nextBin;
@@ -367,11 +381,11 @@ Int_t subtractPhiXeXe(	 TString projectionFile="proj_A3.root",
     } //loop over pt
     fout->cd();
     cdisplay[1][icentbin]->Write();
-    cdisplay[1][icentbin]->Print(Form("%s.png", pngSaveName.Data()));
+    cdisplay[1][icentbin]->Print(Form("%s.pdf", pngSaveName.Data()));
     cdisplay[1][icentbin]->Print(Form("%s.eps", pngSaveName.Data()));
     cdisplay[0][icentbin]->Write();
     pngSaveName.ReplaceAll("sub_", "dist_");
-    cdisplay[0][icentbin]->Print(Form("%s.png",pngSaveName.Data()));
+    cdisplay[0][icentbin]->Print(Form("%s.pdf",pngSaveName.Data()));
     cdisplay[0][icentbin]->Print(Form("%s.eps", pngSaveName.Data()));
   }//loop over centrality
 

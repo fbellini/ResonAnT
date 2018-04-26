@@ -2,27 +2,30 @@
 
 #include "/Users/fbellini/alice/macros/MakeUp.C"
 
-void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
-		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710",
-		    TString binning = "C3",
+void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
+		    Float_t fitLow = 0.994, Float_t fitUp = 1.070,
+		    Float_t normLow = 1.07, Float_t normUp = 1.10,
+		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710", //default
+		    //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSysA", // systematics
+		    TString binning = "A3",
                     TString pid = "tpc2sPtDep_tof2sveto5smism",
-		    TString bgType = "Mixing",
-		    TString fitFcn = "VOIGTpoly1_fixRes",
-		    Float_t normLow = 1.050, Float_t normUp = 1.100,
-                    const Float_t ptmin = 0.0, const Float_t ptmax = 9.999,
+		    const Float_t ptmin = 0.0, const Float_t ptmax = 10.999,
 		    const Float_t cutChi2 = 4.0, Bool_t skipLastBin = 0,
 		    Short_t legendEntryStyle = -1)
+//TString fitFcn = "VOIGTpoly1_ResRMS1",
+// TString bgType = "Mixing",
+                    
 {
   //graphics
   gStyle->SetTextFont(42);
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   myOptions(0);
-  gStyle->SetPadLeftMargin(0.17);
+  gStyle->SetPadLeftMargin(0.2);
   gStyle->SetPadRightMargin(0.05);
   gStyle->SetPadTopMargin(0.05);
   gStyle->SetPadBottomMargin(0.15);
-  TGaxis::SetMaxDigits(2);
+  TGaxis::SetMaxDigits(3);
   Int_t legendEntryCounter = 1;
 
   Color_t color[1][3] = {kRed+2, kSpring-2, kBlue+2};
@@ -33,29 +36,32 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
   Color_t colorBg = kRed+2;
   Color_t colorNorm = kAzure+7;
 
-  TString legendEntry = ""; //default, centrality will be appended
-  switch (legendEntryStyle) {
-  case 0:
-    legendEntry = Form("Fit: %4.3f-%4.3f GeV/#it{c}", fitLow, fitUp);
-    break;
-  case 1 : 
-    legendEntry = Form("%s ", pid.Data());
-    break;
-  case 2 :
-    legendEntry = Form("%s ", bgType.Data());
-    break;
-  case 3 :
-    legendEntry = Form("Norm: %4.3f-%4.3f GeV/#it{c} ", normLow, normUp); 
-    break;
-  case 4:
-    legendEntry = Form("%s ", fitFcn.Data());
-    break;
-  default :
-    break;
-  }
+  TString legendEntry = "";
+  //default, centrality will be appended
+  // switch (legendEntryStyle) {
+  // case 0:
+  //   legendEntry = Form("Fit: %4.3f-%4.3f GeV/#it{c}", fitLow, fitUp);
+  //   break;
+  // case 1 : 
+  //   legendEntry = Form("%s ", pid.Data());
+  //   break;
+  // case 2 :
+  //   legendEntry = Form("%s ", bgType.Data());
+  //   break;
+  // case 3 :
+  //   legendEntry = Form("Norm: %4.3f-%4.3f GeV/#it{c} ", normLow, normUp); 
+  //   break;
+  // case 4:
+  //   legendEntry = Form("%s ", fitFcn.Data());
+  //   break;
+  // default :
+  //   break;
+  // }
   
   TString projPath = Form("%s/phi%s_%s/proj_%s.root", anaPath.Data(), binning.Data(), pid.Data(), binning.Data());
-  TString fitResultPath = Form("%s/phi%s_%s/norm%3.2f-%3.2f/fit_%s_%s/fit_r%4.3f-%4.3f", anaPath.Data(), binning.Data(), pid.Data(), normLow, normUp, bgType.Data(), fitFcn.Data(), fitLow, fitUp);
+  //TString fitResultPath = Form("%s/phi%s_%s/norm%3.2f-%3.2f/fit_%s_%s/fit_r%4.3f-%4.3f", anaPath.Data(), binning.Data(), pid.Data(), normLow, normUp, bgType.Data(), fitFcn.Data(), fitLow, fitUp);
+  TString fitResultPath = Form("%s/phi%s_%s/norm%3.2f-%3.2f/%s/fit_r%4.3f-%4.3f", anaPath.Data(), binning.Data(), pid.Data(), normLow, normUp, folderName.Data(), fitLow, fitUp);
+
   TFile * fin[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 
   //get bins
@@ -80,8 +86,8 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
   // Define output
   TH1D*frameMassVsPt=new TH1D("MassVsPt","Mass vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); #it{M} (GeV/#it{c}^{2})", npt, pt);
   Beautify(frameMassVsPt, kBlack, 1, 2, 1, 1.0);
-  frameMassVsPt->GetYaxis()->SetRangeUser(1.016, 1.024);
-  frameMassVsPt->GetYaxis()->SetTitleOffset(1.3);
+  frameMassVsPt->GetYaxis()->SetRangeUser(1.018, 1.022);
+  frameMassVsPt->GetYaxis()->SetTitleOffset(1.5);
   frameMassVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
 
   TH1D*frameWidthVsPt=new TH1D("WidthVsPt","Width vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); #Gamma (GeV/#it{c}^{2})", npt, pt);
@@ -91,25 +97,25 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
    
   TH1D*frameSigmaVsPt=new TH1D("SigmaVsPt","Sigma vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); #sigma_{Voigt} (GeV/#it{c}^{2})", npt, pt);
   Beautify(frameSigmaVsPt, kBlack, 1, 2, 1, 1.0);
-  frameSigmaVsPt->GetYaxis()->SetRangeUser(0.0, 2.5e-3);
+  frameSigmaVsPt->GetYaxis()->SetRangeUser(0.0, 12.5e-3);
   frameSigmaVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
 
   TH1D*frameYieldVsPt=new TH1D("YieldVsPt","Raw yield vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); d#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", npt, pt);
   Beautify(frameYieldVsPt, kBlack, 1, 2, 1, 1.0);
-  frameYieldVsPt->GetYaxis()->SetRangeUser(1., 3.0e5);
-  frameYieldVsPt->GetYaxis()->SetTitleOffset(1.3);
+  frameYieldVsPt->GetYaxis()->SetRangeUser(1., 1.0e6);
+  frameYieldVsPt->GetYaxis()->SetTitleOffset(1.5);
   frameYieldVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
 
   TH1D*frameYieldBCVsPt=new TH1D("YieldBCVsPt","Raw yield (BC) vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); d#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}", npt, pt);
   Beautify(frameYieldBCVsPt, kBlack, 1, 2, 1, 1.0);
-  frameYieldBCVsPt->GetYaxis()->SetRangeUser(1., 3.0e5);
-  frameYieldBCVsPt->GetYaxis()->SetTitleOffset(1.3);
+  frameYieldBCVsPt->GetYaxis()->SetRangeUser(1., 1.0e6);
+  frameYieldBCVsPt->GetYaxis()->SetTitleOffset(1.5);
   frameYieldBCVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
 
   TH1D*frameTailFractionBCVsPt=new TH1D("YieldBCVsPt","Tails / raw yield (BC) vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); fraction of yield in tails", npt, pt);
   Beautify(frameTailFractionBCVsPt, kBlack, 1, 2, 1, 1.0);
-  frameTailFractionBCVsPt->GetYaxis()->SetRangeUser(0., 0.15);
-  frameTailFractionBCVsPt->GetYaxis()->SetTitleOffset(1.3);
+  frameTailFractionBCVsPt->GetYaxis()->SetRangeUser(0., 0.5);
+  frameTailFractionBCVsPt->GetYaxis()->SetTitleOffset(1.5);
   frameTailFractionBCVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
   
   TH1D*frameChi2VsPt=new TH1D("Chi2VsPt","#chi^{2} vs. #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); #chi^{2}/NDF", npt, pt);
@@ -127,12 +133,12 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
   frameSignificanceVsPt->GetYaxis()->SetRangeUser(0.0, 15.0);
   frameSignificanceVsPt->GetXaxis()->SetRangeUser(ptmin, ptmax);
 
-  TLine * pdgmass = new TLine(0.,1.01995,10.,1.01995);
+  TLine * pdgmass = new TLine(0.,1.01946,10.,1.01946);
   pdgmass->SetLineStyle(2);
   pdgmass->SetLineWidth(3);
   pdgmass->SetLineColor(kBlack);
   
-  TLine * pdgwidth = new TLine(0., 0.00487, 10.,0.00487);
+  TLine * pdgwidth = new TLine(0., 0.004247, 10.,0.004247);
   pdgwidth->SetLineStyle(2);
   pdgwidth->SetLineWidth(3);
   pdgwidth->SetLineColor(kBlack);
@@ -186,31 +192,28 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
   TH1D *hChi2VsPt[6]     =  {0x0,0x0,0x0,0x0,0x0,0x0};
   TH1D *hSoverBVsPt[6]   =  {0x0,0x0,0x0,0x0,0x0,0x0};
   TH1D *hSignificanceVsPt[6] =  {0x0,0x0,0x0,0x0,0x0,0x0};
-
-
-  TLegend *mleg = new TLegend(0.75,0.65,0.95,0.65+0.05*ncent);
-  myLegendSetUp(mleg, 0.05);
-
-  TFile * fout = new TFile("RAW_fitResult.root","recreate");
+  
+  TFile * fout = new TFile(Form("%s/RAW_fitResult.root", fitResultPath.Data()),"recreate");
   TString fitResultFile;
   /*loop on centrality bins*/
   for (Int_t icentbin=0;icentbin<ncent;icentbin++){
 
-    //FIXME fitResultFile = Form("%s/result_c%i.root", fitResultPath.Data(), icentbin);
-    fitResultFile = Form("result_c%i.root", icentbin);
+    fitResultFile = Form("%s/result_c%i.root", fitResultPath.Data(),icentbin);
     fin[icentbin] = TFile::Open(fitResultFile.Data());
     if (!fin[icentbin]) { Printf("Error: cannot find file with fit result. CHECK!"); return; }
     else Printf(">>>>>>> opened file %s", fin[icentbin]->GetName());
     
-    TString centLabel=Form("%3.0f-%3.0f %",cent[icentbin],cent[icentbin+1]);
+    TString centLabel=Form("%3.0f-%3.0f %%",cent[icentbin],cent[icentbin+1]);
     Printf("\n\n\n*******************\n %s \n*******************", centLabel.Data());
     TString drawOpt = "same";
     
     hMassVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("mass");
+    hMassVsPt[icentbin]->GetYaxis()->SetTitleOffset(1.5);
     hWidthVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("gamma");
     hSigmaVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("sigma");
     hRawYieldVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("rawIntegral");
-    hRawYieldBCVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("rawBC"); hRawYieldBCVsPt[icentbin]->SetMarkerStyle(24);
+    hRawYieldBCVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("rawBC");
+    hRawYieldBCVsPt[icentbin]->SetMarkerStyle(24);
     hTailFractionBCVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("tailBCfrac");
     hChi2VsPt[icentbin] = (TH1D*) fin[icentbin]->Get("chi2oNDF");
     hSoverBVsPt[icentbin] = (TH1D*) fin[icentbin]->Get("hSoverB");
@@ -225,9 +228,9 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
     ctail->cd();
     hTailFractionBCVsPt[icentbin]->Draw(drawOpt.Data());
     cm->cd();
-    hMassVsPt[icentbin]->Draw(drawOpt.Data()); pdgmass->Draw();
+    hMassVsPt[icentbin]->Draw(drawOpt.Data());
     cwi->cd();
-    hWidthVsPt[icentbin]->Draw(drawOpt.Data()); pdgwidth->Draw();
+    hWidthVsPt[icentbin]->Draw(drawOpt.Data());
     cre->cd();
     hSigmaVsPt[icentbin]->Draw(drawOpt.Data());  
     cc2->cd();
@@ -245,9 +248,9 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
     csummary->cd(3);
     hChi2VsPt[icentbin]->Draw(drawOpt.Data());
     csummary->cd(4);
-    hMassVsPt[icentbin]->Draw(drawOpt.Data());  pdgmass->Draw();
+    hMassVsPt[icentbin]->Draw(drawOpt.Data());  
     csummary->cd(5);
-    hWidthVsPt[icentbin]->Draw(drawOpt.Data()); pdgwidth->Draw();
+    hWidthVsPt[icentbin]->Draw(drawOpt.Data()); 
     csummary->cd(6);
     hSigmaVsPt[icentbin]->Draw(drawOpt.Data()); 
     
@@ -261,17 +264,32 @@ void MakeRawSpectra(Float_t fitLow = 0.994, Float_t fitUp = 1.050,
     hSoverBVsPt[icentbin]->Write(Form("hSoverBVsPt_%i",icentbin));
     hSignificanceVsPt[icentbin]->Write(Form("hSignificanceVsPt_%i",icentbin));
   }
-  
+
+  TLegend *mleg = new TLegend(0.7,0.75,0.9,0.9);
+  myLegendSetUp(mleg, 0.05);
+  mleg->AddEntry(hRawYieldVsPt[0], "0-30%", "p");
+  mleg->AddEntry(hRawYieldVsPt[1], "30-60%", "p");
+  mleg->AddEntry(hRawYieldVsPt[2], "60-90%", "p");
+
+  cry->cd();
+  mleg->Draw();
+  cm->cd();
+  mleg->Draw();
+  pdgmass->Draw();
+  cwi->cd();
+  mleg->Draw();
+  pdgwidth->Draw();
+
   TString fimgname("result.eps");
-  cry->Print(Form("YIELD_%s",fimgname.Data()));
-  cbc->Print(Form("YIELDBC_%s",fimgname.Data()));
-  ctail->Print(Form("TAILS_%s",fimgname.Data()));
-  cm->Print(Form("MASS_%s",fimgname.Data()));
-  cre->Print(Form("RES_%s",fimgname.Data()));
-  cwi->Print(Form("WIDTH_%s",fimgname.Data()));
-  cc2->Print(Form("CHI2_%s",fimgname.Data()));
-  cSoB->Print(Form("SoB_%s",fimgname.Data()));
-  csign->Print(Form("Signif_%s",fimgname.Data()));
+  cry->Print(Form("%s/YIELD_%s",fitResultPath.Data(), fimgname.Data()));
+  cbc->Print(Form("%s/YIELDBC_%s",fitResultPath.Data(),fimgname.Data()));
+  ctail->Print(Form("%s/TAILS_%s",fitResultPath.Data(),fimgname.Data()));
+  cm->Print(Form("%s/MASS_%s",fitResultPath.Data(),fimgname.Data()));
+  cre->Print(Form("%s/RES_%s",fitResultPath.Data(),fimgname.Data()));
+  cwi->Print(Form("%s/WIDTH_%s",fitResultPath.Data(),fimgname.Data()));
+  cc2->Print(Form("%s/CHI2_%s",fitResultPath.Data(),fimgname.Data()));
+  cSoB->Print(Form("%s/SoB_%s",fitResultPath.Data(),fimgname.Data()));
+  csign->Print(Form("%s/Signif_%s",fitResultPath.Data(),fimgname.Data()));
 
   fout->cd();
   cry->Write();

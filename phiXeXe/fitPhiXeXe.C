@@ -1,5 +1,6 @@
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+//#include "/Users/fbellini/alice/macros/MakeUp.C"
 #include "/Users/fbellini/alice/macros/ResonAnT/fit/FitHistogram.C"
+#include "/Users/fbellini/alice/macros/ResonAnT/phiXeXe/MakeRawSpectra.C"
 
 void SetStyle();
 void DecodeFitStatus(Int_t fitstatus = 0);
@@ -10,41 +11,64 @@ Double_t poly3(Double_t *x, Double_t *par);
 Double_t Voigt( Double_t *x, Double_t * par);
 Double_t Breit( Double_t *x, Double_t * par);
 Double_t BreitB( Double_t *x, Double_t * par);
+Double_t maxB( Double_t *x, Double_t * par);
 
 TF1 * GetVOIGTpoly0(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TF1 * GetVOIGTpoly1(Double_t fitMin = 0.998, Double_t fitMax = 1.068); //new implementation, Int_t nsig = 5.E4, Int_t nbkg = 1.e6);
 TF1 * GetVOIGTpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TF1 * GetBREITpoly1(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TF1 * GetBREITpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
+TF1 * GetBREITpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
+TF1 * GetBREITpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
+TF1 * GetVOIGTmaxB (Double_t fitMin = 0.998, Double_t fitMax = 1.068);
+TF1 * GetBREITpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
+
 TF1 * GetRELBWpoly1(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TF1 * GetRELBWpoly2(Double_t fitMin = 0.998, Double_t fitMax = 1.068);
 TH1D * GetHistoWithoutPeak(TH1D * h = NULL, Double_t peakMin = 1.010, Double_t peakMax = 1.030);
 void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
-Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 0, Bool_t useRMS = 0, Bool_t returnErr = 0);
-void runFitRangeSys(Int_t selCentBin = 0, Double_t integrationTolerance = 1.0e-4, TString inName = "sub_C3.root", TString imgFormat = "png");
+Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
+
+//fit all - range and bg func
+void runDefault(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runVoigtResLowHighLimit(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runFitRangeSysPoly1(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runFitRangeSysPoly2(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+//params sys
+void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+//fit breit
+void runBreitSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runBreitSysPoly2(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+//Run LikeSign fit (Voigt + poly1 and 2)
+void runLikeSignFits(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+
+
+
 
 //TO DO: add customised fit ranges for each pt bin
 //TO DO: fix new implementation of summed functions
 
-Int_t fitPhiXeXe(Int_t selCentBin = 0, 
-		 Double_t fitMin = 0.994,
-		 Double_t fitMax = 1.050,
+TString fitPhiXeXe(TString inName = "sub_C3.root",
 		 TString bgType = "Mixing", //alternative "Mixing"
 		 Double_t integrationTolerance = 1.0e-4,
-		 TString inName = "sub_C3.root",
-		 TString imgFormat = "png",
+		 Int_t selCentBin = 0,
 		 Int_t selPtBin = -1,
-		 Double_t desiredIMbinWidth = 0.002,
+		 Double_t fitMin = 0.994,
+		 Double_t fitMax = 1.050,
 		 TString fcnSignal = "VOIGT", 
 		 TString fcnBg = "poly1",
 		 Double_t minMass = 1.010,
 		 Double_t maxMass = 1.030,
 		 Double_t minWidth = 0.001,
 		 Double_t maxWidth = 0.01,
-		 Double_t minRes = -1.0,
-		 Double_t maxRes = -1.0,
-		 Bool_t   useRmsRes = 0,
-		 Double_t nsigmaPeakBC = 3.0
+		 TString resType = "RMS",
+		 Int_t rangeOpt = 0,
+		 Double_t nsigmaPeakBC = 5.0,
+		 TString imgFormat = "eps",
+		 Double_t desiredIMbinWidth = 0.002
 		 )
 {
 
@@ -58,7 +82,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   TFile * fin = TFile::Open(inName.Data(),"read");
   if (!inName || !fin || !fin->IsOpen()) {
     Printf("Invalid input file or impossible to open: %s", inName.Data());
-    return 1;
+    return "";
   }
 
   //-----------------------
@@ -69,7 +93,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   TFile * finRes = TFile::Open(resolFileName.Data(),"read");
   if (!resolFileName || !finRes || !finRes->IsOpen()) {
     Printf("Invalid input file or impossible to open: %s", resolFileName.Data());
-    return 1;
+    return "";
   }
   
   //-----------------------
@@ -80,11 +104,29 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   TAxis *centbins = (TAxis*)fin->Get("centbins");
   const Int_t nCentBins = centbins->GetNbins();
 
+  
+  //-----------------------
+  //flags for fixed params
+  //-----------------------
+  Bool_t fixMass = 0; Bool_t fixWidth = 0; Bool_t fixRes = 0;
+  TString paramSetting = "";
+  
+  if (fcnSignal.Contains("VOIGT") && (!resType.IsNull())) {
+    fixRes = kTRUE;
+    paramSetting.Append(Form("_Res%s%i", resType.Data(), rangeOpt));
+  } else {
+    Printf(":::: VOIGTIAN Resolution free");
+  }
+  
+  if ((minMass<=0.0) && (maxMass<=0.0)) { fixMass = kTRUE; paramSetting.Append("_fixM");}
+  if ((minWidth<=0.0) && (maxWidth<=0.0)) { fixWidth = kTRUE; paramSetting.Append("_fixW");}
+  if (fixRes && fixMass && fixWidth) paramSetting = "_allFixed";
+  if (!fixRes && !fixMass && !fixWidth) paramSetting = "_allFree";
+
   //-------------------------------
   //create output file and objects
   //-------------------------------
-  TString folderName = Form("fit_%s_%s%s", bgType.Data(), fcnSignal.Data(), fcnBg.Data());
-  if (fcnSignal.Contains("VOIGT") && (minRes<=0.0) && (maxRes<=0.0)) folderName.Append("_FixRes");
+  TString folderName = Form("fit_%s_%s%s%s", bgType.Data(), fcnSignal.Data(), fcnBg.Data(), paramSetting.Data());
   if (nsigmaPeakBC != 5.0) folderName.Append(Form("_BC%2.1f",nsigmaPeakBC));
   gSystem->Exec(Form("mkdir %s", folderName.Data()));
   gSystem->Exec(Form("mkdir %s/fit_r%4.3f-%4.3f", folderName.Data(), fitMin, fitMax));
@@ -134,6 +176,9 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     } else if (fcnBg.Contains("POLY2")) {
       nBgPars = 3;
       fitFcn = (TF1*) GetVOIGTpoly2(fitMin, fitMax);
+    } else if (fcnBg.Contains("MAXB")) {
+      nBgPars = 4;
+      fitFcn = (TF1*) GetVOIGTmaxB(fitMin, fitMax);     
     }
   }
   
@@ -167,7 +212,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
 
   if (!fitFcn) {
     Printf(":::: ERROR: could not retrieve fitting function. ");
-    return 3;
+    return "error";
   }
 
   //-----------------------
@@ -175,11 +220,9 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   //-----------------------
   TDatabasePDG *pdg     = TDatabasePDG::Instance();
   TParticlePDG *part    = pdg->GetParticle(333);
-  Double_t      pdgMass    = part->Mass(); 
-  Double_t      pdgWidth   = part->Width();
-  Double_t      massRes = 0.0018;
-  Double_t      massResErr = 0.00001;
-
+  Double_t      pdgMass    = 1.01946; 
+  Double_t      pdgWidth   = 0.004247;
+  
   //-----------------------
   //define ranges for significance 
   //-----------------------
@@ -205,6 +248,10 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   else 
     fitFcn->SetParLimits(2, minWidth, maxWidth);
 
+  if (fcnBg.Contains("MAX")){
+    fitFcn->FixParameter(5, KKthreshold);
+    fitFcn->SetParLimits(6, 0.5, 2);
+  }
   
   for (Int_t ibin = 2; ibin<nPtBins; ibin++){     
     if (selPtBin>0 && ibin!=selPtBin) continue;
@@ -216,7 +263,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     TH1D * histo = (TH1D*) fin->Get(histName.Data());
     if (!histo) {
       Printf("Cannot find desired histogram: %s >> Doing nothing.", histName.Data());
-      return 2;
+      return "error";
     }
   
     histo->GetYaxis()->SetTitle(Form("Counts / (%4.3f GeV/#it{c}^{2})", desiredIMbinWidth));
@@ -241,10 +288,12 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
       fitBg = new TF1(Form("%s_back",fcnBg.Data()), poly1, fitMin, fitMax, nBgPars);
     else if (fcnBg.Contains("POLY2"))
       fitBg = new TF1(Form("%s_back",fcnBg.Data()), poly2, fitMin, fitMax, nBgPars);
-
+    else if (fcnBg.Contains("MAXB"))
+      fitBg = new TF1(Form("%s_back",fcnBg.Data()), maxB, fitMin, fitMax, nBgPars);
+    
     if (!fitBg) {
       Printf(":::: Invalid background function. >> Doing nothing.");
-      return 3;
+      return "error";
     }
   
     TH1D * histoBgOnly = (TH1D*) GetHistoWithoutPeak(histo, peakMin, peakMax);
@@ -259,16 +308,19 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     //------------------------------
     // Set voigtian resolution
     //------------------------------
+    Double_t      massRes = 0.0018;
+    Double_t      massResErr = 0.00001;
+    Double_t      minRes = 0.001, maxRes = 0.010;
+    
     if (fcnSignal.Contains("VOIGT")) {
-      if ((minRes<=0.0) && (maxRes<=0.0)) {
-	massRes = GetResolutionFromFilePt(finRes, selCentBin, ibin, 0, useRmsRes, 0);
-	massResErr = GetResolutionFromFilePt(finRes, selCentBin, ibin, 0, useRmsRes, 1);
+      if (fixRes) {
+	massRes = GetResolutionFromFilePt(finRes, selCentBin, ibin, rangeOpt, resType.Data(), 0);
+	massResErr = GetResolutionFromFilePt(finRes, selCentBin, ibin, rangeOpt, resType.Data(), 1);
 	fitFcn->SetParLimits(3, massRes-massResErr, massRes+massResErr);
       } else {
 	fitFcn->SetParLimits(3, minRes, maxRes);
       }
     }
-    
     //------------------------------
     //FIT
     //------------------------------
@@ -280,9 +332,9 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     DecodeFitStatus((Int_t) result);
     result->Print("V");
   
-    Double_t par[2][7]; // 7 is the max number of parameters foreseen for the moment
+    Double_t par[2][8]; // 8 is the max number of parameters foreseen for the moment
     Double_t parsig[4]; // 4 is the max number of parameters foreseen for the signal for the moment
-    Double_t parbg[3]; // 3 is the max number of parameters foreseen for the signal for the moment
+    Double_t parbg[4];  // 4 is the max number of parameters foreseen for the signal for the moment
     for (Int_t j = 0; j< nTotPars; j++) {
       par[0][j] = fitFcn->GetParameter(j); 
       par[1][j] = fitFcn->GetParError(j); 
@@ -318,24 +370,22 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     //get covariance matrix to calculate errors on integrals
     //-----------
     TMatrixDSym cov = result->GetCovarianceMatrix();
-    result->Print("V");
-
-    TVirtualFitter *f = TVirtualFitter::GetFitter();  
+    //result->Print("V");
+    //TVirtualFitter *f = TVirtualFitter::GetFitter(); //do not use when fixing parameters
+    //f->GetCovarianceMatrixElement(k,h);
     Double_t bgCovElements[9]; //bg = 3x3 (poly2) matrix or 2x2 (poly1)
-    Double_t sigCovElements[16]; // 3x3 matrix (breit) or 4x4 matrix (voigt)
-    Int_t id = 0;//reset counter
+    Double_t sigCovElements[16]; //3x3 matrix (breit) or 4x4 matrix (voigt)
+    Int_t id = 0; //reset counter
     for (Int_t k = nSigPars; k<(nBgPars+nSigPars); k++) {
       for (Int_t h = nSigPars; h<(nBgPars+nSigPars); h++) {
-    	bgCovElements[id] = f->GetCovarianceMatrixElement(k,h);
-    	//Printf("Bg Cov matrix element %i,%i = %e --> id #%i = %e",k,h, f->GetCovarianceMatrixElement(k,h), id,bgCovElements[id] ); 
+    	bgCovElements[id] = cov[k][h]; 
     	id++;
       }
     }
     id = 0;//reset counter
     for (Int_t k = 0; k<nSigPars; k++) {
       for (Int_t h = 0; h<nSigPars; h++) {
-    	sigCovElements[id] = f->GetCovarianceMatrixElement(k,h);
-    	//Printf("Sig Cov matrix element %i,%i = %e --> id #%i = %e",k,h, f->GetCovarianceMatrixElement(k,h), id, sigCovElements[id] ); 
+    	sigCovElements[id] = cov[k][h]; 
     	id++;
       }
     }
@@ -350,19 +400,23 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     Double_t binCountSignal[2] = {0.0, 0.0};
     Double_t bgIntegral4BC[2] = {0.0, 0.0};
     Double_t binCountTails[2] = {0.0, 0.0};
-    
-    integralTotal[0] = fitFcn->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
-    integralTotal[1] = fitFcn->IntegralError(fitMin, fitMax, result->GetParams(), cov.GetMatrixArray(), integrationTolerance)/desiredIMbinWidth;
+
+    integralTotal[0] = fitFcn->Integral(KKthreshold, fitMax*1.5, integrationTolerance)/desiredIMbinWidth;
+    integralTotal[1] = fitFcn->IntegralError(KKthreshold, fitMax*1.5, result->GetParams(), cov.GetMatrixArray(), integrationTolerance)/desiredIMbinWidth;
     //func->IntegralError(x1,x2,r->GetParams(), cov->GetMatrixArray()->GetSub(4, 5, 4, 5, ""));  
 
     Double_t unphysYield = signalFcn->Integral(0.0, KKthreshold, integrationTolerance);
     Double_t unphysYieldErr = signalFcn->IntegralError(0.0, KKthreshold, parsig, sigCovElements, integrationTolerance);
+    
+    integralSignal[0] = (signalFcn->Integral(KKthreshold, fitMax*1.5, integrationTolerance))/desiredIMbinWidth;
+    integralSignal[1] = (signalFcn->IntegralError(KKthreshold, fitMax*1.5, parsig, sigCovElements, integrationTolerance))/desiredIMbinWidth;
+    // integralSignal[0] = (signalFcn->Integral(0.0, fitMax*1.5, integrationTolerance) - unphysYield)/desiredIMbinWidth;
+    // integralSignal[1] = (signalFcn->IntegralError(0.0, fitMax*1.5, parsig, sigCovElements, integrationTolerance) + unphysYieldErr)/desiredIMbinWidth;
 
-    integralSignal[0] = (signalFcn->Integral(fitMin, fitMax, integrationTolerance) - unphysYield)/desiredIMbinWidth;
-    integralSignal[1] = (signalFcn->IntegralError(fitMin, fitMax, parsig, sigCovElements, integrationTolerance) + unphysYieldErr)/desiredIMbinWidth;
-
-    integralBg[0] = fitBg->Integral(fitMin, fitMax, integrationTolerance)/desiredIMbinWidth;
-    integralBg[1] = fitBg->IntegralError(fitMin, fitMax, parbg, bgCovElements, integrationTolerance)/desiredIMbinWidth;
+    integralBg[0] = fitBg->Integral(KKthreshold, fitMax*1.5, integrationTolerance)/desiredIMbinWidth;
+    integralBg[1] = fitBg->IntegralError(KKthreshold, fitMax*1.5, parbg, bgCovElements, integrationTolerance)/desiredIMbinWidth;
+    // integralBg[0] = fitBg->Integral(0.0, fitMax*1.5, integrationTolerance)/desiredIMbinWidth;
+    // integralBg[1] = fitBg->IntegralError(0.0, fitMax*1.5, parbg, bgCovElements, integrationTolerance)/desiredIMbinWidth;
 
     binCountTotal[0] = histo->IntegralAndError(histo->GetXaxis()->FindBin(peakMin), histo->GetXaxis()->FindBin(peakMax), binCountTotal[1]);
     
@@ -390,6 +444,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
     // fill output histogram
     //-----------------------
     Float_t ptBinWidth = ptbins->GetBinWidth(ibin+1);
+    Printf(":::: Dividing yields by pt bin width for bin %i, low = %f, high = %f >>> width = %f", ibin, ptbins->GetBinLowEdge(ibin+1),ptbins->GetBinUpEdge(ibin+1), ptBinWidth);
     hmass->SetBinContent(ibin+1, par[0][1]);  hmass->SetBinError(ibin+1, par[1][1]); 
     hgamma->SetBinContent(ibin+1,par[0][2]);  hgamma->SetBinError(ibin+1,par[1][2]); 
     hsigma->SetBinContent(ibin+1,par[0][3]);  hsigma->SetBinError(ibin+1,par[1][3]);
@@ -457,7 +512,7 @@ Int_t fitPhiXeXe(Int_t selCentBin = 0,
   hSoverB->Write();
   hSignif->Write();
   
-  return 0;  
+  return folderName.Data();  
 }
 
 
@@ -494,7 +549,10 @@ void SetStyle()
 //-----------------------------------------
 Double_t Voigt( Double_t *x, Double_t * par)
 {
-  return par[0] * TMath::Voigt(x[0]-par[1], par[2], par[3]);
+  //NOte that TMath::Voigt(mass, res, width)
+  //in this code, in order to generalise the fitting function
+  //and to work with a BW, the parameters are par[1]= mass, par[2]=width, par[3]=res
+  return par[0] * TMath::Voigt(x[0]-par[1], par[3], par[2]);
 }
 
 
@@ -552,6 +610,13 @@ Double_t poly3(Double_t *x, Double_t *par)
   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0]+par[3]*x[0]*x[0]*x[0];
 }
 
+//-----------------------------------------
+Double_t maxB(Double_t *x, Double_t *par)
+{
+  //par[0] = B, par[1] = mcutoff, par[2] = n, par[3] = C
+  //Maxwell-Boltzmann like: B * √(x-cutoff)^{n} * C^{3/2} * exp{-C * (x-cutoff)^{n}}
+  return par[0]*TMath::Sqrt(TMath::Power(x[0]-par[1], par[2])) * TMath::Power(par[3],1.5) * TMath::Exp(-par[3]*TMath::Power(x[0]-par[1], par[2]));
+}
 
 //-----------------------------------------
 // Sum of background and peak function
@@ -591,9 +656,14 @@ Double_t VOIGTpoly2(Double_t *x, Double_t *par) {
 }
 
 //-----------------------------------------
+Double_t VOIGTmaxB(Double_t *x, Double_t *par) {
+  return Voigt(x, par) + maxB(x, &par[4]);
+}
+
+//-----------------------------------------
 TF1 * GetVOIGTpoly0(Double_t fitMin, Double_t fitMax)
 {
-  TF1* fitFcn = new TF1("VOIGTpoly1", VOIGTpoly0, fitMin, fitMax, 4);
+  TF1* fitFcn = new TF1("VOIGTpoly0", VOIGTpoly0, fitMin, fitMax, 4);
   fitFcn->SetParNames("Norm","Mass","Width", "Resolution"); 
   return fitFcn;
 }
@@ -646,6 +716,15 @@ TF1 * GetVOIGTpoly2(Double_t fitMin, Double_t fitMax)
   fitFcn->SetParNames("Norm","Mass","Width", "Resolution", "p0","p1","p2"); 
   return fitFcn;
 }
+
+//-----------------------------------------
+TF1 * GetVOIGTmaxB(Double_t fitMin, Double_t fitMax)
+{
+  TF1* fitFcn = new TF1("VOIGTmaxB", VOIGTmaxB, fitMin, fitMax, 8);
+  fitFcn->SetParNames("Norm","Mass","Width", "Resolution", "B","cutoff","n", "C"); 
+  return fitFcn;
+}
+
 
 //-----------------------------------------
 TF1 * GetBREITpoly1(Double_t fitMin, Double_t fitMax)
@@ -737,63 +816,253 @@ void DecodeFitStatus(Int_t fitstatus)
 }
 
 //---------------------------------------------------
-Float_t GetResolutionFromFilePt(TFile * resFile, Int_t centbin, Int_t ptbin, Int_t rangeOpt, Bool_t useRMS, Bool_t returnErr)
+Float_t GetResolutionFromFilePt(TFile * resFile, Int_t centbin, Int_t ptbin, Int_t rangeOpt, TString resType, Bool_t returnErr)
 {
   Float_t returnVal = -1.0;
   if (!resFile) returnVal = -1.0;
   TString histName;
   //FIXME: hack until you have the centrality dependent resolution
-  centbin = 0;
-  if (useRMS) histName = Form("hResVsPtRMS%i_r%i", centbin, rangeOpt);
+  centbin = 3; //min bias resolution used
+  //rangeOpt = 1; //range fit RMS (3sigma)
+  if (resType.Contains("RMS")) histName = Form("hResVsPtRMS%i_r%i", centbin, rangeOpt);
+  else if (resType.Contains("VMC")) histName = Form("hResVsPtVMC%i_r%i", centbin, rangeOpt);
   else histName = Form("hResVsPt%i_res%i", centbin, rangeOpt);
+  Printf("Resolution from %s \n>>> %s", resFile->GetName(), histName.Data());
   TH1D * hRes = (TH1D *) resFile->Get(histName.Data());
   if (returnErr) returnVal = hRes->GetBinError(ptbin);
-    else returnVal = hRes->GetBinContent(ptbin);
+  else returnVal = hRes->GetBinContent(ptbin);
   
   return returnVal;
 }
 
 
-// TVirtualFitter *f = TVirtualFitter::GetFitter();  
-// Double_t bgCovElements[9];
-// Double_t sigCovElements[16];
-// Int_t id=0;//reset counter
-// for (Int_t k=nSigPars;k<(nBgPars+nSigPars);k++) {
-//   for (Int_t h=nSigPars;h<(nBgPars+nSigPars);h++) {
-//     bgCovElements[id]=f->GetCovarianceMatrixElement(k,h);
-//     Printf("Bg Cov matrix element %i,%i = %e --> id #%i = %e",k,h, f->GetCovarianceMatrixElement(k,h), id,bgCovElements[id] ); 
-//     id++;
-//   }
-// }
-// id=0;//reset counter
-// for (Int_t k=0;k<nSigPars;k++) {
-//   for (Int_t h=0;h<nSigPars;h++) {
-//     sigCovElements[id]=f->GetCovarianceMatrixElement(k,h);
-//     Printf("Sig Cov matrix element %i,%i = %e --> id #%i = %e",k,h, f->GetCovarianceMatrixElement(k,h), id, sigCovElements[id] ); 
-//     id++;
-//   }
-// }
+//************************************************************************
+//************************************************************************
+//************************************************************************
+void runDefault(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
+  for (int ic = 0; ic < 4; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  return;
+}
 
+void runVoigtResLowHighLimit(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
 
-//************************************************************************
-//************************************************************************
-//************************************************************************
-void runFitRangeSys(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+  //resolution high
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "RMS", 3, 5.0, imgFormat.Data());    
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  
+  //resolution low
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "Gaus", 0, 5.0, imgFormat.Data());
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  
+  return;
+}
+
+void runAllParFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
+
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", -1.010, -1.030, -0.001, -0.01, "RMS", 1, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  
+  return;
+}
+
+void runAllParFreeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters all free
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "", 1, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  return;
+}
+
+void runWidthResFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy but width and resolution fixed
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
+
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "RMS", 1, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "RMS", 3, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "Gaus", 0, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  return;
+}
+
+void runWidthFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy but width fixed and resolution free
+  Float_t lowFitR = 0.994;
+  Float_t highFitR = 1.070;
+  TString folderName = "";
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", 1, 5.0, imgFormat.Data()); 
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  return;
+}
+
+//---------------------------------------------------------
+void runFitRangeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR[5] = {0.990, 0.992, 0.994, 0.996, 0.998};
+  Float_t highFitR[5] = {1.100, 1.100, 1.080, 1.070, 1.060};
+  TString folderName = "";
+  for (int i = 0; i<5; i++){
+    for (int ic = 0; ic < 3; ic++){
+      if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+      if (selCentBin>0) integrationTolerance = 1.e-3;
+      folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "",  -1, 5.0, imgFormat.Data());
+    }
+    MakeRawSpectra(folderName.Data(), lowFitR[i], highFitR[i]);
+  }
+  return;
+}
+
+void runFitRangeSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR[4] = { 0.992, 0.994, 0.996, 0.998};
+  Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
+  TString folderName = "";
+  for (int i = 0; i<4; i++){
+    for (int ic = 0; ic < 3; ic++){
+      if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+      if (selCentBin>0) integrationTolerance = 1.e-3;
+      folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "VOIGT", "poly2", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+    }
+    MakeRawSpectra(folderName.Data(), lowFitR[i], highFitR[i]);
+  }
+  return;
+}
+
+void runBreitSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
   //only fit range is varied
   Float_t lowFitR[4] = {0.992, 0.994, 0.996, 0.998};
-  Float_t highFitR[4] = {1.050, 1.060, 1.070, 1.100};
-  for (int ic = 0; ic < 3; ic++){
-    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
-    if (selCentBin>0) integrationTolerance = 1.e-3;
-    for (int i = 0; i<4; i++){
-      for (int j = 0; j<4; j++){
-	fitPhiXeXe(ic, lowFitR[i], highFitR[j], "Mixing", integrationTolerance, inName.Data(), imgFormat.Data());
-      }
+  Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
+  TString folderName = "";
+  for (int i = 0; i<4; i++){
+    for (int ic = 0; ic < 3; ic++){
+      if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+      if (selCentBin>0) integrationTolerance = 1.e-3;
+      folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "BREIT", "poly2", 1.010, 1.030, 0.001, 0.01, "", -1, 5.0, imgFormat.Data());
     }
+    MakeRawSpectra(folderName.Data(), lowFitR[i], highFitR[i]);
   }
   return;
 }
 
+void runBreitSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //normalisation fixed
+  //fit parameters as per default strategy
+  //fit Breit-Wigner
+  Float_t lowFitR[4] = {0.992, 0.994, 0.996, 0.998};
+  Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
+  TString folderName = "";
+  for (int i = 0; i<4; i++){
+    for (int ic = 0; ic < 3; ic++){
+      if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+      if (selCentBin>0) integrationTolerance = 1.e-3;
+      folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "BREIT", "poly1", 1.010, 1.030, 0.001, 0.01, "", -1, 5.0, imgFormat.Data());
+    }
+    MakeRawSpectra(folderName.Data(), lowFitR[i], highFitR[i]);
+  }
+  return;
+}
+
+void runLikeSignFits(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+{
+  //no normalisation for Like Sign
+  //fit parameters as per default strategy
+  //only fit range is varied
+  Float_t lowFitR = 0.996;
+  Float_t highFitR = 1.05;
+  TString folderName = "";
+ 
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+
+  for (int ic = 0; ic < 3; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly2", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  
+  return;
+}

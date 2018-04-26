@@ -11,7 +11,7 @@
 // retrieve reference values in the database PDG
 TDatabasePDG *pdg = TDatabasePDG::Instance();
 
-void FitSpectrum(TString infile = "", Int_t centrality = 0, Double_t rangefitMin = 0.05,  Double_t rangefitMax = 5.0);
+void FitSpectrum(Int_t centrality = -1, Double_t rangefitMin = 0.05,  Double_t rangefitMax = 5.0);
 void FitSpectrum(TH1D *data_stat = 0x0,
 		 TH1D *data_syst = 0x0,
 		 TString particle = "phi",
@@ -24,36 +24,32 @@ void FitSpectrum(TH1D *data_stat = 0x0,
 		 );
 
 
-void FitSpectrum(TString infile,
-		 Int_t centrality,
+void FitSpectrum(Int_t centrality,
 		 Double_t rangefitMin, //lower boundary of fit range
 		 Double_t rangefitMax//upper boundary of fit range
 		 )
 {
+  TFile * fin[3];
+  fin[0] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_0.root");
+  fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
+  fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
+  if (!fin[0] || !fin[1] || !fin[2]) return;
   
-  if (infile.IsNull())
-    //infile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0221/phiC3_tpc2s_tof3sveto/norm1.05-1.10/fit_Mixing_VOIGTpoly1_FixRes/fit_r0.990-1.070/CORRECTED_br_ana0221_fitResult.root";
-    infile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/levyfit/CORRECTED_br_fitResult.root";
-    
-  TFile * fin = TFile::Open(infile.Data());
-  if (!fin) return;
-
   TH1D * hstat[3];
   TH1D * hsys[3];
   Int_t centEdges[4] = {0, 30, 60, 90};
   
   for (int ic =0; ic<3; ic++){
     if (centrality>=0 && ic!=centrality) continue;
-    hstat[ic] = (TH1D *) fin->Get(Form("hCorrected_%i", ic));
+    hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
-    //hack tmp for assigning sys uncert to 10%
-    hsys[ic] = (TH1D *) hstat[ic]->Clone(); //FIXME
-    for (int j = 1; j < hsys[ic]->GetNbinsX()+1; j++){
-      hsys[ic]->SetBinError(j, 0.02*hsys[ic]->GetBinContent(j));
-    }
+    hsys[ic] = (TH1D *)  fin[ic]->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
     FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), "bgbw", rangefitMin, rangefitMax, 1, 0);
   }
-
+      //hack tmp for assigning sys uncert to 10%
+    //hsys[ic] = (TH1D *) hstat[ic]->Clone(); //FIXME
+    //for (int j = 1; j < hsys[ic]->GetNbinsX()+1; j++){
+    //  hsys[ic]->SetBinError(j, 0.02*hsys[ic]->GetBinContent(j));  
   return;
 }
 

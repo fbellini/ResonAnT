@@ -4,6 +4,7 @@
 #include "/Users/fbellini/alice/macros/ResonAnT/projectorTH3_InvMass_Centrality_Pt.C"
 #include "TFile.h"
 
+void runProject();
 
 void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
 		     TString outName  = "phi",
@@ -66,7 +67,7 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   if (!fileData || !fileData->IsOpen()) { Printf("Invalid file passed as input. Doing nothing."); return;}
   
   TList *listData = listData = (TList*)fileData->Get(Form("RsnOut_%s", listNameSuffix.Data()));
-  if (!listData) { Printf("Invalid list passed as input. Doing nothing."); return;}
+  if (!listData) { Printf("Invalid list %s passed as input. Doing nothing.", listData->GetName()); return;}
     
   //get input histograms
   TH3F* hInput[kNhistosData] = {0,0,0,0}; 
@@ -75,15 +76,15 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   hInput[2] = (TH3F*)listData->FindObject(Form("PhiXeXeData_LikeMM%s",listNameSuffix.Data()));
   hInput[3] = (TH3F*)listData->FindObject(Form("PhiXeXeData_Mixing%s",listNameSuffix.Data()));
 
-  if (!hInput[0] || !hInput[1] || !hInput[2] || !hInput[3]) {
+  if (!hInput[0] || !hInput[3]){// || !hInput[2] || !hInput[3]) {
     Printf("Invalid histogram requested as input. Doing nothing.");
     return;
   }
 
   // rename
   hInput[0]->SetName("hUnlikePM");
-  hInput[1]->SetName("hLikePP");
-  hInput[2]->SetName("hLikeMM");
+  if (hInput[1]) hInput[1]->SetName("hLikePP");
+  if (hInput[2]) hInput[2]->SetName("hLikeMM");
   hInput[3]->SetName("hMixingPM");
 
   
@@ -146,22 +147,27 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
     ((TH1F*)lMixingPM->At(ih))->SetMarkerStyle(1);
     ((TH1F*)lMixingPM->At(ih))->SetLineWidth(2);
   }
-  for (Int_t ih = 0; ih<lLikePP->GetEntries();ih++){
-    ((TH1F*)lLikePP->At(ih))->SetLineColor(kRed);
-    ((TH1F*)lLikePP->At(ih))->SetMarkerColor(kRed);
-    ((TH1F*)lLikePP->At(ih))->SetMarkerStyle(1);
-    ((TH1F*)lLikePP->At(ih))->SetLineWidth(2);
+
+  if (lLikePP->GetEntries()>0){
+    for (Int_t ih = 0; ih<lLikePP->GetEntries();ih++){
+      ((TH1F*)lLikePP->At(ih))->SetLineColor(kRed);
+      ((TH1F*)lLikePP->At(ih))->SetMarkerColor(kRed);
+      ((TH1F*)lLikePP->At(ih))->SetMarkerStyle(1);
+      ((TH1F*)lLikePP->At(ih))->SetLineWidth(2);
+    }
   }
-  for (Int_t ih = 0; ih<lLikeMM->GetEntries();ih++){
-    ((TH1F*)lLikeMM->At(ih))->SetLineColor(kBlue);
-    ((TH1F*)lLikeMM->At(ih))->SetMarkerColor(kBlue);
-    ((TH1F*)lLikeMM->At(ih))->SetMarkerStyle(1);
-    ((TH1F*)lLikeMM->At(ih))->SetLineWidth(2);
-  }          
+  if (lLikeMM->GetEntries()>0){
+    for (Int_t ih = 0; ih<lLikeMM->GetEntries();ih++){
+      ((TH1F*)lLikeMM->At(ih))->SetLineColor(kBlue);
+      ((TH1F*)lLikeMM->At(ih))->SetMarkerColor(kBlue);
+      ((TH1F*)lLikeMM->At(ih))->SetMarkerStyle(1);
+      ((TH1F*)lLikeMM->At(ih))->SetLineWidth(2);
+    }
+  }
   fileOut->cd();
   lUnlikePM->Write(hInput[0]->GetName(), TObject::kSingleKey);
-  lLikePP->Write(hInput[1]->GetName(), TObject::kSingleKey);
-  lLikeMM->Write(hInput[2]->GetName(), TObject::kSingleKey);
+   if (lLikePP->GetEntries()>0) lLikePP->Write(hInput[1]->GetName(), TObject::kSingleKey);
+  if (lLikeMM->GetEntries()>0) lLikeMM->Write(hInput[2]->GetName(), TObject::kSingleKey);
   lMixingPM->Write(hInput[3]->GetName(), TObject::kSingleKey);
   fileOut->Close();
   
@@ -175,5 +181,15 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
 
 
 
+void runProject()
+{
+  projectPhiXeXe("RsnOut_A.root", "phi", "tpc2s", "C3");
+  projectPhiXeXe("RsnOut_A.root", "phi", "tpc2sPtDep", "C3");
+  projectPhiXeXe("RsnOut_A.root", "phi", "tpc2sPtDep_tof3sveto", "C3");
+  projectPhiXeXe("RsnOut_B.root", "phi", "tpc2sPtDep_tof4sveto5smism", "C3");
+  projectPhiXeXe("RsnOut_B.root", "phi", "tpc3sPtDep_tof3sveto5smism", "C3");
+  projectPhiXeXe("RsnOut_B.root", "phi", "tpc2sPtDep_tof3sveto_elRej", "C3");
 
+}
  
+

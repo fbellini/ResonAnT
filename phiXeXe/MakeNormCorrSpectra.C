@@ -7,6 +7,9 @@ TPaveText * AddPaveTextXeXe();
 TPaveText * AddPaveTextStatOnly();
 
 void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",                    
+			 TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation", //default
+			 TString pid = "tpc3sPtDep_tof3sveto5smism",
+			 TString binning = "A3",
 			 TString suffix = "",
 			 Bool_t correctBR = 1)
 {
@@ -23,18 +26,27 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   TGaxis::SetMaxDigits(2);
   Int_t legendEntryCounter = 1;
 
-  Color_t color[1][3] = {kRed+1, kSpring+5, kBlue+1};
-  Int_t  marker[1][3] = {20, 21, 33}; 
+  Color_t color[1][4] = {kRed+1, kSpring+5, kBlue+1, kBlack};
+  Int_t  marker[1][4] = {20, 21, 28, 25}; 
 
   const TString effHistName = "hEffVsPt";
   Float_t trgAndVtxEff_pPbMinBias = 1.0; //trigger and vertex reco efficiency for pPb 0-100%
   Float_t trgAndVtxEff_80to100 = 1.0;
   Float_t branchingRatio = 0.489; // BR = 0.489 ± 0.005;
     
-  Float_t nEvents_ana0221[3] = {2.866550e+05, 2.870050e+05, 2.872150e+05}; //ana0221
+  Float_t nEvents_ana0221[3] = { 2.866550e+05, 2.870050e+05, 2.872150e+05}; //ana0221
   Float_t nEvents_ana0301[3] = { 2.361130e+05, 2.354870e+05, 2.359310e+05};
   Float_t nEvents_ana0406[3] = { 4.367050e+05, 4.367330e+05, 4.367250e+05};
-  Int_t centBinning[4] = {0, 30, 60, 90}; 
+  Float_t nEvents_ana0406A3[4] = {1.456080e+05, 2.910970e+05, 4.367330e+05, 4.367250e+05};
+  Float_t nEvents_ana0414A[3] = { 4.176880e+05, 4.177600e+05, 4.177170e+05};
+  Float_t nEvents_ana0414B[3] = { 4.386910e+05, 4.387360e+05, 4.387220e+05};
+  Int_t centBinning[5] = {0, 30, 60, 90, 100}; 
+  if (binning.Contains("A3")) {
+    centBinning[1] = 10;
+    centBinning[2] = 30;
+    centBinning[3] = 60;
+    centBinning[4] = 90;
+  }
     
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -45,27 +57,35 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   corrspectraFileName.ReplaceAll("RAW",Form("CORRECTED_%s",(correctBR?"br":"NOBR")));
   corrspectraFileName.ReplaceAll(".root",Form("%s.root",suffix.Data()));
   TFile * fout = new TFile(corrspectraFileName.Data(),"recreate");
-    
-  for (Int_t ic = 0; ic<3;ic++){
+  Int_t maxc = 3; if (binning.Contains("A3")) maxc = 4;
+		    
+  for (Int_t ic = 0; ic<maxc;ic++){
 
     TString centLabel = Form("%i-%i%%",centBinning[ic], centBinning[ic+1]);
     Printf("\n\n\n*************************\n Spectra %s \n*************************",centLabel.Data());
     
-    TString effFileName = "";
-    TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation";
-    if (effFilePath.Contains("ana0221")) {
-      effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc"; // no trailing /
-      effFileName = "eff_C3_tpc2s_tof3sveto.root";
-    } else
-      if (effFilePath.Contains("ana0301")) {
-	effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana03011mc"; // no trailing /
-	effFileName = "eff_C3_tpc2sPtDep_tof3sveto.root";
-      }
-      else
-	if (effFilePath.Contains("ana0406")) {
-	  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation"; // no trailing /
-	  effFileName = "eff_C3_tpc2sPtDep_tof2sveto5smism.root";
-	}
+    TString effFileName = Form("eff_C3_%s.root", pid.Data());
+    if (binning.Contains("A3")) effFileName.ReplaceAll("C3", "A3");
+    //FIXME: implement general PID string below
+    // if (effFilePath.Contains("ana0221")) {
+    //   effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc"; // no trailing /
+    //   effFileName = "eff_C3_tpc2s_tof3sveto.root";
+    // }
+    // else
+    //   if (effFilePath.Contains("ana0301")) {
+    //  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana03011mc"; // no trailing /
+    // 	effFileName = "eff_C3_tpc2sPtDep_tof3sveto.root";
+    //   }
+    //   else
+    // 	if (effFilePath.Contains("ana0406")) {
+    // 	  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation"; // no trailing /
+    // 	  effFileName = "eff_C3_tpc2sPtDep_tof2sveto5smism.root";
+    // 	}
+    // 	else
+    // 	  if (effFilePath.Contains("ana0414")) {
+    // 	    effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/simulation"; // no trailing /
+    // 	    effFileName = Form("eff_C3_%s.root", pid.Data());
+    // 	  }
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));
     TFile *fraw = TFile::Open(spectraFileName.Data());
@@ -83,7 +103,11 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     hraw->SetLineWidth(1);
         
     //normalise by event number
-    if (effFilePath.Contains("ana0221")){
+    if (binning.Contains("A3") && (effFilePath.Contains("ana0406"))){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEvents_ana0406A3[ic]);
+      Printf(":::: Normalization by accepted event number for ana0406");
+    } else if (effFilePath.Contains("ana0221")){
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0221[ic]);
       Printf(":::: Normalization by accepted event number for ana0221");
@@ -95,6 +119,10 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0406[ic]);
       Printf(":::: Normalization by accepted event number for ana0406");
+    } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc3sPtDep_tof3sveto5smism") || pid.Contains("tpc2sPtDep_tof4sveto5smism"))){
+      hraw->SetName(Form("hCombinedNorm_%i",ic));
+      hraw->Scale(1./nEvents_ana0414B[ic]);
+      Printf(":::: Normalization by accepted event number for ana0414B - pid %s", pid.Data());
     }
     
     TH1F * hcorr = (TH1F*) hraw->Clone(Form("hCorrected_%i",ic));
@@ -119,7 +147,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     if (!heff) { Printf("Invalid efficiency histogram name."); return;}
     heff->SetTitle(Form("Efficiency (%s)", centLabel.Data()));
     heff->SetName(Form("hEff_%i", ic));
-    heff->GetXaxis()->SetRangeUser(0.0,10.5);
+    heff->GetXaxis()->SetRangeUser(0.0, 10.5);
     heff->GetYaxis()->SetRangeUser(0.0, 1.0);
     heff->GetYaxis()->SetTitle("efficiency");
     heff->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
