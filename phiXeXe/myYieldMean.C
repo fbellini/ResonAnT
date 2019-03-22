@@ -8,8 +8,8 @@
 #include "TCanvas.h"
 #include "TROOT.h"
 #include "TRandom.h"
-
 #endif
+
 using namespace std;
 /* definition of the fields in the histogram returned */
 enum EValue_t {
@@ -26,8 +26,8 @@ enum EValue_t {
 
 
 void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo=kFALSE);
-TH1* YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth = 0.01, Double_t integrationStep = 1.E-6);
-TH1 * YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth = 0.1, Double_t integrationStep = 1.E-6);
+TH1* YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth = 0.01, Double_t integrationStep = 1.E-4);
+TH1 * YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth = 0.1, Double_t integrationStep = 1.E-4);
 TH1 * YieldMean_ReturnRandom(TH1 *hin);
 TH1 * YieldMean_ReturnCoherentRandom(TH1 *hin);
 TH1 *YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign = 1.);
@@ -71,7 +71,7 @@ TH1 * YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_
     min=minfit;	
 
   /* set integration step for function */
-  Double_t integrationStep = 1.0E-03;
+  Double_t integrationStep = 1.0E-4;
 
   /* set many iterations when fitting the data so we don't
      stop minimization with MAX_CALLS */
@@ -133,9 +133,8 @@ TH1 * YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_
   TString opts(opt); 
   if (opts.Contains("S")) opts.ReplaceAll("S",""); //do not save anymore the result of the fit in pointer
   opt = opts;
+
   /******* fbellini's hack to get parameters of the fit function for the central value************/
-
-
   hlo = YieldMean_LowExtrapolationHisto(htot, f, min, loprecision, integrationStep);
   hhi = YieldMean_HighExtrapolationHisto(htot, f, max, hiprecision, integrationStep);
   YieldMean_IntegralMean(htot, hlo, hhi, integral, mean,kTRUE);

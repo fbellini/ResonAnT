@@ -29,47 +29,49 @@ TH1D * GetHistoWithoutPeak(TH1D * h = NULL, Double_t peakMin = 1.010, Double_t p
 void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
 
+//run all
+void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit all - range and bg func
-void runDefault(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runVoigtResLowHighLimit(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runFitRangeSysPoly1(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runFitRangeSysPoly2(Int_t selCentBin = -1, Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runDefault(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //params sys
-void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.0e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit breit
-void runBreitSysPoly1(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
-void runBreitSysPoly2(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //Run LikeSign fit (Voigt + poly1 and 2)
-void runLikeSignFits(Int_t selCentBin = -1,  Double_t integrationTolerance = 1.e-2, TString inName = "sub_C3.root", TString imgFormat = "eps");
+void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 
 
-
+void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel, Float_t ptMin, Float_t ptMax);
 
 //TO DO: add customised fit ranges for each pt bin
 //TO DO: fix new implementation of summed functions
 
 TString fitPhiXeXe(TString inName = "sub_C3.root",
-		 TString bgType = "Mixing", //alternative "Mixing"
-		 Double_t integrationTolerance = 1.0e-4,
-		 Int_t selCentBin = 0,
-		 Int_t selPtBin = -1,
-		 Double_t fitMin = 0.994,
-		 Double_t fitMax = 1.050,
-		 TString fcnSignal = "VOIGT", 
-		 TString fcnBg = "poly1",
-		 Double_t minMass = 1.010,
-		 Double_t maxMass = 1.030,
-		 Double_t minWidth = 0.001,
-		 Double_t maxWidth = 0.01,
-		 TString resType = "RMS",
-		 Int_t rangeOpt = 0,
-		 Double_t nsigmaPeakBC = 5.0,
-		 TString imgFormat = "eps",
-		 Double_t desiredIMbinWidth = 0.002
-		 )
+		   TString bgType = "Mixing", //alternative "Mixing"
+		   Double_t integrationTolerance = 1.0e-4,
+		   Int_t selCentBin = 0,
+		   Int_t selPtBin = -1,
+		   Double_t fitMin = 0.994,
+		   Double_t fitMax = 1.050,
+		   TString fcnSignal = "VOIGT", 
+		   TString fcnBg = "poly1",
+		   Double_t minMass = 1.010,
+		   Double_t maxMass = 1.030,
+		   Double_t minWidth = 0.001,
+		   Double_t maxWidth = 0.01,
+		   TString resType = "RMS",
+		   Int_t rangeOpt = 0,
+		   Double_t nsigmaPeakBC = 5.0,
+		   TString imgFormat = "eps",
+		   Double_t desiredIMbinWidth = 0.002,
+		   Bool_t saveForApproval = 0)
 {
 
   SetStyle();
@@ -132,7 +134,7 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
   gSystem->Exec(Form("mkdir %s/fit_r%4.3f-%4.3f", folderName.Data(), fitMin, fitMax));
   TString foutName = Form("%s/fit_r%4.3f-%4.3f/result_c%i.root", folderName.Data(), fitMin, fitMax, selCentBin);
   TFile *fout = TFile::Open(foutName.Data(), "RECREATE");
-  TString centLabel = Form("%2.0f - %2.0f", centbins->GetBinLowEdge(selCentBin+1), centbins->GetBinUpEdge(selCentBin+1));
+  TString centLabel = Form("%1.0f-%2.0f%%", centbins->GetBinLowEdge(selCentBin+1), centbins->GetBinUpEdge(selCentBin+1));
   
   // create the histograms which will contain all the raw counts and the corrections
   TH1D  *hmass  = new TH1D("mass" , "mass; #it{p}_{T} (GeV/#it{c}); #it{M} (GeV/#it{c}^{2})" , nPtBins, ptbins->GetXbins()->GetArray());
@@ -480,7 +482,7 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
     //set cosmetics
     //-----------------------
     Int_t marker_Type[2] = {20, 24}; //LSB, MEB
-    Beautify(histo, kBlack, 1, 1, 20, 1.0);
+    Beautify(histo, kBlack, 1, 2, 20, 1.3);
     histo->GetXaxis()->SetRangeUser(0.990, 1.1);
     histo->GetYaxis()->SetRangeUser( histo->GetMinimum()*1.0, histo->GetMaximum()*1.20);
  
@@ -497,7 +499,11 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
     pr->Draw();
     TString printFitName = Form("%s/fit_r%4.3f-%4.3f/fit_c%i_pt%i.%s", folderName.Data(), fitMin, fitMax, selCentBin, ibin, imgFormat.Data()); 
     cFit->Print(printFitName.Data());
+
+    //save figure for approval
+    if (saveForApproval) SaveFigureForApproval(histo, fitFcn, fitBg, centLabel.Data(), ptbins->GetBinLowEdge(ibin+1),ptbins->GetBinUpEdge(ibin+1));
   }
+
 
   fout->cd();
   hmass->Write(); 
@@ -839,7 +845,7 @@ Float_t GetResolutionFromFilePt(TFile * resFile, Int_t centbin, Int_t ptbin, Int
 //************************************************************************
 //************************************************************************
 //************************************************************************
-void runDefault(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runDefault(Int_t selCentBin,  Int_t nCentBinsToProcess, Float_t normLow, Float_t normUp, TString binning, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -847,16 +853,16 @@ void runDefault(Int_t selCentBin,  Double_t integrationTolerance, TString inName
   Float_t lowFitR = 0.994;
   Float_t highFitR = 1.070;
   TString folderName = "";
-  for (int ic = 0; ic < 4; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
-    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+    folderName = fitPhiXeXe(Form("sub_%s.root", binning.Data()), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
   }
-  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR, binning.Data(), normLow, normUp);
   return;
 }
 
-void runVoigtResLowHighLimit(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runVoigtResLowHighLimit(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -865,15 +871,23 @@ void runVoigtResLowHighLimit(Int_t selCentBin,  Double_t integrationTolerance, T
   TString folderName = "";
 
   //resolution high
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "RMS", 3, 5.0, imgFormat.Data());    
   }
   MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+
+  //resolution central
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
+    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+    if (selCentBin>0) integrationTolerance = 1.e-3;
+    folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "RMS", 1, 5.0, imgFormat.Data());
+  }
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
   
   //resolution low
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "Gaus", 0, 5.0, imgFormat.Data());
@@ -883,7 +897,7 @@ void runVoigtResLowHighLimit(Int_t selCentBin,  Double_t integrationTolerance, T
   return;
 }
 
-void runAllParFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runAllParFixedSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -892,7 +906,7 @@ void runAllParFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TS
   Float_t highFitR = 1.070;
   TString folderName = "";
 
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", -1.010, -1.030, -0.001, -0.01, "RMS", 1, 5.0, imgFormat.Data()); 
@@ -902,14 +916,14 @@ void runAllParFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TS
   return;
 }
 
-void runAllParFreeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runAllParFreeSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters all free
   Float_t lowFitR = 0.994;
   Float_t highFitR = 1.070;
   TString folderName = "";
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, 0.001, 0.01, "", 1, 5.0, imgFormat.Data()); 
@@ -918,7 +932,7 @@ void runAllParFreeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TSt
   return;
 }
 
-void runWidthResFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runWidthResFixedSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy but width and resolution fixed
@@ -926,20 +940,20 @@ void runWidthResFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, 
   Float_t highFitR = 1.070;
   TString folderName = "";
 
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "RMS", 1, 5.0, imgFormat.Data()); 
   }
   MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
 
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "RMS", 3, 5.0, imgFormat.Data()); 
   }
   MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "Gaus", 0, 5.0, imgFormat.Data()); 
@@ -948,14 +962,14 @@ void runWidthResFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, 
   return;
 }
 
-void runWidthFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runWidthFixedSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy but width fixed and resolution free
   Float_t lowFitR = 0.994;
   Float_t highFitR = 1.070;
   TString folderName = "";
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", 1, 5.0, imgFormat.Data()); 
@@ -965,7 +979,7 @@ void runWidthFixedSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TSt
 }
 
 //---------------------------------------------------------
-void runFitRangeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runFitRangeSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -974,7 +988,7 @@ void runFitRangeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TStri
   Float_t highFitR[5] = {1.100, 1.100, 1.080, 1.070, 1.060};
   TString folderName = "";
   for (int i = 0; i<5; i++){
-    for (int ic = 0; ic < 3; ic++){
+    for (int ic = 0; ic < nCentBinsToProcess; ic++){
       if ((selCentBin>=0) && (ic!=selCentBin)) continue;
       if (selCentBin>0) integrationTolerance = 1.e-3;
       folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "",  -1, 5.0, imgFormat.Data());
@@ -984,16 +998,16 @@ void runFitRangeSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TStri
   return;
 }
 
-void runFitRangeSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runFitRangeSysPoly2(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
   //only fit range is varied
-  Float_t lowFitR[4] = { 0.992, 0.994, 0.996, 0.998};
-  Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
+  Float_t lowFitR[5] = { 0.992, 0.994, 0.996, 0.998, 0.992};
+  Float_t highFitR[5] = {1.080, 1.070, 1.060, 1.050, 1.100};
   TString folderName = "";
-  for (int i = 0; i<4; i++){
-    for (int ic = 0; ic < 3; ic++){
+  for (int i = 0; i<5; i++){
+    for (int ic = 0; ic < nCentBinsToProcess; ic++){
       if ((selCentBin>=0) && (ic!=selCentBin)) continue;
       if (selCentBin>0) integrationTolerance = 1.e-3;
       folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "VOIGT", "poly2", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
@@ -1003,7 +1017,7 @@ void runFitRangeSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TStri
   return;
 }
 
-void runBreitSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runBreitSysPoly2(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -1012,7 +1026,7 @@ void runBreitSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString 
   Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
   TString folderName = "";
   for (int i = 0; i<4; i++){
-    for (int ic = 0; ic < 3; ic++){
+    for (int ic = 0; ic < nCentBinsToProcess; ic++){
       if ((selCentBin>=0) && (ic!=selCentBin)) continue;
       if (selCentBin>0) integrationTolerance = 1.e-3;
       folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "BREIT", "poly2", 1.010, 1.030, 0.001, 0.01, "", -1, 5.0, imgFormat.Data());
@@ -1022,7 +1036,7 @@ void runBreitSysPoly2(Int_t selCentBin,  Double_t integrationTolerance, TString 
   return;
 }
 
-void runBreitSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runBreitSysPoly1(Int_t selCentBin,  Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -1031,7 +1045,7 @@ void runBreitSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString 
   Float_t highFitR[4] = {1.080, 1.070, 1.060, 1.050};
   TString folderName = "";
   for (int i = 0; i<4; i++){
-    for (int ic = 0; ic < 3; ic++){
+    for (int ic = 0; ic < nCentBinsToProcess; ic++){
       if ((selCentBin>=0) && (ic!=selCentBin)) continue;
       if (selCentBin>0) integrationTolerance = 1.e-3;
       folderName = fitPhiXeXe(inName.Data(), "Mixing", integrationTolerance, ic, -1, lowFitR[i], highFitR[i], "BREIT", "poly1", 1.010, 1.030, 0.001, 0.01, "", -1, 5.0, imgFormat.Data());
@@ -1041,23 +1055,23 @@ void runBreitSysPoly1(Int_t selCentBin,  Double_t integrationTolerance, TString 
   return;
 }
 
-void runLikeSignFits(Int_t selCentBin,  Double_t integrationTolerance, TString inName, TString imgFormat)
+void runLikeSignFits(Int_t selCentBin, Int_t nCentBinsToProcess, TString inName, Double_t integrationTolerance, TString imgFormat)
 {
   //no normalisation for Like Sign
   //fit parameters as per default strategy
   //only fit range is varied
-  Float_t lowFitR = 0.996;
-  Float_t highFitR = 1.05;
+  Float_t lowFitR = 0.992;
+  Float_t highFitR = 1.100;
   TString folderName = "";
  
-  for (int ic = 0; ic < 3; ic++){
-    if ((selCentBin>=0) && (ic!=selCentBin)) continue;
-    if (selCentBin>0) integrationTolerance = 1.e-3;
-    folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
-  }
-  MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
+  // for (int ic = 0; ic < nCentBinsToProcess; ic++){
+  //   if ((selCentBin>=0) && (ic!=selCentBin)) continue;
+  //   if (selCentBin>0) integrationTolerance = 1.e-3;
+  //   folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
+  // }
+  // MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
 
-  for (int ic = 0; ic < 3; ic++){
+  for (int ic = 0; ic < 4; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly2", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
@@ -1065,4 +1079,94 @@ void runLikeSignFits(Int_t selCentBin,  Double_t integrationTolerance, TString i
   MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
   
   return;
+}
+
+
+void runFitDefaultAndSys(Int_t selCentBin, Int_t nCentBinsToProcess, TString binning, Double_t integrationTolerance, TString imgFormat)
+{
+  // run all fits, default and systematics
+  //
+  TString inName = Form("sub_%s.root", binning.Data());
+  //default
+  runDefault(selCentBin, nCentBinsToProcess, 1.07, 1.10, "A3", 1.e-2, "eps");
+  //fit range variations
+  runFitRangeSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  //bg fit function variation
+  runFitRangeSysPoly2(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  //voigtian parameters variations
+  runAllParFixedSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  
+  runAllParFreeSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  runWidthFixedSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  runWidthResFixedSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  runVoigtResLowHighLimit(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  //Breit-Wigner fit
+  runBreitSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  //like sign fit
+  runLikeSignFits(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
+  return;
+}
+
+
+void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel, Float_t ptMin, Float_t ptMax)
+{
+  if (!histo || !fitBg) return;
+
+  gStyle->SetOptTitle(0);
+  gStyle->SetPadLeftMargin(0.17);
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadTopMargin(0.05);
+  gStyle->SetPadBottomMargin(0.15);
+  TGaxis::SetMaxDigits(2);
+  
+  TCanvas *c1 = new TCanvas("c1","mass",800,800);
+  c1->SetTickx();
+  c1->SetTicky();
+
+  histo->GetXaxis()->SetTitleOffset(1.1);
+  histo->GetYaxis()->SetTitleOffset(1.6);
+  histo->GetYaxis()->SetTitleSize(0.05);
+  histo->GetXaxis()->SetTitleSize(0.05);
+  histo->GetXaxis()->SetRangeUser(0.990, 1.1);
+  histo->GetYaxis()->SetRangeUser( histo->GetMinimum()*1.0, histo->GetMaximum()*1.20);
+
+  fitBg->SetNpx(500);
+  fitBg->SetLineWidth(3);
+  fitBg->SetLineColor(kBlue+1);
+  fitBg->SetLineStyle(7);
+
+  ftot->SetLineWidth(3);
+  ftot->SetLineColor(kRed);
+  ftot->SetLineStyle(1);
+  
+  TPaveText *titletext = new TPaveText(0.38,0.70,0.9,0.90,"brNDC");
+  titletext->SetBorderSize(0);
+  titletext->SetFillColor(0);
+  titletext->SetFillStyle(0);
+  titletext->SetTextAlign(12);
+  titletext->SetTextSize(0.04);
+  titletext->SetTextFont(42);
+  titletext->AddText("#bf{ALICE Preliminary}");
+  titletext->AddText(Form("Xe-Xe, #sqrt{#it{s}_{NN}} = 5.44 TeV (%s)", centLabel.Data()));
+  titletext->InsertText("#phi #rightarrow K^{+}K^{-}");
+  titletext->InsertText(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}, |#it{y} | < 0.5", ptMin, ptMax));
+
+  
+  TLegend * leg = new TLegend(0.55, 0.5, 0.85, 0.65);
+  myLegendSetUp(leg, 0.04);
+  leg->SetTextAlign(12);
+  leg->AddEntry(histo, "Data (stat. unc.)", "p");
+  leg->AddEntry(ftot, "Voigt peak fit", "l");
+  leg->AddEntry(fitBg, "Res. background", "l");
+  
+  c1->cd();
+  histo->Draw();
+  fitBg->Draw("same");
+  titletext->Draw();
+  leg->Draw();
+
+  c1->Print(Form("InvMassFit_pt%2.1f-%2.1f.eps", ptMin, ptMax));
+  //c1->Print(Form("InvMassFit_pt%2.1f-%2.1f.pdf", ptMin, ptMax));
+  
+
 }

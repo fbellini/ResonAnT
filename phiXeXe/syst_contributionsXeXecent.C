@@ -2,8 +2,9 @@
 void SmoothenSysPtRange(TH1F * hist, Float_t ptmin, Float_t ptmax);
 
 void syst_contributionsXeXecent(Int_t icent=0, 
-				TString date="25apr18", 
-				Bool_t smooth = 1)
+				TString date="01may18", 
+				Bool_t smooth = 1,
+				Bool_t useReweigthed = 1)
 {
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -13,21 +14,26 @@ void syst_contributionsXeXecent(Int_t icent=0,
   gStyle->SetPadTopMargin(0.05);
   gStyle->SetPadBottomMargin(0.17);
   //set input name
-  TString fPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/syst20180422";
-  TString fPathCorr = "~/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
-  TString corrFile = "CORRECTED_br_fitResult.root"; //CHANGE-ME
+  TString fPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/systematics";
+  TString fPathCorr = "~/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
+  TString corrFile = "CORRECTED_br_fitResult.root"; 
   TString hCorrYieldName = Form("hCorrected_%i",icent); 
+
+  if (useReweigthed){
+    fPathCorr = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/spectra";
+    corrFile = "REWEIGHT_CORRECTED_br_fitResult.root";
+  }
   
-  //pA analysis
-  Double_t cent[]={0.0, 30.0, 60.0, 90.0};   
-  Double_t pt[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};  
-  Int_t   npt  = sizeof(pt) / sizeof(pt[0]) - 1;   
-  Int_t   ncent  = sizeof(cent) / sizeof(cent[0]) - 1;
-  TString centLabel=Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
+  //Binning for XeXe analysis - preliminary
+  Double_t cent[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
+  Double_t pt[]   = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};  
+  Int_t    npt    = sizeof(pt) / sizeof(pt[0]) - 1;   
+  Int_t   ncent   = sizeof(cent) / sizeof(cent[0]) - 1;
+  TString centLabel = Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
   
   //cosmetics  
-  Color_t color[3] = {kRed+1, kSpring+5, kBlue+1};
-  Int_t  marker[3] = {20, 21, 33}; 
+  Color_t color[4] = {kRed+1, kOrange, kSpring+5, kBlue+1};
+  Int_t  marker[4] = {20, 21, 34, 33}; 
   
   //create axis to reproduce the binning
   TAxis *ptbins = new TAxis(npt, pt);
@@ -184,12 +190,12 @@ void syst_contributionsXeXecent(Int_t icent=0,
     function->SetLineStyle(7);
     function->SetMarkerStyle(0); 
   }
-  if (smooth) SmoothenSysPtRange(function, 4.0,10.);
+  if (smooth) SmoothenSysPtRange(function, 3.0,10.);
 
   TFile * fParamSyst = TFile::Open(Form("%s/systematics_Fit_params_cent%i.root", fPath.Data(), icent));
   TH1F * dummyPar = 0x0;
   if (fParamSyst) {
-    dummyPar = (TH1F*) fParamSyst->Get("hSystVsPtPercentageOfCentral_max");
+    dummyPar = (TH1F*) fParamSyst->Get("hSystVsPtPercentageOfCentral_rms");
     parameters = (TH1F*) dummyPar->Clone("FitParams"); 
     parameters->SetTitle("Fit parameters");
     parameters->SetLineWidth(2);
@@ -199,7 +205,7 @@ void syst_contributionsXeXecent(Int_t icent=0,
     parameters->SetMarkerStyle(0); 
   }
   if (smooth) SmoothenSysPtRange(parameters, 0.5, 1.5);
-  if (smooth) SmoothenSysPtRange(parameters, 4.0,10.);
+  if (smooth) SmoothenSysPtRange(parameters, 3.0,10.);
 
   //sum all contributions in quadrature
   Double_t syst_sum2 = 0.; 
@@ -254,7 +260,7 @@ void syst_contributionsXeXecent(Int_t icent=0,
     statunc->SetBinContent(ibin, (yd>0? (yd_stat/yd) : 0.0));
     data_Wsyst->SetBinContent(ibin,yd);
     data_Wsyst->SetBinError(ibin, yd_syst);
-    data_Wsyst_Wstat->SetBinContent(ibin,yd);
+    data_Wsyst_Wstat->SetBinContent(ibin, yd);
     data_Wsyst_Wstat->SetBinError(ibin,TMath::Sqrt(yd_syst*yd_syst+yd_stat*yd_stat));
     Printf("bin %i     yield = %e     syst err = %e    stat err = %e", ibin, yd, yd_syst, yd_stat);
     
@@ -263,6 +269,7 @@ void syst_contributionsXeXecent(Int_t icent=0,
     data_Wsyst_uncorr->SetBinContent(ibin,yd);
     data_Wsyst_uncorr->SetBinError(ibin, yd_syst_uncorr);
   }
+
   
   //systematic uncertainty plot
   TCanvas *cs=new TCanvas("cs","Systematic uncertainty vs p_{t}", 750,600);
@@ -285,8 +292,13 @@ void syst_contributionsXeXecent(Int_t icent=0,
   function->Draw("same");
   parameters->Draw("same");
   pid->Draw("same");
-
-  
+  TLegend * autolegry = (TLegend*)gPad->BuildLegend(0.18,0.62,0.88,0.88, Form("V0M %s",centLabel.Data()));
+  autolegry->SetFillColor(kWhite);
+  autolegry->SetLineColor(kWhite);
+  autolegry->SetTextFont(42);
+  autolegry->SetTextSize(0.03);
+  autolegry->SetNColumns(3); 
+  autolegry->Draw();
 
   TCanvas *cspectra = new TCanvas("cspectra","Systematic uncertainty vs p_{t}", 750,600);
   Beautify(data, color[icent], 1, 2, marker[icent], 1.3);
@@ -303,30 +315,25 @@ void syst_contributionsXeXecent(Int_t icent=0,
   cs->Print(Form("%s.png", imagefilename.Data()));
 
   
-  TLegend * autolegry = (TLegend*)gPad->BuildLegend(0.18,0.62,0.88,0.88, Form("V0M %s",centLabel.Data()));
-  autolegry->SetFillColor(kWhite);
-  autolegry->SetLineColor(kWhite);
-  autolegry->SetTextFont(42);
-  autolegry->SetTextSize(0.03);
-  autolegry->SetNColumns(3); 
-
   TCanvas *cunc=new TCanvas("cunc","Summary of uncertainty vs p_{t}", 750,600);
   cunc->cd();
   sum2->Draw();
   statunc->Draw("HIST same");
+  
   TLegend * autolegry2 = (TLegend*)gPad->BuildLegend(0.25,0.65,0.88,0.88);
   autolegry2->SetFillColor(kWhite);
   autolegry2->SetLineColor(kWhite);
   autolegry2->SetTextFont(42);
   autolegry2->SetNColumns(1); 
-  autolegry2->Draw();  //save to out file
+  autolegry2->Draw();
+  //save to out file
   TString outfilename = Form("finalWsyst_%s_%i.root", date.Data(),icent);
   if (smooth>0) outfilename.ReplaceAll("finalWsyst", Form("finalWsyst_smooth%i",smooth));
 
   TString imagefilename2 = Form("summaryUncert_cent%i_%s", icent, date.Data());
   if (smooth>0) imagefilename2.ReplaceAll("summaryUncert", Form("summaryUncert_smooth%i",smooth));
-  cunc->SaveAs(Form("%s.png", imagefilename2.Data()));
-  cunc->SaveAs(Form("%s.C", imagefilename2.Data()));
+  //cunc->SaveAs(Form("%s.png", imagefilename2.Data()));
+  cunc->SaveAs(Form("%s.eps", imagefilename2.Data()));
 
   TFile * fout = new TFile(outfilename.Data(),"recreate");
   fout->cd();

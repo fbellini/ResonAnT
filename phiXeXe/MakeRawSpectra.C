@@ -4,10 +4,9 @@
 
 void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
 		    Float_t fitLow = 0.994, Float_t fitUp = 1.070,
+		    TString binning = "A3",
 		    Float_t normLow = 1.07, Float_t normUp = 1.10,
 		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710", //default
-		    //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSysA", // systematics
-		    TString binning = "A3",
                     TString pid = "tpc2sPtDep_tof2sveto5smism",
 		    const Float_t ptmin = 0.0, const Float_t ptmax = 10.999,
 		    const Float_t cutChi2 = 4.0, Bool_t skipLastBin = 0,
@@ -37,29 +36,7 @@ void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
   Color_t colorNorm = kAzure+7;
 
   TString legendEntry = "";
-  //default, centrality will be appended
-  // switch (legendEntryStyle) {
-  // case 0:
-  //   legendEntry = Form("Fit: %4.3f-%4.3f GeV/#it{c}", fitLow, fitUp);
-  //   break;
-  // case 1 : 
-  //   legendEntry = Form("%s ", pid.Data());
-  //   break;
-  // case 2 :
-  //   legendEntry = Form("%s ", bgType.Data());
-  //   break;
-  // case 3 :
-  //   legendEntry = Form("Norm: %4.3f-%4.3f GeV/#it{c} ", normLow, normUp); 
-  //   break;
-  // case 4:
-  //   legendEntry = Form("%s ", fitFcn.Data());
-  //   break;
-  // default :
-  //   break;
-  // }
-  
   TString projPath = Form("%s/phi%s_%s/proj_%s.root", anaPath.Data(), binning.Data(), pid.Data(), binning.Data());
-  //TString fitResultPath = Form("%s/phi%s_%s/norm%3.2f-%3.2f/fit_%s_%s/fit_r%4.3f-%4.3f", anaPath.Data(), binning.Data(), pid.Data(), normLow, normUp, bgType.Data(), fitFcn.Data(), fitLow, fitUp);
   TString fitResultPath = Form("%s/phi%s_%s/norm%3.2f-%3.2f/%s/fit_r%4.3f-%4.3f", anaPath.Data(), binning.Data(), pid.Data(), normLow, normUp, folderName.Data(), fitLow, fitUp);
 
   TFile * fin[6] = {0x0,0x0,0x0,0x0,0x0,0x0};

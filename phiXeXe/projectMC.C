@@ -41,7 +41,7 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   gStyle->SetTitleY(.91);
   TGaxis::SetMaxDigits(2);
     
-  Color_t color[]={kRed+1, kSpring+2, kBlue+1, kBlack, kAzure+10};
+  Color_t color[]={kRed+1, kSpring+2, kBlue+1, kBlack, kAzure+7};
   Color_t marker[]={20, 21, 24, 25, 28}; 
   Color_t histoColor = customColor;
   const Int_t kNhistosData = 4;
@@ -88,7 +88,7 @@ void projectMC(TString nameData = "LHC17j7_RsnOut.root",
   Double_t centB[] = {0.0, 20.0, 40.0, 60.0, 80.0};
   Double_t centD[] = {0.0, 30.0, 50.0, 70.0, 90.0};
   Double_t centC[] = {0.0, 30.0, 60.0, 90.0};
-  Double_t   pt1[] = {0.0, 0.3, 0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
+  Double_t   pt1[100]; pt1[0] = 0.0; for(int j = 1; j<100; j++){ pt1[j] = pt1[j-1]+0.1;}
   Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
   Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};
   Double_t   rap[] = {-0.5, 0.5};//{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5};

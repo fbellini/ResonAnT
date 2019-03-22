@@ -7,9 +7,10 @@ TPaveText * AddPaveTextXeXe();
 TPaveText * AddPaveTextStatOnly();
 
 void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",                    
-			 TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation", //default
-			 TString pid = "tpc3sPtDep_tof3sveto5smism",
+			 TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation", 
+			 TString pid = "tpc2sPtDep_tof2sveto5smism",
 			 TString binning = "A3",
+			 Bool_t reweightEff = 0,
 			 TString suffix = "",
 			 Bool_t correctBR = 1)
 {
@@ -55,6 +56,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   TCanvas * ccorr = new TCanvas("corr","corrected spectra",600,700);
   TString corrspectraFileName = spectraFileName;
   corrspectraFileName.ReplaceAll("RAW",Form("CORRECTED_%s",(correctBR?"br":"NOBR")));
+  if (reweightEff)  corrspectraFileName.Prepend("REWEIGHT_");
   corrspectraFileName.ReplaceAll(".root",Form("%s.root",suffix.Data()));
   TFile * fout = new TFile(corrspectraFileName.Data(),"recreate");
   Int_t maxc = 3; if (binning.Contains("A3")) maxc = 4;
@@ -66,26 +68,6 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     
     TString effFileName = Form("eff_C3_%s.root", pid.Data());
     if (binning.Contains("A3")) effFileName.ReplaceAll("C3", "A3");
-    //FIXME: implement general PID string below
-    // if (effFilePath.Contains("ana0221")) {
-    //   effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc"; // no trailing /
-    //   effFileName = "eff_C3_tpc2s_tof3sveto.root";
-    // }
-    // else
-    //   if (effFilePath.Contains("ana0301")) {
-    //  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana03011mc"; // no trailing /
-    // 	effFileName = "eff_C3_tpc2sPtDep_tof3sveto.root";
-    //   }
-    //   else
-    // 	if (effFilePath.Contains("ana0406")) {
-    // 	  effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation"; // no trailing /
-    // 	  effFileName = "eff_C3_tpc2sPtDep_tof2sveto5smism.root";
-    // 	}
-    // 	else
-    // 	  if (effFilePath.Contains("ana0414")) {
-    // 	    effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/simulation"; // no trailing /
-    // 	    effFileName = Form("eff_C3_%s.root", pid.Data());
-    // 	  }
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));
     TFile *fraw = TFile::Open(spectraFileName.Data());
@@ -138,7 +120,9 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     hcorr->SetLineWidth(1);
           
     //get efficiency 
-    TFile *feff = TFile::Open(Form("%s/%s", effFilePath.Data(), effFileName.Data()));
+    TFile * feff = 0x0;
+    if (reweightEff) feff = TFile::Open(Form("%s/reweight_%s", effFilePath.Data(), effFileName.Data()));
+    else feff = TFile::Open(Form("%s/%s", effFilePath.Data(), effFileName.Data()));
     if (!feff) {
       Printf("CANNOT FIND EFF FILE!!!");
       return;
@@ -168,7 +152,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     // }
   
     //correct for efficiency
-    if (hcorr->Divide(heff))  Printf(":::: Efficiency correction from file: %s/%s", effFilePath.Data(), effFileName.Data());
+    if (hcorr->Divide(heff))  Printf(":::: Efficiency correction from file: %s/%s", effFilePath.Data(), feff->GetName());
         
     //correct for BR
     if (correctBR) {

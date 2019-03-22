@@ -52,65 +52,83 @@ Double_t Hagedorn_Func(Double_t* x, Double_t* par)
 
 TF1* Hagedorn(const Char_t* name, Double_t mass)
 {
-
   TF1* fun = new TF1(name, Hagedorn_Func, 0, 50., 6);
   fun->SetParNames("a", "b", "m0", "n", "Scale", "mass");
   fun->FixParameter(5, mass);
   return fun;
 }
-Double_t PowerLawdNdptTimesPt(const double x, const double* p)
+
+Double_t PowerLawdNdptTimesPt(double * x, double* p)
 {
-  return p[0] * x * TMath::Power((1.0 + x / p[1]), (-1.0 * p[2]));
+  Double_t f = p[0] * x[0] * TMath::Power((1.0 + x[0] / p[1]), (-1.0 * p[2]));
+  return f;
 }
 
-Double_t MTExpdNdptTimesPt(const double x, const double* p)
+TF1 * PowerLawdNdptTimesPtFunc(const Char_t *name, Double_t norm = 1.0, Double_t T = 0.1, Double_t n = 1.)
 {
-
-  return p[0] * x * TMath::Exp(-1.0 * TMath::Sqrt(x * x + p[2] * p[2]) / p[1]);
+  TF1 *fPowerLawdNdptTimesPt = new TF1(name, PowerLawdNdptTimesPt, 0., 10., 3);
+  fPowerLawdNdptTimesPt->SetParameters(norm, T, n);
+  fPowerLawdNdptTimesPt->SetParNames("norm", "T", "n");
+  return fPowerLawdNdptTimesPt;
 }
 
-Double_t UA1_Func(const double* x, const double* p)
+
+Double_t MTExpdNdptTimesPt(double * x, double* p)
 {
-
-  // "mass","p0star","pt0","n","T","norm"
-  Double_t mass = p[0];
-  Double_t p0star = p[1];
-  Double_t pt0 = p[2];
-  Double_t n = p[3];
-  Double_t temp = p[4];
-  Double_t norm = p[5];
-
-  Double_t xx = x[0];
-
-  Double_t parplaw[3] = { 0.0, 0.0, 0.0 };
-  parplaw[0] = norm;
-  parplaw[1] = pt0;
-  parplaw[2] = n;
-  Double_t parpexp[3] = { 0.0, 0.0, 0.0 };
-  parpexp[0] = norm;
-  parpexp[1] = temp;
-  parpexp[2] = mass;
-
-  Double_t normMT = MTExpdNdptTimesPt(p0star, parpexp) > 0 ? PowerLawdNdptTimesPt(p0star, parplaw) / MTExpdNdptTimesPt(p0star, parpexp) * parpexp[0] : 1;
-  parpexp[0] = normMT;
-
-  if (TMath::Abs(MTExpdNdptTimesPt(p0star, parpexp) - PowerLawdNdptTimesPt(p0star, parplaw)) > 0.0001) {
-    Printf("UA1 - Wrong norm");
-    Printf(" p0* %f  NMT: %f  N: %f  PL: %f  MT: %f", p0star, normMT, norm, PowerLawdNdptTimesPt(p0star, parplaw), MTExpdNdptTimesPt(p0star, parpexp));
-  }
-
-  if (xx > p0star)
-    return PowerLawdNdptTimesPt(xx, parplaw);
-  return MTExpdNdptTimesPt(xx, parpexp);
+  return p[0] * x[0] * TMath::Exp(-1.0 * TMath::Sqrt(x[0] * x[0] + p[2] * p[2]) / p[1]);
 }
 
-TF1* UA1(const Char_t* name, Double_t mass)
-{
 
-  TF1* fun = new TF1(name, UA1_Func, 0, 50., 6);
-  fun->FixParameter(0, mass);
-  return fun;
+TF1 * MTExpdNdptTimesPtFunc(const Char_t *name, Double_t norm = 1.0, Double_t T = 0.1, Double_t mass = 1.)
+{
+  TF1 *fMTExpdNdptTimesPt = new TF1(name, MTExpdNdptTimesPt, 0., 10., 3);
+  fMTExpdNdptTimesPt->SetParameters(norm, T, mass);
+  fMTExpdNdptTimesPt->SetParNames("norm", "T", "mass");
+  return fMTExpdNdptTimesPt;
 }
+
+/* Double_t UA1_Func(const double* x, const double* p) */
+/* { */
+
+/*   // "mass","p0star","pt0","n","T","norm" */
+/*   Double_t mass = p[0]; */
+/*   Double_t p0star = p[1]; */
+/*   Double_t pt0 = p[2]; */
+/*   Double_t n = p[3]; */
+/*   Double_t temp = p[4]; */
+/*   Double_t norm = p[5]; */
+
+/*   Double_t xx = x[0]; */
+
+/*   Double_t parplaw[3] = { 0.0, 0.0, 0.0 }; */
+/*   parplaw[0] = norm; */
+/*   parplaw[1] = pt0; */
+/*   parplaw[2] = n; */
+/*   Double_t parpexp[3] = { 0.0, 0.0, 0.0 }; */
+/*   parpexp[0] = norm; */
+/*   parpexp[1] = temp; */
+/*   parpexp[2] = mass; */
+
+/*   Double_t normMT = MTExpdNdptTimesPt(p0star, parpexp) > 0 ? PowerLawdNdptTimesPt(p0star, parplaw) / MTExpdNdptTimesPt(p0star, parpexp) * parpexp[0] : 1; */
+/*   parpexp[0] = normMT; */
+
+/*   if (TMath::Abs(MTExpdNdptTimesPt(p0star, parpexp) - PowerLawdNdptTimesPt(p0star, parplaw)) > 0.0001) { */
+/*     Printf("UA1 - Wrong norm"); */
+/*     Printf(" p0* %f  NMT: %f  N: %f  PL: %f  MT: %f", p0star, normMT, norm, PowerLawdNdptTimesPt(p0star, parplaw), MTExpdNdptTimesPt(p0star, parpexp)); */
+/*   } */
+
+/*   if (xx > p0star) */
+/*     return PowerLawdNdptTimesPt(xx, parplaw); */
+/*   return MTExpdNdptTimesPt(xx, parpexp); */
+/* } */
+
+/* TF1* UA1(const Char_t* name, Double_t mass) */
+/* { */
+
+/*   TF1* fun = new TF1(name, UA1_Func, 0, 50., 6); */
+/*   fun->FixParameter(0, mass); */
+/*   return fun; */
+/* } */
 
 Double_t Bylinkin_Func(const double* x, const double* p)
 {
@@ -137,6 +155,29 @@ TF1* Bylinkin(const Char_t* name, Double_t mass)
   fun->SetParNames("mass", "Norm_{global}", "Norm_{n}", "T_{exp}", "T_{n}", "n");
   fun->FixParameter(0, mass);
   return fun;
+}
+
+Double_t FermiDirac_Func(const Double_t* x, const Double_t* p)
+{
+  /* dN/dpt */
+
+  Double_t pt = x[0];
+  Double_t mass = p[0];
+  Double_t mt = TMath::Sqrt(pt * pt + mass * mass);
+  Double_t T = p[1];
+  Double_t norm = p[2];
+
+  return pt * norm * 1.0 / (TMath::Exp(mt / T) + 1) * (TMath::Exp(-mass / T) + 1);
+}
+
+TF1 * FermiDirac(const Char_t *name, Double_t mass, Double_t T = 0.1, Double_t norm = 1.)
+{
+  
+  TF1 *fFermiDirac = new TF1(name, FermiDirac_Func, 0., 10., 3);
+  fFermiDirac->SetParameters(mass, T, norm);
+  fFermiDirac->SetParNames("mass", "T", "norm");
+  fFermiDirac->FixParameter(0, mass);
+  return fFermiDirac;
 }
 
 Double_t Boltzmann_Func(const Double_t* x, const Double_t* p)

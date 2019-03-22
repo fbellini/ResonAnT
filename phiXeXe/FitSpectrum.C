@@ -10,50 +10,85 @@
 
 // retrieve reference values in the database PDG
 TDatabasePDG *pdg = TDatabasePDG::Instance();
+void PrintParams(TF1 * fitFunc = 0, TPaveText * paveFitParams = 0, TFitResultPtr myDummyResult = 0);
+void PrintParams(TF1 * fitFunc = 0, TPaveText * paveFitParams = 0, Double_t * par = 0, Double_t * parErr = 0);
+Float_t StatUncertFromData(TH1D * hStat = 0);
+Float_t SystUncertFromData(TH1D * hSyst = 0);
 
-void FitSpectrum(Int_t centrality = -1, Double_t rangefitMin = 0.05,  Double_t rangefitMax = 5.0);
-void FitSpectrum(TH1D *data_stat = 0x0,
-		 TH1D *data_syst = 0x0,
-		 TString particle = "phi",
-		 TString system = "Xe-Xe",
-		 TString function = "bgbw",
-		 Double_t rangefitMin = 0.05, //lower boundary of fit range
-		 Double_t rangefitMax = 5.0,//upper boundary of fit range
-		 Bool_t refitCentral = 1,
-		 Bool_t useOfficialMacro = 0
-		 );
+void FitSpectrum(Int_t centrality = -1, TString function = "bgbw", Double_t rangefitMin = 0.5, Double_t rangefitMax = 10.0, TString date = "01may18");
 
+TF1 * FitSpectrum(TH1D *data_stat = 0x0,
+	     TH1D *data_syst = 0x0,
+	     TString particle = "phi",
+	     TString system = "Xe-Xe",
+	     TString function = "bgbw",
+	     Double_t rangefitMin = 0.5, //lower boundary of fit range
+	     Double_t rangefitMax = 10.0,//upper boundary of fit range
+	     Bool_t refitCentral = 0,
+	     Bool_t useOfficialMacro = 0,
+	     TH1F * fitResults = 0);
 
 void FitSpectrum(Int_t centrality,
+		 TString function,
 		 Double_t rangefitMin, //lower boundary of fit range
-		 Double_t rangefitMax//upper boundary of fit range
+		 Double_t rangefitMax,//upper boundary of fit range
+		 TString date //date of spectra
 		 )
 {
-  TFile * fin[3];
-  fin[0] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_0.root");
-  fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
-  fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
-  if (!fin[0] || !fin[1] || !fin[2]) return;
+  Int_t centEdges[5] = {0, 10, 30, 60, 90};
+  // fin[0] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_0.root");
+  // fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
+  // fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
+  TH1F * fitResults[4];  
+  TFile * fin[4];
+  for (Int_t i = 0; i<4; i++){
+  fitResults[i] = new TH1F(Form("fitResults%i",i),"fitResults", 7, 0., 7.);
+  fitResults[i]->GetXaxis()->SetBinLabel(1, "dN/dy");
+  fitResults[i]->GetXaxis()->SetBinLabel(2,"stat");
+  fitResults[i]->GetXaxis()->SetBinLabel(3,"syst");
+  fitResults[i]->GetXaxis()->SetBinLabel(4, "extrap");
+  fitResults[i]->GetXaxis()->SetBinLabel(5, "<p_{T}>");
+  fitResults[i]->GetXaxis()->SetBinLabel(6,"mpt stat");
+  fitResults[i]->GetXaxis()->SetBinLabel(7,"mpt syst");
+  fin[i] = TFile::Open(Form("finalWsyst_smooth1_%s_%i.root",date.Data(), i));
+  if (!fin[i]) return;
+  }
   
-  TH1D * hstat[3];
-  TH1D * hsys[3];
-  Int_t centEdges[4] = {0, 30, 60, 90};
+  TFile * fileres = new TFile(Form("FITSPECTRUM_%s_%3.1f-%3.1f_%s.root", function.Data(),rangefitMin,rangefitMax, date.Data()), "recreate");
+
+  TH1D * hstat[4];
+  TH1D * hsys[4];
   
-  for (int ic =0; ic<3; ic++){
+  for (int ic =0; ic<4; ic++){
     if (centrality>=0 && ic!=centrality) continue;
     hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
     hsys[ic] = (TH1D *)  fin[ic]->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
-    FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), "bgbw", rangefitMin, rangefitMax, 1, 0);
+    TF1 * fitFcn = (TF1*) FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), function.Data(), rangefitMin, rangefitMax, 1, 0, fitResults[ic]);
+    fitFcn->SetName(Form("%s%i", function.Data(), ic));
+    fileres->cd();
+    fitResults[ic]->Write();
+    fitFcn->Write();
+    hstat[ic]->Write(Form("hPhiXeXe_cent%i_stat",ic));
+    hsys[ic]->Write(Form("hPhiXeXe_cent%i_syst",ic));
   }
-      //hack tmp for assigning sys uncert to 10%
-    //hsys[ic] = (TH1D *) hstat[ic]->Clone(); //FIXME
-    //for (int j = 1; j < hsys[ic]->GetNbinsX()+1; j++){
-    //  hsys[ic]->SetBinError(j, 0.02*hsys[ic]->GetBinContent(j));  
+
+  Printf("::::: RESULTS dN/dy :::::");
+  for (int ic =0; ic<4; ic++){
+    Printf("dN/dy cent %i: %8.6f %8.6f %8.6f (%3.2f)", ic,
+	   fitResults[ic]->GetBinContent(1), fitResults[ic]->GetBinContent(2), fitResults[ic]->GetBinContent(3), fitResults[ic]->GetBinContent(4));
+  }
+  
+  Printf("::::: RESULTS mean pT :::::");
+  for (int ic =0; ic<4; ic++){
+    Printf("<pT> cent %i: %8.6f %8.6f %8.6f", ic,
+	   fitResults[ic]->GetBinContent(5), fitResults[ic]->GetBinContent(6), fitResults[ic]->GetBinContent(7) );
+  }
+  fileres->Close();
   return;
 }
 
-void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString system, TString function, Double_t rangefitMin, Double_t rangefitMax, Bool_t refitCentral, Bool_t useOfficialMacro) 
+TF1 * FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString system, TString function, Double_t rangefitMin, Double_t rangefitMax, Bool_t refitCentral, Bool_t useOfficialMacro, TH1F * fitResults) 
 {
 
   //SetStyle
@@ -72,14 +107,14 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   if (particle.Contains("K0s")) PDG = 310; 
   if (particle.Contains("phi")) PDG = 333; 
   if (particle.Contains("Kstar")) PDG = 313;
-  if (PDG<0) {Printf("Particle with PDG %i not supported. Nothing done.", PDG); return;}
+  if (PDG<0) {Printf("Particle with PDG %i not supported. Nothing done.", PDG); return 0;}
  
   TParticlePDG *part       = pdg->GetParticle(PDG);
   Double_t      pdgMass    = part->Mass(); // const Double_t pdgMass = 0.89594;
   Double_t      pdgWidth   = part->Width(); // 0.0487;// const Double_t pdgWidth = 0.0487;
   //check input histogram
-  if (!data_stat) {Printf("missing plot data_stat"); return;}
-  if (!data_syst) {Printf("missing plot data_syst_uncorr"); return;}
+  if (!data_stat) {Printf("missing plot data_stat"); return 0;}
+  if (!data_syst) {Printf("missing plot data_syst_uncorr"); return 0;}
   
   //prepare results objects for central value refitted
   //TPaveText *paveFitParams = new TPaveText(0.5, 0.45, 0.88, 0.75,"NDC"); 
@@ -120,6 +155,9 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   TF1 * myLevyTsallis = LevyTsallis("levy", pdgMass, npar, temp, norm);
   TF1 * myBoltzmann = Boltzmann("boltz", pdgMass, temp, norm);
   TF1 * myBGBlastWave = BGBlastWave("bgbw", pdgMass, beta_max, temp, npar, norm);
+  TF1 * myMTexp = MTExpdNdptTimesPtFunc("mT-exp", norm, temp, pdgMass);
+  TF1 * myFermiDirac = FermiDirac("Fermi-Dirac", pdgMass, temp, norm);
+  TF1 * myBylinkin = Bylinkin("Bylinkin", pdgMass);
   
   Double_t extrapMin = 0; Double_t extrapMax = 50.;
   
@@ -140,89 +178,30 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   Double_t fitChi2ndf[2] = {0.0, -1.e3}; //initialization values for chi2 and NDF
   Double_t fitParMain[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // values for parameters
   Double_t fitParErrMain[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; //values for parameter errors
-  
-  if (function.Contains("levy")) {
-    if (refitCentral) {
-      do {
-	myDummyResult = data_tot->Fit(myLevyTsallis, "IRSq","same", rangefitMin, rangefitMax);
-	Printf("My refit central trial: %d  --- chi2/ndf = %6.4f", trials++, myLevyTsallis->GetChisquare()/myLevyTsallis->GetNDF());
-	if(trials > 10) {
-	  Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
-	break;
-	}
-      }  while (myDummyResult->Status() != 0);    
-      paveFitParams->AddText(Form(" norm = %8.4f #pm %8.4f", myDummyResult->Parameter(3), myDummyResult->ParError(3) ));
-      paveFitParams->AddText(Form("  T   = %6.4f #pm %6.4f", myDummyResult->Parameter(2), myDummyResult->ParError(2) ));
-      paveFitParams->AddText(Form("  n   = %6.4f #pm %6.4f", myDummyResult->Parameter(1), myDummyResult->ParError(1) ));
-      paveFitParams->AddText(Form("  m   = %6.4f", myDummyResult->Parameter(0)));
-      paveFitParams->AddText(Form("#chi^{2}/ndf = %6.4f", myLevyTsallis->GetChisquare()/myLevyTsallis->GetNDF())); 
-    }
-    //get yield and mean
-    if (useOfficialMacro) {
-      hresult =  (TH1D*) YieldMean(myDummy2, data_syst, myLevyTsallis, extrapMin, extrapMax, 0.01, 0.1, "IRSq", Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax); 
-    } else {
-      hresult =  (TH1D*) YieldMean(myDummy2, data_syst, myLevyTsallis, extrapMin, extrapMax, 0.01, 0.1, "IRSq", Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax, fitChi2ndf, fitParMain, fitParErrMain); 
-      paveFitParamsUff->AddText(Form(" norm = %8.4f #pm %8.4f", fitParMain[3], fitParErrMain[3]));
-      paveFitParamsUff->AddText(Form("  T   = %6.4f #pm %6.4f", fitParMain[2], fitParErrMain[2]));
-      paveFitParamsUff->AddText(Form("  n   = %6.4f #pm %6.4f", fitParMain[1], fitParErrMain[1]));
-      paveFitParamsUff->AddText(Form("  m   = %6.4f (fixed)", fitParMain[0]));
-      paveFitParamsUff->AddText(Form("#chi^{2}/ndf = %6.4f", fitChi2ndf[0]/fitChi2ndf[1])); 
-    } 
-  }
 
+  TF1 * fitFunc = 0; Int_t nFcnPar = 3;
+  if (function.Contains("levy")) fitFunc = myLevyTsallis;
+  if (function.Contains("boltz")) fitFunc = myBoltzmann;
+  if (function.Contains("mtexp")) fitFunc = myMTexp;
+  if (function.Contains("fermi")) fitFunc = myFermiDirac;
+  if (function.Contains("bylinkin")) fitFunc = myBylinkin;
+  if (function.Contains("bgbw")) { fitFunc = myBGBlastWave; nFcnPar = 4; }
 
-  else if (function.Contains("boltz")) {
-    if (refitCentral) {
-      myDummyResult = data_tot->Fit(myBoltzmann, "IRSq","same", rangefitMin, rangefitMax);
-      paveFitParams->AddText(Form(" norm  = %8.4f #pm %8.4f", myDummyResult->Parameter(2), myDummyResult->ParError(2) ));
-      paveFitParams->AddText(Form("   T    = %6.4f #pm %6.4f", myDummyResult->Parameter(1), myDummyResult->ParError(1) ));
-      paveFitParams->AddText(Form("   m    = %6.4f", myDummyResult->Parameter(0)));
-      paveFitParams->AddText(Form("#chi^{2}/ndf = %6.4f", myBoltzmann->GetChisquare()/myBoltzmann->GetNDF())); 
-   }
-    //get yield and mean
-    if (useOfficialMacro) {
-      hresult =  (TH1D*) YieldMean(myDummy2, data_syst, myBoltzmann, extrapMin, extrapMax, 0.01, 0.1, "IRSq",Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax); 
-    } else {
-      hresult =  (TH1D*) YieldMean(myDummy2, data_syst, myBoltzmann, extrapMin, extrapMax, 0.01, 0.1, "IRSq",Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax,fitChi2ndf, fitParMain, fitParErrMain); 
-      paveFitParamsUff->AddText(Form(" norm = %8.4f #pm %8.4f", fitParMain[2], fitParErrMain[2]));
-      paveFitParamsUff->AddText(Form("  T   = %6.4f #pm %6.4f", fitParMain[1], fitParErrMain[1]));
-      paveFitParamsUff->AddText(Form("  m   = %6.4f (fixed)", fitParMain[0]));
-      paveFitParamsUff->AddText(Form("#chi^{2}/ndf = %6.4f", fitChi2ndf[0]/fitChi2ndf[1])); 
-    } 
+  if (refitCentral) {
+    do {
+      myDummyResult = data_tot->Fit(fitFunc, "IRSq","same", rangefitMin, rangefitMax);
+      Printf("My refit central trial: %d  --- chi2/ndf = %6.4f", trials++, fitFunc->GetChisquare()/fitFunc->GetNDF());
+      if(trials > 10) {
+  	Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+  	break;
+      }
+    }  while (myDummyResult->Status() != 0);    
+    PrintParams(fitFunc, paveFitParams, myDummyResult);
   }
   
-  else if (function.Contains("bgbw")) {
-    if (refitCentral) {
-      do {
-	myDummyResult = data_tot->Fit(myBGBlastWave, "IRSq","same", rangefitMin, rangefitMax);
-	Printf("Trial: %d  --- chi2/ndf = %6.4f", trials++, myBGBlastWave->GetChisquare()/myBGBlastWave->GetNDF());
-	if(trials > 10) {
-	  Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
-	  break;
-	}
-      }  while (myDummyResult->Status() != 0);
-      paveFitParams->AddText(Form(" norm   = %8.4f #pm %8.4f", myDummyResult->Parameter(4), myDummyResult->ParError(4) ));
-      paveFitParams->AddText(Form("  n     = %6.4f #pm %6.4f", myDummyResult->Parameter(3), myDummyResult->ParError(3) ));
-      paveFitParams->AddText(Form("  T     = %6.4f #pm %6.4f", myDummyResult->Parameter(2), myDummyResult->ParError(2) ));
-      paveFitParams->AddText(Form("  #beta_{max} = %6.4f #pm %6.4f", myDummyResult->Parameter(1), myDummyResult->ParError(1) ));
-      paveFitParams->AddText(Form("  m     = %6.4f", myDummyResult->Parameter(0)));
-      paveFitParams->AddText(Form("#chi^{2}/ndf = %6.4f", myBGBlastWave->GetChisquare()/myBGBlastWave->GetNDF())); 
-    }
-
-    //get yield and mean
-    if (useOfficialMacro) {
-      hresult = (TH1D*) YieldMean(myDummy2, data_syst, myBGBlastWave, extrapMin, extrapMax, 0.01, 0.1, "IRSq", Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax); 
-    } else {
-      hresult = (TH1D*) YieldMean(myDummy2, data_syst, myBGBlastWave, extrapMin, extrapMax, 0.01, 0.1, "IRSq", Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax, fitChi2ndf, fitParMain, fitParErrMain); 
-      paveFitParamsUff->AddText(Form(" norm = %8.4f #pm %8.4f", fitParMain[4], fitParErrMain[4]));
-      paveFitParamsUff->AddText(Form("  n     = %6.4f #pm %6.4f", fitParMain[3], fitParErrMain[3]));
-      paveFitParamsUff->AddText(Form("  T   = %6.4f #pm %6.4f", fitParMain[2], fitParErrMain[2]));
-      paveFitParamsUff->AddText(Form("  #beta_{max} = %6.4f #pm %6.4f", fitParMain[1], fitParErrMain[1]));
-      paveFitParamsUff->AddText(Form("  m   = %6.4f (fixed)", fitParMain[0]));
-      paveFitParamsUff->AddText(Form("#chi^{2}/ndf = %6.4f", fitChi2ndf[0]/fitChi2ndf[1]));   
-    }
-  }
-
+  hresult = (TH1D*) YieldMean(myDummy2, data_syst, fitFunc, extrapMin, extrapMax, 0.001, 0.1, "IRSq", Form("fitlog_%s_%s.root",particle.Data(), function.Data()), rangefitMin, rangefitMax, fitChi2ndf, fitParMain, fitParErrMain); 
+  PrintParams(fitFunc, paveFitParamsUff, fitParMain, fitParErrMain);  
+  
   // TH1D * hSpecShiftLowSys  = YieldMean_ReturnExtremeLowHisto(data_syst);
   // TH1D * hSpecShiftHighSys = YieldMean_ReturnExtremeHighHisto(data_syst);
   Double_t dNdy = hresult->GetBinContent(kYield);
@@ -238,14 +217,12 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   Double_t dNdy_maxSyst = TMath::Max(dNdy_sysHi,dNdy_sysLo);
   Double_t meanPt_maxSyst = TMath::Max(meanPt_sysHi,meanPt_sysLo);
   
-  //TPaveText *paveYieldMean = new TPaveText(0.35, 0.75, 0.88, 0.88,"NDC"); 
   TPaveText *paveYieldMean = new TPaveText(0.02, 0.83, 0.98, 0.97,"NDC"); 
   paveYieldMean->SetTextSize(0.035);
   paveYieldMean->SetTextFont(62);
   paveYieldMean->SetLineWidth(0);
   paveYieldMean->SetBorderSize(0);
   paveYieldMean->SetFillColor(kWhite);
-  //paveYieldMean->AddText(Form("Fit: %s, range %4.2f-%4.2f GeV/c", function.Data(), rangefitMin,rangefitMax));
   paveYieldMean->AddText(Form("dN/dy (h+fit) = %8.4f #pm %8.4f (stat) #pm %8.4f (sys)", dNdy, dNdy_stat, dNdy_maxSyst));
   paveYieldMean->AddText(Form("<p_{T}> (h+fit) = %6.4f #pm %6.4f (stat) #pm %6.4f (sys)", meanPt, meanPt_stat, meanPt_maxSyst));
   
@@ -261,35 +238,90 @@ void FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sys
   
   //draw
   TString titleX = "#it{p}_{T} (GeV/#it{c})";
-  TString titleY = "1/#it{N}_{evt}*d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]";
+  TString titleY = "1/#it{N}_{evt}*d^{2}#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}";
   
   HistoMakeUp(data_tot, kBlack, 20, titleX.Data(), titleY.Data());
   HistoMakeUp(myDummy2, kBlack, 20, titleX.Data(), titleY.Data());
   //HistoMakeUp(data2fit, kBlack, 20, titleX.Data(), "data/fit");
-  data_stat->GetXaxis()->SetTitle(" p_{T} (GeV/c)");
-  data_stat->GetYaxis()->SetTitle(" 1/N_{evt}*d^{2}N/dydp_{T} (GeV/c)^{-1}");   	
+  data_stat->GetXaxis()->SetTitle(titleX.Data());
+  data_stat->GetYaxis()->SetTitle(titleY.Data());   	
 
   TString namefit = Form("fit_%s_%s_%s_%04.2f_%04.2f", particle.Data(), system.Data(), function.Data(), rangefitMin, rangefitMax);
   TCanvas *c1 = new TCanvas(namefit.Data(), "Fit",1000,600);
-
   SetStyle();
-
   c1->Divide(2,1);
   c1->cd(1);
   gPad->SetLogy();
   data_tot->Draw("same");
-  myBGBlastWave->Draw("same");
+  fitFunc->Draw("same");
   c1->cd(2);
   paveYieldMean->Draw("same");
   if (refitCentral) paveFitParams->Draw("same");
   if (!useOfficialMacro) paveFitParamsUff->Draw("same");
   c1->Print(Form("%s%s%s.eps",namefit.Data(), (useOfficialMacro? "_YM":""), (refitCentral?"":"woR")));
+  Printf("::::: Statistical uncertainty from data = %e", StatUncertFromData(data_stat));
+  Printf("::::: Systematic uncertainty from data = %e", SystUncertFromData(data_syst));
+  Int_t ibinStart = data_stat->GetXaxis()->FindBin(0.5);
+  Int_t ibinStop = data_stat->GetXaxis()->FindBin(10.0);
+  Double_t histIntegralErr = 0;
+  Double_t histIntegral = data_stat->IntegralAndError(ibinStart, ibinStop, histIntegralErr,"width");
   
-  // TCanvas *c2 = new TCanvas(namefit.Prepend("ratio_"), "Ratio fit to histogram",700,600);
-  // c2->cd();
+  Printf("::::: Statistical uncertainty from integral of data = %e +/- %e", histIntegral, histIntegralErr);
+
+  if (fitResults){
+    fitResults->SetBinContent(1, dNdy);
+    fitResults->SetBinContent(2, dNdy_stat);
+    fitResults->SetBinContent(3, dNdy_maxSyst);
+    fitResults->SetBinContent(4, (1.0 - histIntegral/dNdy));
+    fitResults->SetBinContent(5, meanPt);
+    fitResults->SetBinContent(6, meanPt_stat);
+    fitResults->SetBinContent(7, meanPt_maxSyst);
+  }
+  
+  TCanvas *c2 = new TCanvas("r", "r",700,600);
+  c2->cd();
+  fitResults->Draw();
   // data2fit->Draw("E2");
   // c2->SaveAs(Form("%s.png",namefit.Data()));
+  return fitFunc;
+}
 
+void PrintParams(TF1 * fitFunc, TPaveText * paveFitParams, TFitResultPtr myDummyResult)
+{
+  //if (!fitFunc || !paveFitParams || !myDummyResult) return;
+  for (Int_t i = 0; i<fitFunc->GetNpar(); i++){
+    paveFitParams->AddText(Form(" %s = %8.4f #pm %8.4f", fitFunc->GetParName(i), myDummyResult->Parameter(i), myDummyResult->ParError(i)));
+  }
   return;
 }
 
+void PrintParams(TF1 * fitFunc, TPaveText * paveFitParams, Double_t * par = 0, Double_t * parErr = 0)
+{
+  //if (!fitFunc || !paveFitParams || !myDummyResult) return;
+  for (Int_t i = 0; i<fitFunc->GetNpar(); i++){
+    paveFitParams->AddText(Form(" %s = %8.4f #pm %8.4f", fitFunc->GetParName(i), par[i], parErr[i]));
+  }
+  return;
+}
+
+Float_t StatUncertFromData(TH1D * hStat)
+{
+  if (!hStat) return 0.0;
+  Float_t statUnc = 0.0;
+  for (int i = 1; i<hStat->GetNbinsX()+1; i++) {
+    if (hStat->GetBinContent(i)>0)
+      statUnc += TMath::Power(hStat->GetBinError(i)*hStat->GetXaxis()->GetBinWidth(i),2.0);
+  }
+  return TMath::Sqrt(statUnc);
+}
+
+Float_t SystUncertFromData(TH1D * hSyst)
+{
+  if (!hSyst) return 0.0;
+  Float_t systUnc = 0.0;
+  for (int i = 1; i<hSyst->GetNbinsX()+1; i++) {
+    if (hSyst->GetBinContent(i)>0)
+      systUnc += hSyst->GetBinError(i);
+  }
+  return systUnc;
+}

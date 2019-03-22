@@ -14,9 +14,9 @@ enum ESysSource_t {kPID = 0,
 		   kNtypes};
 
 
-TList * GetListOfAlternativeHistograms(ESysSource_t source = ESysSource_t::kNtypes, Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_");
+TList * GetListOfAlternativeHistograms(ESysSource_t source = ESysSource_t::kNtypes, Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "A3");
 TH1D  * GetAlternativeHist(Int_t altID = 0, TString  alternativeFile = "", Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_");
-TH1D  * GetCentralValueHistRaw(Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_");
+TH1D  * GetCentralValueHistRaw(Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "A3");
 TH1D  * GetCentralValueHistCorr(Short_t cent = 0, TString histoPrefix = "hCorrected_");
 TString GetSourceName(ESysSource_t source = ESysSource_t::kNtypes);
 TCanvas * createCanvas(TString name = "c1", Short_t nrows = 1, Short_t ncols = 1);
@@ -24,9 +24,13 @@ TCanvas * createCanvas(TString name = "c1", Short_t nrows = 1, Short_t ncols = 1
 Float_t GetSysMaxDeviationPt(TH1D * hDevPt = 0x0);
 Float_t GetSysUnifRangePt(TH1D * hDevPt = 0x0);
 
+void runSystematics();
+
+
 void systematicsPhiXeXe(Short_t cent = 0, 
 			TString BarlowOpt = "", // empty for no Barlow, B1 for Barlow 1sigma, B2 for Barlow 2sigma
-			ESysSource_t source = ESysSource_t::kFitRange)
+			ESysSource_t source = ESysSource_t::kFitRange,
+			TString binning = "A3")
 {
   //style for display
   gStyle->SetPadLeftMargin(0.15);
@@ -37,17 +41,17 @@ void systematicsPhiXeXe(Short_t cent = 0,
   gStyle->SetPadTickX(1);
   gStyle->SetFrameBorderSize(0);
 
-  Int_t centrality[4] = {0, 30, 60, 90};
+  Int_t centrality[5] = {0, 10, 30, 60, 90};
   //Get histo with central value
   TH1D * hCentral = 0X0;
   if (source == ESysSource_t::kPID) hCentral = (TH1D *) GetCentralValueHistCorr(cent, "hCorrected_");
-  else hCentral = (TH1D *) GetCentralValueHistRaw(cent, "hRawYieldVsPt_");
+  else hCentral = (TH1D *) GetCentralValueHistRaw(cent, "hRawYieldVsPt_", binning.Data());
 
   const Int_t nBins = hCentral->GetNbinsX();
   Printf("::::: N. of pT Bins = %i", nBins);
 
   //Get list for histos with alternative values for given source
-  TList * alternativeList = (TList *) GetListOfAlternativeHistograms(source, cent);
+  TList * alternativeList = (TList *) GetListOfAlternativeHistograms(source, cent,  "hRawYieldVsPt_", binning.Data());
   if (!alternativeList) return;
   else Printf("::::: We are ready to extract systematics!");
 
@@ -98,12 +102,15 @@ void systematicsPhiXeXe(Short_t cent = 0,
   TH1D * hsys_unif = (TH1D*) hsys_rms->Clone("hSystVsPtPercentageOfCentral_unif");
   TH1D * hsys_max = (TH1D*) hsys_rms->Clone("hSystVsPtPercentageOfCentral_max");
 
+  //Number of alternative histograms
+  Short_t nAltern = alternativeList->GetEntries(); 
+
   //prep for display
   TCanvas * c1 = new TCanvas("c1","c1", 800, 600);
   TString centLabel = Form("%i-%i %%",centrality[cent],centrality[cent+1]);
-  TLegend * leg = new TLegend(0.2, 0.74, 0.75, 0.9, Form("%s", centLabel.Data()));
+  TLegend * leg = new TLegend(0.2, 0.85-0.05*nAltern/3, 0.75, 0.9, Form("%s", centLabel.Data()));
+  leg->SetNColumns(3);
   myLegendSetUp(leg, 0.035);
-  leg->SetNColumns(2);
   
   //loop over list and over pt to get variations in each pt bin
   for (Int_t ih = 0; ih<alternativeList->GetEntries(); ih++){
@@ -119,6 +126,8 @@ void systematicsPhiXeXe(Short_t cent = 0,
     htmpratio->SetMarkerColor(kAzure+9-ih);
     htmpratio->SetMarkerStyle(20+ih);
     htmpratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+    if (source == ESysSource_t::kParams) htmpratio->GetYaxis()->SetRangeUser(0.2, 1.8);
+    
     htmpratio->GetYaxis()->SetTitle("alternative / default");
     ratioList->Add(htmpratio);
 
@@ -182,16 +191,16 @@ void systematicsPhiXeXe(Short_t cent = 0,
       
       // compute sys - >1 alternative after Barlow - max deviation
       maxDevPt = GetSysMaxDeviationPt(hDevPt);
-      Printf("Rel. sys. MAX = %4.3f", ipt, nUsed, maxDevPt);
+      Printf("Rel. sys. MAX = %4.3f", maxDevPt);
 
       // compute sys - >1 alternative after Barlow - (max-min)/√12 --> FIXME: should take the range in yield and not in variation
-      // unifDevPt = GetSysUnifRangePt(hDevPt);
-      //Printf("Rel. sys. UNIF = %4.3f", ipt, nUsed, unifDevPt);
+      unifDevPt = GetSysUnifRangePt(hDevPt);
+      Printf("Rel. sys. UNIF = %4.3f", unifDevPt);
     }
     
     hsys_max->SetBinContent(ipt, maxDevPt);  hsys_max->SetBinError(ipt, 0.0);
     hsys_rms->SetBinContent(ipt, relSysPt); hsys_rms->SetBinError(ipt, 0.0);
-    //hsys_unif->SetBinContent(ipt, unifDevPt);  hsys_unif->SetBinError(ipt, 0.0);
+    hsys_unif->SetBinContent(ipt, unifDevPt);  hsys_unif->SetBinError(ipt, 0.0);
     
   }
   c1->cd();
@@ -203,7 +212,7 @@ void systematicsPhiXeXe(Short_t cent = 0,
   hCentral->Write();
   hsys_rms->Write();
   hsys_max->Write();
-  //hsys_unif->Write();
+  hsys_unif->Write();
   alternativeList->Write();
   ratioList->Write();
   varList->Write();
@@ -213,10 +222,19 @@ void systematicsPhiXeXe(Short_t cent = 0,
   return;
 }
 
+void runSystematics()
+{
+  // run all systematics for all centralities
+  for (Int_t is = 1; is<ESysSource_t::kNtypes; is ++){
+    for (Int_t ic = 0; ic<4; ic ++){
+      systematicsPhiXeXe(ic, "", (ESysSource_t) is, "A3");
+    }
+  }
+  return; 
+}
 
 TString GetSourceName(ESysSource_t source)
-{
-  
+{  
   switch (source) {
   case ESysSource_t::kPID:
     return "PID";
@@ -259,13 +277,13 @@ TH1D * GetAlternativeHist(Int_t altID, TString alternativeFile, Short_t cent, TS
 }
 
 
-TH1D * GetCentralValueHistRaw(Short_t cent, TString histoPrefix)
+TH1D * GetCentralValueHistRaw(Short_t cent, TString histoPrefix, TString binning)
 {
   //Get central value from file
   
   if (!histoPrefix) return 0x0;
   
-  TString centralValueFile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root";
+  TString centralValueFile = Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data());
   TFile * fin = TFile::Open(centralValueFile.Data());
   if (!fin) return 0x0;
   TH1D * h = (TH1D *) fin->Get(Form("%s%i", histoPrefix.Data(), cent));
@@ -297,7 +315,7 @@ TCanvas * createCanvas(TString name, Short_t nrows, Short_t ncols)
   return c;
 }
 
-TList * GetListOfAlternativeHistograms(ESysSource_t source, Short_t cent, TString histoPrefix)
+TList * GetListOfAlternativeHistograms(ESysSource_t source, Short_t cent, TString histoPrefix, TString binning)
 {
 
   if (source<0) return 0x0;
@@ -307,47 +325,47 @@ TList * GetListOfAlternativeHistograms(ESysSource_t source, Short_t cent, TStrin
 
   switch (source) {
   case ESysSource_t::kPID:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phiC3_tpc2sPtDep_tof4sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", cent, "hCorrected_"));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phi%s_tpc2sPtDep_tof4sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", binning.Data()), cent, "hCorrected_"));
     list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phiC3_tpc3sPtDep_tof3sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", cent, "hCorrected_"));
     break;
 
   case ESysSource_t::kBgNorm:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.06-1.08/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.05-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.10-1.20/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.06-1.08/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.05-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.10-1.20/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
     
   case ESysSource_t::kBgFit:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly2_fixW/fit_r0.992-1.080/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly2_fixW/fit_r0.992-1.100/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
     
   case ESysSource_t::kLSB:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Like_VOIGTpoly1_fixW/fit_r0.996-1.050/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Like_VOIGTpoly2_fixW/fit_r0.992-1.100/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
 
   case ESysSource_t::kBreit:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_BREITpoly1_allFree/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_BREITpoly1_allFree/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
     
   case ESysSource_t::kParams:
-    //list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_allFree/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_allFixed/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS1_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data())); 
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResGaus0_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS3_fixW/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS1/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data())); 
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResGaus0/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*) GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS3/fit_r0.994-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*) GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_allFixed/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*) GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data())); 
+    list->AddLast((TH1D*) GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResGaus0_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*) GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS3_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*) GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS1/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data())); 
+    list->AddLast((TH1D*) GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResGaus0/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*) GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_ResRMS3/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
 
     
   case ESysSource_t::kBinCount:
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data()), cent, "hRawYieldBCVsPt_"));
     break;
     
   case ESysSource_t::kFitRange:
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.992-1.100/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.996-1.070/RAW_fitResult.root", cent, histoPrefix.Data()));
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.998-1.060/RAW_fitResult.root", cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.992-1.100/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.996-1.070/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
+    list->AddLast((TH1D*)GetAlternativeHist(++i,  Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.998-1.060/RAW_fitResult.root", binning.Data()), cent, histoPrefix.Data()));
     break;
     
   case ESysSource_t::kTrackCuts:

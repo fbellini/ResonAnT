@@ -1,6 +1,0 @@
-
-
-void fitKStarTF1()
-{
-
-}

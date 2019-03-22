@@ -39,13 +39,13 @@ void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
     listName = "RsnOut_tpc2sPtDep_tof3sveto";
     break;
   case 8:
-    listName = "RsnOut_tpc2sPtDep_tof2sveto";
+    listName = "RsnOut_tpc2sPtDep_tof4sveto5smism";
     break;
   case 9:
-    listName = "RsnOut_tpc3sPtDep_tof3sveto";
+    listName = "RsnOut_tpc3sPtDep_tof3sveto5smism";
     break;
   case 10:
-    listName = "RsnOut_tpc2sPtDep_tof2sveto5smism";//buggy label -->it's a 3 sigma veto instead
+    listName = "RsnOut_tpc2sPtDep_tof3sveto5smism";//buggy label -->it's a 3 sigma veto instead
     break;
   case 11:
     listName = "RsnOut_tpc2sPtDep_tof3sveto_elRej";
