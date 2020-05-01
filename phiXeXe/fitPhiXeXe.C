@@ -1,5 +1,5 @@
-//#include "/Users/fbellini/alice/macros/MakeUp.C"
-#include "/Users/fbellini/alice/macros/ResonAnT/fit/FitHistogram.C"
+//#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
+//#include "/Users/fbellini/alice/macros/ResonAnT/fit/FitHistogram.C"
 #include "/Users/fbellini/alice/macros/ResonAnT/phiXeXe/MakeRawSpectra.C"
 
 void SetStyle();
@@ -30,7 +30,7 @@ void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
 
 //run all
-void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "A3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit all - range and bg func
 void runDefault(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
@@ -90,7 +90,7 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
   //-----------------------
   //open resolution file
   //-----------------------
-  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation/res_C3_tpc2sPtDep_tof2sveto5smism.root";
+  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation/res_A3_tpc2sPtDep_tof2sveto5smism.root";
     //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
   TFile * finRes = TFile::Open(resolFileName.Data(),"read");
   if (!resolFileName || !finRes || !finRes->IsOpen()) {

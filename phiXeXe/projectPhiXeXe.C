@@ -1,7 +1,7 @@
 //
 // Splits a TH2F using the myHistSplig_sparse_IM_PT_CENT class
 //
-#include "/Users/fbellini/alice/macros/ResonAnT/projectorTH3_InvMass_Centrality_Pt.C"
+#include "/Users/fbellini/alice/macros/ResonAnT/core/projectorTH3_InvMass_Centrality_Pt.C"
 #include "TFile.h"
 
 void runProject();

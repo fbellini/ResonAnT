@@ -1,8 +1,8 @@
 //
 // Splits a TH2F using the myHistSplig_sparse_IM_PT_CENT class
 //
-#include "/Users/fbellini/alice/macros/ResonAnT/projectorTH3_InvMass_Centrality_Pt.C"
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/ResonAnT/core/projectorTH3_InvMass_Centrality_Pt.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 #include "TFile.h"
 
 void GetEfficiencyFromBinnedMinv(TH1F* trueMinv=NULL, TH1F* momMinv=NULL, Float_t* effAndErr=NULL);
@@ -12,10 +12,10 @@ Float_t GetTruncationCorrection(Int_t absRange = 3);
 Double_t Voigt( Double_t *x, Double_t * par);
 TF1 * GetVOIGT(Double_t fitMin, Double_t fitMax);
 
-void projectMC(TString nameData = "LHC17j7_RsnOut.root",
+void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
 	       TString listName = "RsnOut_tpc2sPtDep_tof3sveto5smism",
 	       TString cutLabel  = "tpc2sPtDep_tof3sveto5smism",
-	       TString binning  = "C3",
+	       TString binning  = "A3",
 	       Bool_t doEffOnly = 0,
 	       Color_t customColor = kBlack)
 {

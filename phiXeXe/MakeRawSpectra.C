@@ -1,13 +1,13 @@
 /* fbellini@cern.ch, 05.03.2018 */
 
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 
 void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
 		    Float_t fitLow = 0.994, Float_t fitUp = 1.070,
 		    TString binning = "A3",
 		    Float_t normLow = 1.07, Float_t normUp = 1.10,
-		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710", //default
-                    TString pid = "tpc2sPtDep_tof2sveto5smism",
+		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423", //default
+                    TString pid = "tpc2sPtDep_tof3sveto5smism",
 		    const Float_t ptmin = 0.0, const Float_t ptmax = 10.999,
 		    const Float_t cutChi2 = 4.0, Bool_t skipLastBin = 0,
 		    Short_t legendEntryStyle = -1)
