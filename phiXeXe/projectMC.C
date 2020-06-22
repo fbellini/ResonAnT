@@ -41,7 +41,7 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   gStyle->SetTitleY(.91);
   TGaxis::SetMaxDigits(2);
     
-  Color_t color[]={kRed+1, kSpring+2, kBlue+1, kBlack, kAzure+7};
+  Color_t color[]={kRed+1, kOrange+1, kSpring-5, kBlue+1, kBlack};
   Color_t marker[]={20, 21, 24, 25, 28}; 
   Color_t histoColor = customColor;
   const Int_t kNhistosData = 4;
@@ -55,7 +55,7 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
     
   TList * listData = (TList*)fileData->Get(listName.Data());
   if (! listData) return;
-  TH2F * hVtx = (TH2F*) listData->FindObject("PhiXeXeMC_eventVtx");
+//  TH2F * hVtx = (TH2F*) listData->FindObject("PhiXeXeMC_eventVtx");
   TH1F * hCounters = (TH1F*) listData->FindObject("hEventStat");
   TH1F * hMulti = (TH1F*) listData->FindObject("hAEventsVsMulti");
   TH1F * hMultiAccepted = (TH1F*) listData->FindObject("PhiXeXeMC_eventMult");
@@ -73,21 +73,21 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   TCanvas * cev = new TCanvas("cev","events", 800,600);
   cev->cd(); gPad->SetLogy();
   Beautify(hMulti, kBlue+2, 1, 2, 24, 1.0);
-  Beautify(hMultiAccepted, kRed+2, 1, 2, 20, 1.0);
+  if (hMultiAccepted) Beautify(hMultiAccepted, kRed+2, 1, 2, 20, 1.0);
   hMulti->GetXaxis()->SetRangeUser(0.0, 100.0);
   hMulti->GetYaxis()->SetRangeUser(1., hMulti->GetMaximum()*2);
   hMulti->SetTitle("events; V0M percentile; events");
   hMulti->Draw("hist");
-  hMultiAccepted->Draw("same E0");
+  if (hMultiAccepted) hMultiAccepted->Draw("same E0");
   cev->Print(Form("events_%s.png",nameData.Data()));
   
   //------------------------------
   //define binning
   //------------------------------
   Double_t centA[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
-  Double_t centB[] = {0.0, 20.0, 40.0, 60.0, 80.0};
-  Double_t centD[] = {0.0, 30.0, 50.0, 70.0, 90.0};
-  Double_t centC[] = {0.0, 30.0, 60.0, 90.0};
+  Double_t centB[] = {0.0, 5.0, 10.0, 30.0, 50.0, 70.0, 90.0};
+  Double_t centC[] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};
+  Double_t centD[] = {0.0, 30.0, 60.0, 90.0};
   Double_t   pt1[100]; pt1[0] = 0.0; for(int j = 1; j<100; j++){ pt1[j] = pt1[j-1]+0.1;}
   Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
   Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};
@@ -337,15 +337,15 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   TCanvas * cres = new TCanvas("cres","pt, y resolution", 800,600);
   cres->Divide(1,2);
 
-  TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 800,600);
-  cresMethods->Divide(2,2);
+  TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 1400,1000);
+  cresMethods->Divide(3,2);
 
   TCanvas * cresGausCent = new TCanvas("cresGausCent","mass resolution, Gaussian fit", 800,600);
   TCanvas * cresRMSCent = new TCanvas("cresRMSCent","mass resolution, RMS", 800,600);
   TCanvas * cresVMCCent = new TCanvas("cresVMCCent","mass resolution, Voigt fit to MC true", 800,600);
 
   TCanvas * cres_cent[4];
-  for (Int_t icent = 0; icent<4; icent++) {
+  for (Int_t icent = 0; icent<ncent; icent++) {
     cres_cent[icent] = new TCanvas(Form("cres_cent%i",icent),"resolution", 1000,600);
     cres_cent[icent]->Divide(2,2);
   }
@@ -389,7 +389,7 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   TH1F * htmp = NULL;
   Float_t sigmaAndErr[2] = {0., 0.};
   TString opt = "";
-  Color_t rescol[4] = {kRed+2, kSpring+2, kBlue+1, kGray+3};
+  Color_t rescol[6] = {kRed+2, kOrange+1, kSpring-5, kAzure+4, kMagenta+4, kBlack};
   Float_t massResolRange[4] = {0.002, 0.003, 0.004, 0.005};
   Float_t fitLowRange[4] = {1.008, 1.007, 1.006, 1.005};
   Float_t fitHighRange[4] = {1.032, 1.033, 1.034, 1.035};
@@ -402,13 +402,13 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   if (!fitFcn) return;
   
   for (Int_t icent = 0; icent<ncent+1;icent++){
-    Printf ("\n\n Centrality bin %i -------------------------", icent);
+    Printf ("\n\n Centrality bin %i ----------- %f - %f", icent, centA[icent], centA[icent+1]);
     TH1F * hResVsPt[4];
     TH1F * hResVsPtRMS[4];
     TH1F * hResVsPtVMC[4];
     TH1F * hMassVsPtVMC[4];
     TH1F * hWidthVsPtVMC[4];
-    TString centLabel = Form("%2.0f-%2.0f %%", centC[icent], centC[icent+1]);
+    TString centLabel = Form("%2.0f-%2.0f %%", centA[icent], centA[icent+1]);
     if (icent == ncent) centLabel = "0-90%";
     
     for (Int_t i = 0; i<4; i++){
@@ -434,42 +434,41 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
       
       //loop over pt bins
       for (Int_t iptbin = 1; iptbin<npt+1; iptbin++){
-	if (icent == ncent) htmp = (TH1F*) lResolution->FindObject(Form("MassResCmb_ptBin%02i_centBin%02i", iptbin-1, 0));
-	else htmp = (TH1F*) lResolution->FindObject(Form("MassResC_ptBin%02i_centBin%02i", iptbin-1, icent));
-	Beautify(htmp, kAzure+7-iptbin, 1, 2, 1, 1.0);	
+        if (icent == ncent) htmp = (TH1F*) lResolution->FindObject(Form("MassResCmb_ptBin%02i_centBin%02i", iptbin-1, 0));
+        else htmp = (TH1F*) lResolution->FindObject(Form("MassResC_ptBin%02i_centBin%02i", iptbin-1, icent));
+        Beautify(htmp, kAzure+7-iptbin, 1, 2, 1, 1.0);	
 
-	//get resolution from gaussian fit of mrec - mgen
-	GetGausSigma(htmp, sigmaAndErr, massResolRange[i]);       
-	hResVsPt[i]->SetBinContent(iptbin, sigmaAndErr[0]);
-	hResVsPt[i]->SetBinError(iptbin, sigmaAndErr[1]);
+        //get resolution from gaussian fit of mrec - mgen
+        GetGausSigma(htmp, sigmaAndErr, massResolRange[i]);       
+        hResVsPt[i]->SetBinContent(iptbin, sigmaAndErr[0]);
+        hResVsPt[i]->SetBinError(iptbin, sigmaAndErr[1]);
 
-	//get resolution from RMS of mrec - mgen, by also correcting for the truncated tails
-	GetSigmaRMS(htmp, sigmaAndErr, i+2);       
-	hResVsPtRMS[i]->SetBinContent(iptbin, sigmaAndErr[0]/GetTruncationCorrection(i+2));
-	hResVsPtRMS[i]->SetBinError(iptbin, sigmaAndErr[1]/GetTruncationCorrection(i+2));
-	Printf("::::: Truncation correction factor = 1./%f",GetTruncationCorrection(i+2));
+        //get resolution from RMS of mrec - mgen, by also correcting for the truncated tails
+        GetSigmaRMS(htmp, sigmaAndErr, i+2);       
+        hResVsPtRMS[i]->SetBinContent(iptbin, sigmaAndErr[0]/GetTruncationCorrection(i+2));
+        hResVsPtRMS[i]->SetBinError(iptbin, sigmaAndErr[1]/GetTruncationCorrection(i+2));
+        //Printf("::::: Truncation correction factor = 1./%f",GetTruncationCorrection(i+2));
 
-	//voigtian fit of true distribution
-	if (icent < 3) htmp = (TH1F*) lTrue->FindObject(Form("True_ptBin%02i_centBin%02i", iptbin-1, icent));
-	else htmp = (TH1F*) lTrue->FindObject(Form("Truemb_ptBin%02i_centBin00", iptbin-1));
+        //voigtian fit of true distribution
+        if (icent < ncent) htmp = (TH1F*) lTrue->FindObject(Form("True_ptBin%02i_centBin%02i", iptbin-1, icent));
+        else htmp = (TH1F*) lTrue->FindObject(Form("Truemb_ptBin%02i_centBin00", iptbin-1));
 
-	if (!htmp) {
-	  // Printf(":::: WARNING : no input to fit Voigt with!");
-	  hMassVsPtVMC[i]->SetBinContent(iptbin, 0.0);
-	  hWidthVsPtVMC[i]->SetBinContent(iptbin, 0.0);
-	  hResVsPtVMC[i]->SetBinContent(iptbin, 0.0);
-	} else {
-	  Printf("here!!!");
-	  TFitResultPtr result = htmp->Fit(fitFcn, "SBRNQ", "", fitLowRange[i],fitHighRange[i]);
-	  //Printf("mean = %f, \n sigma = %f, \n res = %f", fitFcn->GetParameter(1),fitFcn->GetParameter(2), fitFcn->GetParameter(3));
-	  hMassVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(1));
-	  hWidthVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(3));
-	  hResVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(2));
-	  
-	  hMassVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(1));
-	  hWidthVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(3));
-	  hResVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(2));
-	}
+        if (!htmp) {
+          // Printf(":::: WARNING : no input to fit Voigt with!");
+          hMassVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+          hWidthVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+          hResVsPtVMC[i]->SetBinContent(iptbin, 0.0);
+        } else {
+          TFitResultPtr result = htmp->Fit(fitFcn, "SBRNQ", "", fitLowRange[i],fitHighRange[i]);
+          //Printf("mean = %f, \n sigma = %f, \n res = %f", fitFcn->GetParameter(1),fitFcn->GetParameter(2), fitFcn->GetParameter(3));
+          hMassVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(1));
+          hWidthVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(3));
+          hResVsPtVMC[i]->SetBinContent(iptbin, fitFcn->GetParameter(2));
+          
+          hMassVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(1));
+          hWidthVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(3));
+          hResVsPtVMC[i]->SetBinError(iptbin, fitFcn->GetParError(2));
+        }
       } //end loop on pt
 
       fres->cd();
@@ -513,9 +512,11 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
 
     cresMethods->cd(icent+1);
     hResVsPt[1]->Draw(opt.Data());
+    hResVsPtRMS[1]->SetMarkerStyle(30);
     hResVsPtRMS[1]->Draw("same");
+    hResVsPtVMC[1]->SetMarkerStyle(28);
     hResVsPtVMC[1]->Draw("same");
-    
+    gPad->BuildLegend(0.25, 0.7, 0.6, 0.9, centLabel);
     //draw legends
     cres_cent[icent]->cd(1);
     TLegend * legRes = (TLegend*) gPad->BuildLegend(0.2, 0.6, 0.62, 0.9, centLabel.Data(), "p");

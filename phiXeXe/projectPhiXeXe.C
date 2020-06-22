@@ -6,10 +6,10 @@
 
 void runProject();
 
-void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
+void projectPhiXeXe( const char *nameData = "RsnOut.root",
 		     TString outName  = "phi",
-		     TString listNameSuffix = "tpc2s_tof3sveto",
-		     TString binning  = "B2",
+		     TString listNameSuffix = "tpc2sPtDep_tof3sveto5smism",
+		     TString binning  = "B3",
 		     Bool_t isMC = 0,
 		     Bool_t saveSeparatelyByCent = 0)
 {
@@ -24,8 +24,9 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   //define binning
   //------------------------------
   Double_t centA[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
-  Double_t centB[] = {0.0, 20.0, 40.0, 60.0, 80.0};
-  Double_t centC[] = {0.0, 30.0, 60.0, 90.0};   
+  Double_t centB[] = {0.0, 5.0, 10.0, 30.0, 50.0, 70.0, 90.0};
+  Double_t centC[] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};   
+  Double_t centD[] = {0.0, 30.0, 60.0, 90.0};   
   Double_t   pt1[] = {0.0, 0.3, 0.5, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
   Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
   Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};
@@ -66,8 +67,8 @@ void projectPhiXeXe( const char *nameData = "20180123_RsnOut.root",
   TFile *fileData = TFile::Open(nameData);
   if (!fileData || !fileData->IsOpen()) { Printf("Invalid file passed as input. Doing nothing."); return;}
   
-  TList *listData = listData = (TList*)fileData->Get(Form("RsnOut_%s", listNameSuffix.Data()));
-  if (!listData) { Printf("Invalid list %s passed as input. Doing nothing.", listData->GetName()); return;}
+  TList *listData = (TList*)fileData->Get(Form("RsnOut_%s", listNameSuffix.Data()));
+  if (!listData) { Printf("Invalid list passed as input. Doing nothing."); return;}
     
   //get input histograms
   TH3F* hInput[kNhistosData] = {0,0,0,0}; 
@@ -189,7 +190,6 @@ void runProject()
   projectPhiXeXe("RsnOut_B.root", "phi", "tpc2sPtDep_tof4sveto5smism", "C3");
   projectPhiXeXe("RsnOut_B.root", "phi", "tpc3sPtDep_tof3sveto5smism", "C3");
   projectPhiXeXe("RsnOut_B.root", "phi", "tpc2sPtDep_tof3sveto_elRej", "C3");
-
 }
  
 
