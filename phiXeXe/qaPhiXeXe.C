@@ -1,6 +1,6 @@
-#include "/Users/fbellini/alice/macros/SetStyle.C"
-#include "/Users/fbellini/alice/macros/MakeUp.C"
-#include "/Users/fbellini/alice/macros/fitSlices.C"
+#include "/Users/fbellini/alice/macros/comsetics/SetStyle.C"
+#include "/Users/fbellini/alice/macros/comsetics/MakeUp.C"
+#include "/Users/fbellini/alice/macros/utils/fitSlices.C"
 
 void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
 {
