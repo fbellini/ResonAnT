@@ -30,9 +30,9 @@ void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
 
 //run all
-void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "A3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit all - range and bg func
-void runDefault(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runDefault(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 4, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "A3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
@@ -45,7 +45,7 @@ void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess =
 void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //Run LikeSign fit (Voigt + poly1 and 2)
-void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = , TString inName = "sub_A3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 
 
 void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel, Float_t ptMin, Float_t ptMax);
@@ -59,7 +59,7 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
 		   Int_t selCentBin = 0,
 		   Int_t selPtBin = -1,
 		   Double_t fitMin = 0.994,
-		   Double_t fitMax = 1.050,
+		   Double_t fitMax = 1.070,
 		   TString fcnSignal = "VOIGT", 
 		   TString fcnBg = "poly1",
 		   Double_t minMass = 1.010,

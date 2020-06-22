@@ -2,12 +2,12 @@
 
 #include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 
-void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
+void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_fixW",
 		    Float_t fitLow = 0.994, Float_t fitUp = 1.070,
 		    TString binning = "A3",
 		    Float_t normLow = 1.07, Float_t normUp = 1.10,
-		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423", //default
-                    TString pid = "tpc2sPtDep_tof3sveto5smism",
+		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710", //default
+        TString pid = "tpc2sPtDep_tof2sveto5smism",
 		    const Float_t ptmin = 0.0, const Float_t ptmax = 10.999,
 		    const Float_t cutChi2 = 4.0, Bool_t skipLastBin = 0,
 		    Short_t legendEntryStyle = -1)
@@ -27,8 +27,8 @@ void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
   TGaxis::SetMaxDigits(3);
   Int_t legendEntryCounter = 1;
 
-  Color_t color[1][3] = {kRed+2, kSpring-2, kBlue+2};
-  Int_t  marker[1][3] = {20, 21, 33}; 
+  Color_t color[1][4] = {kRed+2, kOrange, kSpring-2, kBlue+2};
+  Int_t  marker[1][4] = {20, 21, 33, 34}; 
 
   Color_t colorFunc = kBlue+2;
   Color_t colorPID = kTeal+5;
@@ -244,10 +244,18 @@ void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_Wfix",
 
   TLegend *mleg = new TLegend(0.7,0.75,0.9,0.9);
   myLegendSetUp(mleg, 0.05);
-  mleg->AddEntry(hRawYieldVsPt[0], "0-30%", "p");
-  mleg->AddEntry(hRawYieldVsPt[1], "30-60%", "p");
-  mleg->AddEntry(hRawYieldVsPt[2], "60-90%", "p");
-
+  if (binning.Contains("A3")) {
+    mleg->AddEntry(hRawYieldVsPt[0], "0-10%", "p");
+    mleg->AddEntry(hRawYieldVsPt[1], "10-30%", "p");
+    mleg->AddEntry(hRawYieldVsPt[2], "30-60%", "p");
+    mleg->AddEntry(hRawYieldVsPt[3], "60-90%", "p");
+  } else {
+    mleg->AddEntry(hRawYieldVsPt[0], "0-30%", "p");
+    mleg->AddEntry(hRawYieldVsPt[1], "30-60%", "p");
+    mleg->AddEntry(hRawYieldVsPt[2], "60-90%", "p");
+  }
+  
+  
   cry->cd();
   mleg->Draw();
   cm->cd();

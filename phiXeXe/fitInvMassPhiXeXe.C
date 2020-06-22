@@ -1,6 +1,5 @@
-#include "/Users/fbellini/alice/macros/SetStyle.C"
 #include "/Users/fbellini/alice/macros/ResonAnT/fit/FitHistogram.C"
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 
 enum EFit { kMixing = 0,
 	    kLike = 1,
