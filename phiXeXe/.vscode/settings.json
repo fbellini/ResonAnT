@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "projectPhiXeXe.C": "cpp",
+        "compareLSB2MEB.C": "cpp",
+        "compareEffByPeriod.C": "cpp",
+        "fitInvMassPhiXeXe.C": "cpp",
+        "fitPhiXeXe.C": "cpp",
+        "subtractPhiXeXe.C": "cpp",
+        "MakeRawSpectra.C": "cpp",
+        "RunGridRsnTrain.C": "cpp",
+        "projectMC.C": "cpp",
+        "runFinalAnalysis.C": "cpp",
+        "GetNormalizationFactors.C": "cpp",
+        "myYieldMean.C": "cpp",
+        "ParticleRatios.C": "cpp",
+        "GetPlotRatio.C": "cpp",
+        "PlotSpectraExtrapFits.C": "cpp",
+        "MakeUp.C": "cpp",
+        "compareFinal2Prel.C": "cpp"
+    }
+}
