@@ -1,6 +1,6 @@
 /* fbellini, created on 20 aug 2012 */
 
-Int_t  GetNormalizationFactors(TString fileName, TString listNameSuffix = "_tpc2s_tof3sveto")
+Int_t  GetNormalizationFactors(TString fileName, TString listNameSuffix = "_tpc2sPtDep_tof3sveto5smism")
 {
   TString hEventsName = "hEventStat";
   TString hAccEventVsCentName = "hAEventsVsMulti";
@@ -16,18 +16,18 @@ Int_t  GetNormalizationFactors(TString fileName, TString listNameSuffix = "_tpc2
   TH1D * hAccEventVsCent = (TH1D*) lin->FindObject(hAccEventVsCentName.Data());
   if (!hAccEventVsCent) return 4;
 
-  Int_t counters[4] = {0,0,0,0};
-  for (Int_t j=0; j<4;j++){
+  Int_t counters[5] = {0,0,0,0,0};
+  for (Int_t j=0; j<5;j++){
     counters[j] = hEvents->GetBinContent(j+1);
   }
   Printf("Event counters: \n total CINT1B = %i \n total V0AND = %i \n candle events = %i \n total ACCEPTED = %i \n ACCEPTED/CINT1B = %8.5f", 
 	 counters[0],counters[1],counters[2],counters[3], (Float_t)counters[3]/counters[0]);
   
-  Float_t centLowE[5] = {0.0, 10., 30.0, 60.0, 90.0};
-  Double_t centCounters[4] = {0.0, 0.0, 0.0, 0.0};
-  TH1D * hCentDraw[4];
+  Float_t centLowE[6] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};
+  Double_t centCounters[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+  TH1D * hCentDraw[5];
   
-  for (Int_t i=0; i<4;i++){
+  for (Int_t i=0; i<5;i++){
     Int_t lowBin = hAccEventVsCent->GetXaxis()->FindBin(centLowE[i]);
     Int_t upBin = hAccEventVsCent->GetXaxis()->FindBin(centLowE[i+1]-1);
     centCounters[i] = (Double_t) hAccEventVsCent->Integral(lowBin, upBin);
@@ -42,15 +42,15 @@ Int_t  GetNormalizationFactors(TString fileName, TString listNameSuffix = "_tpc2
 
   }
   
-  Printf(Form("Normalization array: norm = { %e, %e, %e %e}", centCounters[0], centCounters[1], centCounters[2], centCounters[3]));
+  Printf(Form("Normalization array: norm = { %e, %e, %e, %e, %e}", centCounters[0], centCounters[1], centCounters[2], centCounters[3],centCounters[4]));
 
-  Color_t color[4] = {kRed+2-9, kSpring-2, kBlue+2, kGray+1};
+  Color_t color[5] = {kRed+2-9, kOrange, kSpring-2, kBlue+2, kGray+1};
   hAccEventVsCent->SetXTitle("centrality (%)");
   hAccEventVsCent->GetYaxis()->SetRangeUser(1,1e6);
   hAccEventVsCent->SetYTitle("accepted events");
   hAccEventVsCent->SetLineWidth(2);
   hAccEventVsCent->Draw();
-  for (Int_t i=0; i<4;i++){
+  for (Int_t i=0; i<5;i++){
     hCentDraw[i]->SetLineStyle(2);
     hCentDraw[i]->SetFillStyle(1001);
     hCentDraw[i]->SetFillColorAlpha(color[i],0.2);

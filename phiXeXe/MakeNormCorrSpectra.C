@@ -1,15 +1,15 @@
 //fbellini@cern.ch
 //for XeXe spectra - 04/03/2018
 //
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 
 TPaveText * AddPaveTextXeXe();
 TPaveText * AddPaveTextStatOnly();
 
 void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",                    
-			 TString effFilePath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation", 
-			 TString pid = "tpc2sPtDep_tof2sveto5smism",
-			 TString binning = "A3",
+			 TString effFilePath =  "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/simulation/LHC17j7_3",//"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423/simulation", 
+			 TString pid = "default_LowBdca", //"tpc2sPtDep_tof3sveto5smism",
+			 TString binning = "C3",
 			 Bool_t reweightEff = 0,
 			 TString suffix = "",
 			 Bool_t correctBR = 1)
@@ -27,8 +27,8 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   TGaxis::SetMaxDigits(2);
   Int_t legendEntryCounter = 1;
 
-  Color_t color[1][4] = {kRed+1, kSpring+5, kBlue+1, kBlack};
-  Int_t  marker[1][4] = {20, 21, 28, 25}; 
+  Color_t color[1][5] = {kOrange, kSpring+5, kTeal+5, kBlue+1, kMagenta+3};
+  Int_t  marker[1][5] = {20, 21, 33, 34, 45}; 
 
   const TString effHistName = "hEffVsPt";
   Float_t trgAndVtxEff_pPbMinBias = 1.0; //trigger and vertex reco efficiency for pPb 0-100%
@@ -39,16 +39,20 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   Float_t nEvents_ana0301[3] = { 2.361130e+05, 2.354870e+05, 2.359310e+05};
   Float_t nEvents_ana0406[3] = { 4.367050e+05, 4.367330e+05, 4.367250e+05};
   Float_t nEvents_ana0406A3[4] = {1.456080e+05, 2.910970e+05, 4.367330e+05, 4.367250e+05};
-  Float_t nEvents_ana0414A[3] = { 4.176880e+05, 4.177600e+05, 4.177170e+05};
-  Float_t nEvents_ana0414B[3] = { 4.386910e+05, 4.387360e+05, 4.387220e+05};
-  Int_t centBinning[5] = {0, 30, 60, 90, 100}; 
+  Float_t nEvents_ana0414A[5] = {1.392300e+05, 2.784580e+05, 2.785530e+05, 2.784210e+05, 2.785030e+05};
+  Float_t nEvents_ana0414B[5] = {1.462360e+05, 2.924550e+05, 2.924940e+05, 2.924800e+05, 2.924840e+05};
+//  Int_t centBinning[5] = {0, 30, 60, 90, 100}; 
+  Int_t centBinning[7] = {0, 10, 30, 50, 70, 90, 100}; 
+  Float_t nEvents_ana0423[5] = {1.441320e+05, 2.882710e+05, 2.881750e+05, 2.883070e+05, 2.883840e+05};
+  Float_t nEvents_ana0503[5] ={ 1.445520e+05, 2.890270e+05, 2.889130e+05, 2.885410e+05, 2.858640e+05};
   if (binning.Contains("A3")) {
     centBinning[1] = 10;
     centBinning[2] = 30;
     centBinning[3] = 60;
     centBinning[4] = 90;
+    centBinning[5] = 90;
   }
-    
+
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   TCanvas * c1 = new TCanvas("c1","raw norm. spectra",600,700);
@@ -59,14 +63,14 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   if (reweightEff)  corrspectraFileName.Prepend("REWEIGHT_");
   corrspectraFileName.ReplaceAll(".root",Form("%s.root",suffix.Data()));
   TFile * fout = new TFile(corrspectraFileName.Data(),"recreate");
-  Int_t maxc = 3; if (binning.Contains("A3")) maxc = 4;
+  Int_t maxc = 5; if (binning.Contains("A3")) maxc = 4;
 		    
   for (Int_t ic = 0; ic<maxc;ic++){
 
     TString centLabel = Form("%i-%i%%",centBinning[ic], centBinning[ic+1]);
     Printf("\n\n\n*************************\n Spectra %s \n*************************",centLabel.Data());
     
-    TString effFileName = Form("eff_C3_%s.root", pid.Data());
+    TString effFileName = Form("eff_C3_%s.root", pid.Data()); 
     if (binning.Contains("A3")) effFileName.ReplaceAll("C3", "A3");
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));
@@ -85,7 +89,27 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     hraw->SetLineWidth(1);
         
     //normalise by event number
-    if (binning.Contains("A3") && (effFilePath.Contains("ana0406"))){
+    if (binning.Contains("C3")) {
+
+      if  (effFilePath.Contains("ana0503")){
+        hraw->SetName(Form("hCombinedNorm_%i",ic));
+        hraw->Scale(1./nEvents_ana0503[ic]);
+        Printf(":::: Normalization by accepted event number for ana0503");
+      } else if (effFilePath.Contains("ana0423")){
+        hraw->SetName(Form("hCombinedNorm_%i",ic));
+        hraw->Scale(1./nEvents_ana0423[ic]);
+        Printf(":::: Normalization by accepted event number for ana0423");
+      } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc3sPtDep_tof3sveto5smism") || pid.Contains("tpc2sPtDep_tof4sveto5smism"))){
+        hraw->SetName(Form("hCombinedNorm_%i",ic));
+        hraw->Scale(1./nEvents_ana0414B[ic]);
+        Printf(":::: Normalization by accepted event number for ana0414B - pid %s", pid.Data());
+      } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc2sPtDep_tof3sveto"))){      
+        hraw->SetName(Form("hCombinedNorm_%i",ic));
+        hraw->Scale(1./nEvents_ana0414A[ic]);
+        Printf(":::: Normalization by accepted event number for ana0414A - pid %s", pid.Data());
+      }
+    } else {
+      if (binning.Contains("A3") && (effFilePath.Contains("ana0406"))){
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0406A3[ic]);
       Printf(":::: Normalization by accepted event number for ana0406");
@@ -101,12 +125,8 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
       hraw->SetName(Form("hCombinedNorm_%i",ic));
       hraw->Scale(1./nEvents_ana0406[ic]);
       Printf(":::: Normalization by accepted event number for ana0406");
-    } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc3sPtDep_tof3sveto5smism") || pid.Contains("tpc2sPtDep_tof4sveto5smism"))){
-      hraw->SetName(Form("hCombinedNorm_%i",ic));
-      hraw->Scale(1./nEvents_ana0414B[ic]);
-      Printf(":::: Normalization by accepted event number for ana0414B - pid %s", pid.Data());
+      } 
     }
-    
     TH1F * hcorr = (TH1F*) hraw->Clone(Form("hCorrected_%i",ic));
     hcorr->GetYaxis()->SetTitle("1/N_{evt} d#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");
     hcorr->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");

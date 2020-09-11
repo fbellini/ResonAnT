@@ -9,9 +9,9 @@ void runProject();
 void projectPhiXeXe( const char *nameData = "RsnOut.root",
 		     TString outName  = "phi",
 		     TString listNameSuffix = "tpc2sPtDep_tof3sveto5smism",
-		     TString binning  = "B3",
-		     Bool_t isMC = 0,
-		     Bool_t saveSeparatelyByCent = 0)
+		     TString binning  = "C3",
+		     Bool_t isMC = 0)		     
+         //Bool_t saveSeparatelyByCent = 0)
 {
   //graphics for display
   gStyle->SetOptStat("1111");

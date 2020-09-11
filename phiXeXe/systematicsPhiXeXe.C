@@ -1,6 +1,6 @@
 // #include "/Users/fbellini/alice/macros/MakeUp.C"
 // #include "/Users/fbellini/alice/macros/SetStyle.C"
-#include "/Users/fbellini/alice/macros/GetPlotRatio.C"
+#include "/Users/fbellini/alice/macros/ResonAnT/phiXeXe/GetPlotRatio.C"
 
 enum ESysSource_t {kPID = 0,
 		   kBgNorm, 
@@ -14,9 +14,9 @@ enum ESysSource_t {kPID = 0,
 		   kNtypes};
 
 
-TList * GetListOfAlternativeHistograms(ESysSource_t source = ESysSource_t::kNtypes, Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "A3");
+TList * GetListOfAlternativeHistograms(ESysSource_t source = ESysSource_t::kNtypes, Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "C3");
 TH1D  * GetAlternativeHist(Int_t altID = 0, TString  alternativeFile = "", Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_");
-TH1D  * GetCentralValueHistRaw(Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "A3");
+TH1D  * GetCentralValueHistRaw(Short_t cent = 0, TString histoPrefix = "hRawYieldVsPt_", TString binning = "C3");
 TH1D  * GetCentralValueHistCorr(Short_t cent = 0, TString histoPrefix = "hCorrected_");
 TString GetSourceName(ESysSource_t source = ESysSource_t::kNtypes);
 TCanvas * createCanvas(TString name = "c1", Short_t nrows = 1, Short_t ncols = 1);
@@ -30,7 +30,7 @@ void runSystematics();
 void systematicsPhiXeXe(Short_t cent = 0, 
 			TString BarlowOpt = "", // empty for no Barlow, B1 for Barlow 1sigma, B2 for Barlow 2sigma
 			ESysSource_t source = ESysSource_t::kFitRange,
-			TString binning = "A3")
+			TString binning = "C3")
 {
   //style for display
   gStyle->SetPadLeftMargin(0.15);
@@ -283,7 +283,9 @@ TH1D * GetCentralValueHistRaw(Short_t cent, TString histoPrefix, TString binning
   
   if (!histoPrefix) return 0x0;
   
-  TString centralValueFile = Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data());
+  TString centralValueFile = Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/phi%s_default_LowBdca/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data());
+  
+  //PRELIM Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phi%s_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/RAW_fitResult.root", binning.Data());
   TFile * fin = TFile::Open(centralValueFile.Data());
   if (!fin) return 0x0;
   TH1D * h = (TH1D *) fin->Get(Form("%s%i", histoPrefix.Data(), cent));
@@ -297,7 +299,8 @@ TH1D * GetCentralValueHistCorr(Short_t cent, TString histoPrefix)
   //Get central value from file
   
   if (!histoPrefix) return 0x0;
-  TString centralValueFile = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_Wfix/fit_r0.994-1.070/CORRECTED_br_fitResult.root";
+  TString centralValueFile = Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/phiC3_default_LowBdca/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root");
+  //PRELIM "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_Wfix/fit_r0.994-1.070/CORRECTED_br_fitResult.root";
   
   TFile * fin = TFile::Open(centralValueFile.Data());
   if (!fin) return 0x0;
@@ -326,7 +329,10 @@ TList * GetListOfAlternativeHistograms(ESysSource_t source, Short_t cent, TStrin
   switch (source) {
   case ESysSource_t::kPID:
     list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phi%s_tpc2sPtDep_tof4sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", binning.Data()), cent, "hCorrected_"));
-    list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phiC3_tpc3sPtDep_tof3sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", cent, "hCorrected_"));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phi%s_tpc2sPtDep_tof3sveto/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", binning.Data()), cent, "hCorrected_"));
+    list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phi%s_tpc3sPtDep_tof3sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", binning.Data()), cent, "hCorrected_"));
+    //list->AddLast((TH1D*)GetAlternativeHist(++i, Form("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phiD3_tpc2sPtDep_tof4sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", binning.Data()), cent, "hCorrected_"));
+    //list->AddLast((TH1D*)GetAlternativeHist(++i, "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys/phiD3_tpc3sPtDep_tof3sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070/CORRECTED_br_fitResult.root", cent, "hCorrected_"));
     break;
 
   case ESysSource_t::kBgNorm:

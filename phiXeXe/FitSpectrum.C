@@ -15,7 +15,7 @@ void PrintParams(TF1 * fitFunc = 0, TPaveText * paveFitParams = 0, Double_t * pa
 Float_t StatUncertFromData(TH1D * hStat = 0);
 Float_t SystUncertFromData(TH1D * hSyst = 0);
 
-void FitSpectrum(Int_t centrality = -1, TString function = "bgbw", Double_t rangefitMin = 0.5, Double_t rangefitMax = 10.0, TString date = "01may18");
+void FitSpectrum(Int_t centrality = -1, TString function = "bgbw", Double_t rangefitMin = 0.5, Double_t rangefitMax = 10.0, TString date = "22jun20");
 
 TF1 * FitSpectrum(TH1D *data_stat = 0x0,
 	     TH1D *data_syst = 0x0,
@@ -35,13 +35,14 @@ void FitSpectrum(Int_t centrality,
 		 TString date //date of spectra
 		 )
 {
-  Int_t centEdges[5] = {0, 10, 30, 60, 90};
+  const int ncentbins = 5;
+  Int_t centEdges[ncentbins] = {0, 10, 30, 50, 70, 90};
   // fin[0] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_0.root");
   // fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
   // fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
-  TH1F * fitResults[4];  
-  TFile * fin[4];
-  for (Int_t i = 0; i<4; i++){
+  TH1F * fitResults[ncentbins];  
+  TFile * fin[ncentbins];
+  for (Int_t i = 0; i<ncentbins; i++){
   fitResults[i] = new TH1F(Form("fitResults%i",i),"fitResults", 7, 0., 7.);
   fitResults[i]->GetXaxis()->SetBinLabel(1, "dN/dy");
   fitResults[i]->GetXaxis()->SetBinLabel(2,"stat");
@@ -56,10 +57,10 @@ void FitSpectrum(Int_t centrality,
   
   TFile * fileres = new TFile(Form("FITSPECTRUM_%s_%3.1f-%3.1f_%s.root", function.Data(),rangefitMin,rangefitMax, date.Data()), "recreate");
 
-  TH1D * hstat[4];
-  TH1D * hsys[4];
+  TH1D * hstat[ncentbins];
+  TH1D * hsys[ncentbins];
   
-  for (int ic =0; ic<4; ic++){
+  for (int ic =0; ic<ncentbins; ic++){
     if (centrality>=0 && ic!=centrality) continue;
     hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
@@ -74,13 +75,13 @@ void FitSpectrum(Int_t centrality,
   }
 
   Printf("::::: RESULTS dN/dy :::::");
-  for (int ic =0; ic<4; ic++){
+  for (int ic =0; ic<ncentbins; ic++){
     Printf("dN/dy cent %i: %8.6f %8.6f %8.6f (%3.2f)", ic,
 	   fitResults[ic]->GetBinContent(1), fitResults[ic]->GetBinContent(2), fitResults[ic]->GetBinContent(3), fitResults[ic]->GetBinContent(4));
   }
   
   Printf("::::: RESULTS mean pT :::::");
-  for (int ic =0; ic<4; ic++){
+  for (int ic =0; ic<ncentbins; ic++){
     Printf("<pT> cent %i: %8.6f %8.6f %8.6f", ic,
 	   fitResults[ic]->GetBinContent(5), fitResults[ic]->GetBinContent(6), fitResults[ic]->GetBinContent(7) );
   }

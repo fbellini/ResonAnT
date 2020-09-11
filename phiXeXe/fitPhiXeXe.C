@@ -30,22 +30,22 @@ void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
 
 //run all
-void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit all - range and bg func
-void runDefault(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 4, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "A3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runDefault(TString pid = "tpc2sPtDep_tof3sveto", TString anaPath = " ~/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys", Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //params sys
-void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit breit
-void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 3, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //Run LikeSign fit (Voigt + poly1 and 2)
-void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = , TString inName = "sub_A3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 
 
 void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel, Float_t ptMin, Float_t ptMax);
@@ -75,8 +75,10 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
 {
 
   SetStyle();
-  Color_t color[]={kRed+1, kSpring+2, kBlue+1, kBlack, kAzure+10};
-  Color_t marker[]={20, 21, 33, 34, 28}; 
+  Color_t color[] = {kOrange, kSpring+5, kTeal+5, kBlue+1, kMagenta+3};
+  Int_t  marker[] = {20, 21, 33, 34, 45}; 
+ // Color_t color[]={kRed+1, kSpring+2, kBlue+1, kBlack, kAzure+10};
+  //Color_t marker[]={20, 21, 33, 34, 28}; 
   
   //-----------------------
   //open input file
@@ -90,15 +92,15 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
   //-----------------------
   //open resolution file
   //-----------------------
-  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/simulation/res_A3_tpc2sPtDep_tof2sveto5smism.root";
-    //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
+  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/simulation/LHC17j7_3/res_C3_default_LowBdca.root";
+  // 24.6.2020 "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423/simulation/res_C3_tpc2sPtDep_tof3sveto5smism.root";
+    //PRELIM "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
   TFile * finRes = TFile::Open(resolFileName.Data(),"read");
   if (!resolFileName || !finRes || !finRes->IsOpen()) {
     Printf("Invalid input file or impossible to open: %s", resolFileName.Data());
     return "";
   }
   
-  //-----------------------
   //retrieve axis and binning
   //-----------------------
   TAxis *ptbins = (TAxis*)fin->Get("ptbins");
@@ -845,7 +847,7 @@ Float_t GetResolutionFromFilePt(TFile * resFile, Int_t centbin, Int_t ptbin, Int
 //************************************************************************
 //************************************************************************
 //************************************************************************
-void runDefault(Int_t selCentBin,  Int_t nCentBinsToProcess, Float_t normLow, Float_t normUp, TString binning, Double_t integrationTolerance, TString imgFormat)
+void runDefault(TString pid, TString anaPath, Int_t selCentBin,  Int_t nCentBinsToProcess, Float_t normLow, Float_t normUp, TString binning, Double_t integrationTolerance, TString imgFormat)
 {
   //normalisation fixed
   //fit parameters as per default strategy
@@ -858,7 +860,7 @@ void runDefault(Int_t selCentBin,  Int_t nCentBinsToProcess, Float_t normLow, Fl
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(Form("sub_%s.root", binning.Data()), "Mixing", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly1", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
   }
-  MakeRawSpectra(folderName.Data(), lowFitR, highFitR, binning.Data(), normLow, normUp);
+  MakeRawSpectra(folderName.Data(), lowFitR, highFitR, binning.Data(), normLow, normUp, anaPath.Data(), pid.Data());
   return;
 }
 
@@ -1071,7 +1073,7 @@ void runLikeSignFits(Int_t selCentBin, Int_t nCentBinsToProcess, TString inName,
   // }
   // MakeRawSpectra(folderName.Data(), lowFitR, highFitR);
 
-  for (int ic = 0; ic < 4; ic++){
+  for (int ic = 0; ic < nCentBinsToProcess; ic++){
     if ((selCentBin>=0) && (ic!=selCentBin)) continue;
     if (selCentBin>0) integrationTolerance = 1.e-3;
     folderName = fitPhiXeXe(inName.Data(), "Like", integrationTolerance, ic, -1, lowFitR, highFitR, "VOIGT", "poly2", 1.010, 1.030, -0.001, -0.01, "", -1, 5.0, imgFormat.Data());
@@ -1088,7 +1090,7 @@ void runFitDefaultAndSys(Int_t selCentBin, Int_t nCentBinsToProcess, TString bin
   //
   TString inName = Form("sub_%s.root", binning.Data());
   //default
-  runDefault(selCentBin, nCentBinsToProcess, 1.07, 1.10, "A3", 1.e-2, "eps");
+  runDefault("default_LowBdca", "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec", selCentBin, nCentBinsToProcess, 1.07, 1.10, "C3", 1.e-2, "eps");
   //fit range variations
   runFitRangeSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
   //bg fit function variation

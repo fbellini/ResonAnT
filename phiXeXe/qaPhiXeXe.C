@@ -1,6 +1,8 @@
-#include "/Users/fbellini/alice/macros/comsetics/SetStyle.C"
-#include "/Users/fbellini/alice/macros/comsetics/MakeUp.C"
+#include "/Users/fbellini/alice/macros/cosmetics/SetStyle.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 #include "/Users/fbellini/alice/macros/utils/fitSlices.C"
+
+void compareLowBdca(TString finname = "RsnOut.root");
 
 void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
 {
@@ -49,6 +51,9 @@ void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
     break;
   case 11:
     listName = "RsnOut_tpc2sPtDep_tof3sveto_elRej";
+    break;
+  case 101:
+    listName = "RsnOut_default_LowBdca";
     break;
   default:
     listName = "RsnOut_tpc2sPtDep_tof3s";
@@ -157,5 +162,45 @@ void qaPhiXeXe(Int_t nCuts = 0, TString finname = "RsnOut.root")
   c->cd(4); hTOFpidCut->Draw("colz"); 
   gPad->SetLogz();gPad->SetLogx();
 
+  return;
+}
+
+
+
+void compareLowBdca(TString finname){
+  SetStyle();
+  TFile * fin = new TFile(finname.Data());
+  if (!fin) return;
+
+  TList * lin1 = (TList*) fin->Get("RsnOut_default_LowBdca");
+  TList * lin2 = (TList*) fin->Get("RsnOut_tpc2sPtDep_tof3sveto5smism");
+  if (!lin1 || !lin2) return;
+
+  TH2F * hLowB = (TH2F*) lin1->FindObject("cutKa.DCAxyVsPt_pt_DCAxy");
+  TH2F * hNominalB = (TH2F*) lin2->FindObject("cutKa.DCAxyVsPt_pt_DCAxy");
+
+  if (!hLowB || !hNominalB) return;
+  int istart = hLowB->GetXaxis()->FindBin(0.2);
+  int istop = hLowB->GetXaxis()->FindBin(1.5);
+  TH1F * hLowB_py = (TH1F *) hLowB->ProjectionY("hLowB_py", istart, istop);
+  Beautify(hLowB_py, kRed, 1, 2, 20, 1.3);
+  hLowB_py->SetTitle("low B");
+  TH1F * hNominalB_py = (TH1F *) hNominalB->ProjectionY("hNominalB_py", istart, istop);
+  Beautify(hNominalB_py, kBlue, 1, 2, 21, 1.3);
+  hNominalB_py->SetTitle("standard");
+
+  TCanvas *cdca = new TCanvas("cdca", "DCAxy", 800, 900);
+  cdca->cd();
+  gPad->SetLogy();
+  gStyle->SetOptStat(0);
+  gPad->SetMargin(0.2, 0.05, 0.2, 0.07);
+  hLowB_py->Draw("hist");
+  hLowB_py->GetXaxis()->SetRangeUser(-0.5, 0.5);
+  hLowB_py->GetXaxis()->SetTitle("DCA_{xy} (cm)");
+  hLowB_py->GetYaxis()->SetTitle("tracks");
+  hNominalB_py->Draw("hist same");
+  TLegend * leg = (TLegend*) gPad->BuildLegend(0.7, 0.7, 0.9, 0.9, "DCAxy cut");
+  myLegendSetUp(leg, 0.04);
+  
   return;
 }

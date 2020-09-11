@@ -36,7 +36,7 @@ enum EHistStyle {kSig = 0,
 		 kMEBnorm,
 		 kMEBsub};
 
-Int_t subtractPhiXeXe(TString projectionFile="proj_A3.root", 
+Int_t subtractPhiXeXe(TString projectionFile="proj_C3.root", 
 		      Float_t emNormInf = 1.07,
 		      Float_t emNormSup = 1.1, 
 		      Double_t desiredIMbinWidth = 0.002, //in GeV/cˆ2

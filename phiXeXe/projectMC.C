@@ -12,10 +12,10 @@ Float_t GetTruncationCorrection(Int_t absRange = 3);
 Double_t Voigt( Double_t *x, Double_t * par);
 TF1 * GetVOIGT(Double_t fitMin, Double_t fitMax);
 
-void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
+int projectMC(TString nameData = "RsnOut.root",
 	       TString listName = "RsnOut_tpc2sPtDep_tof3sveto5smism",
 	       TString cutLabel  = "tpc2sPtDep_tof3sveto5smism",
-	       TString binning  = "A3",
+	       TString binning  = "C3",
 	       Bool_t doEffOnly = 0,
 	       Color_t customColor = kBlack)
 {
@@ -41,8 +41,10 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   gStyle->SetTitleY(.91);
   TGaxis::SetMaxDigits(2);
     
-  Color_t color[]={kRed+1, kOrange+1, kSpring-5, kBlue+1, kBlack};
-  Color_t marker[]={20, 21, 24, 25, 28}; 
+  //Color_t color[]={kRed+1, kOrange+1, kSpring-5, kBlue+1, kBlack};
+  //Color_t marker[]={20, 21, 24, 25, 28}; 
+  Color_t color[] = {kOrange, kSpring+5, kAzure+2, kBlue+1, kMagenta+3, kBlack};
+  Int_t  marker[] = {20, 21, 24, 25, 34, 1}; 
   Color_t histoColor = customColor;
   const Int_t kNhistosData = 4;
     
@@ -50,23 +52,23 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   TFile * fileData = TFile::Open(nameData.Data());
   if (!(fileData && fileData->IsOpen())) { 
     Printf("ERROR: cannot open file");
-    return; 
+    return 1; 
   }
     
   TList * listData = (TList*)fileData->Get(listName.Data());
-  if (! listData) return;
+  if (! listData) return 2;
 //  TH2F * hVtx = (TH2F*) listData->FindObject("PhiXeXeMC_eventVtx");
   TH1F * hCounters = (TH1F*) listData->FindObject("hEventStat");
   TH1F * hMulti = (TH1F*) listData->FindObject("hAEventsVsMulti");
   TH1F * hMultiAccepted = (TH1F*) listData->FindObject("PhiXeXeMC_eventMult");
   TH3F * hTrueIn =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_True%s", cutLabel.Data()));
-  if (!hTrueIn) return;
+  if (!hTrueIn) return 3;
   TH3F * hTrueYIn =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_TrueY%s", cutLabel.Data()));
-  if (!hTrueYIn) return;
+  if (!hTrueYIn) return 4;
   TH3F * hMother =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_Mother%s", cutLabel.Data()));
-  if (!hMother) return;
+  if (!hMother) return 5;
   TH3F * hMotherY =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_MotherY%s", cutLabel.Data()));
-  if (!hMotherY && !doEffOnly) return;
+  if (!hMotherY && !doEffOnly) return 6;
   // TH3F * hPhaseSpace =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_PhaseSpace%s", cutLabel.Data()));
   // if (!hPhaseSpace) return;
 
@@ -88,7 +90,9 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   Double_t centB[] = {0.0, 5.0, 10.0, 30.0, 50.0, 70.0, 90.0};
   Double_t centC[] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};
   Double_t centD[] = {0.0, 30.0, 60.0, 90.0};
-  Double_t   pt1[100]; pt1[0] = 0.0; for(int j = 1; j<100; j++){ pt1[j] = pt1[j-1]+0.1;}
+  Double_t   pt1[100]; 
+  pt1[0] = 0.0; 
+  for(int j = 1; j<100; j++){ pt1[j] = pt1[j-1]+0.1;}
   Double_t   pt2[] = {0.0, 0.3, 0.5, 0.7, 1.00, 1.50, 2.00, 2.50, 3.00, 3.5, 4.00, 4.5, 5.0, 7.0, 10.0};
   Double_t   pt3[] = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};
   Double_t   rap[] = {-0.5, 0.5};//{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5};
@@ -116,18 +120,18 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
     selectedPtBinning = pt3;
   }
 
-  if (binning.Contains("A")) {
-    ncent = sizeof(centA) / sizeof(centA[0]) - 1;
-    centbins = new TAxis(ncent, centA);
-  }  else
-    if (binning.Contains("B")) {
-      ncent = sizeof(centB) / sizeof(centB[0]) - 1;
-      centbins = new TAxis(ncent, centB);
-    } else
-      if (binning.Contains("C")) {
-	ncent = sizeof(centC) / sizeof(centC[0]) - 1;
-	centbins = new TAxis(ncent, centC);
-      }
+  if (binning.Contains("C")) {
+	      ncent = sizeof(centC) / sizeof(centC[0]) - 1;
+	      centbins = new TAxis(ncent, centC);
+      } else
+    if (binning.Contains("A")) {
+      ncent = sizeof(centA) / sizeof(centA[0]) - 1;
+      centbins = new TAxis(ncent, centA);
+    }  else
+      if (binning.Contains("B")) {
+        ncent = sizeof(centB) / sizeof(centB[0]) - 1;
+        centbins = new TAxis(ncent, centB);
+      } 
 
   //output file
   TString efffilename = Form("eff_%s_%s.root", binning.Data(), cutLabel.Data());
@@ -162,10 +166,10 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
     projector.MultiProjPtCent(npt, selectedPtBinning, 1, minbias,  hInput[i], out);
   }
   Printf(":::: Projected according to binning strategy %s", binning.Data());
-  if (!lTrue || !lMother) return;  
+  if (!lTrue || !lMother)  7;  
 
   //Print efficiency plot on canvas
-  TCanvas *ctrue[5];
+  TCanvas *ctrue[6];
   TCanvas * ceffo = new TCanvas("ceffo","efficiency", 800,600);
   TCanvas * cratio = new TCanvas("cratio","efficiency ratio", 800,600);
 
@@ -280,8 +284,8 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   lMother->Write("Mother");
   lTrue->Write("True");
 
-  if (doEffOnly) return;
-  //---------------------------------
+  if (doEffOnly) return 8;
+  //-------------------- -------------
   // efficiency vs y
   //---------------------------------
   //Project pt vs Y
@@ -337,14 +341,14 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   TCanvas * cres = new TCanvas("cres","pt, y resolution", 800,600);
   cres->Divide(1,2);
 
-  TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 1400,1000);
-  cresMethods->Divide(3,2);
+  TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 900,1500);
+  cresMethods->Divide(2,3);
 
   TCanvas * cresGausCent = new TCanvas("cresGausCent","mass resolution, Gaussian fit", 800,600);
   TCanvas * cresRMSCent = new TCanvas("cresRMSCent","mass resolution, RMS", 800,600);
   TCanvas * cresVMCCent = new TCanvas("cresVMCCent","mass resolution, Voigt fit to MC true", 800,600);
 
-  TCanvas * cres_cent[4];
+  TCanvas * cres_cent[6];
   for (Int_t icent = 0; icent<ncent; icent++) {
     cres_cent[icent] = new TCanvas(Form("cres_cent%i",icent),"resolution", 1000,600);
     cres_cent[icent]->Divide(2,2);
@@ -399,16 +403,16 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   fitFcn->SetParLimits(2, 0.001, 0.01);//0.004266); // width fixed to the pdg value
   fitFcn->SetParLimits(3, 0.001, 0.01);//0.004266); // width fixed to the pdg value
   fitFcn->SetParameter(3, 0.004266); // width fixed to the pdg value
-  if (!fitFcn) return;
+  if (!fitFcn) return 9;
   
-  for (Int_t icent = 0; icent<ncent+1;icent++){
-    Printf ("\n\n Centrality bin %i ----------- %f - %f", icent, centA[icent], centA[icent+1]);
+  for (Int_t icent = 0; icent<ncent;icent++){
+    Printf ("\n\n Centrality bin %i ----------- %f - %f", icent, centC[icent], centC[icent+1]);
     TH1F * hResVsPt[4];
     TH1F * hResVsPtRMS[4];
     TH1F * hResVsPtVMC[4];
     TH1F * hMassVsPtVMC[4];
     TH1F * hWidthVsPtVMC[4];
-    TString centLabel = Form("%2.0f-%2.0f %%", centA[icent], centA[icent+1]);
+    TString centLabel = Form("%2.0f-%2.0f %%", centC[icent], centC[icent+1]);
     if (icent == ncent) centLabel = "0-90%";
     
     for (Int_t i = 0; i<4; i++){
@@ -558,10 +562,7 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
   legResV->SetNColumns(2);
   legResV->SetTextSize(0.025);
   cresVMCCent->Print("centDep_VMCRes.pdf");
-
-
   
-
   //loop on rapidity bins
   for (Int_t irapbin = 0; irapbin<nrap;irapbin++){
     TString rapLabel = Form("(%2.1f < #it{y} < %2.1f)", rap[irapbin], rap[irapbin+1]);
@@ -620,7 +621,7 @@ void projectMC(TString nameData = "LHC17j7_2_RsnOut.root",
     hYResVsPt->Draw(opt.Data());
   }//end loop on rapidity bins
 
-  return;
+  return 0;
  
 }
 
