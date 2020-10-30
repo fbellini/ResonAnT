@@ -7,9 +7,10 @@ TPaveText * AddPaveTextXeXe();
 TPaveText * AddPaveTextStatOnly();
 
 void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",                    
-			 TString effFilePath =  "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/simulation/LHC17j7_3",//"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423/simulation", 
+        TString effFilePath =  "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/final",
+			 //TString effFilePath =  "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/simulation/LHC17j7_3",//"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423/simulation", 
 			 TString pid = "default_LowBdca", //"tpc2sPtDep_tof3sveto5smism",
-			 TString binning = "C3",
+			 TString binning = "final",
 			 Bool_t reweightEff = 0,
 			 TString suffix = "",
 			 Bool_t correctBR = 1)
@@ -70,7 +71,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     TString centLabel = Form("%i-%i%%",centBinning[ic], centBinning[ic+1]);
     Printf("\n\n\n*************************\n Spectra %s \n*************************",centLabel.Data());
     
-    TString effFileName = Form("eff_C3_%s.root", pid.Data()); 
+    TString effFileName = Form("eff_final_%s.root", pid.Data()); 
     if (binning.Contains("A3")) effFileName.ReplaceAll("C3", "A3");
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));
@@ -89,43 +90,48 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     hraw->SetLineWidth(1);
         
     //normalise by event number
-    if (binning.Contains("C3")) {
-
-      if  (effFilePath.Contains("ana0503")){
+    if (binning.Contains("final")){
         hraw->SetName(Form("hCombinedNorm_%i",ic));
         hraw->Scale(1./nEvents_ana0503[ic]);
         Printf(":::: Normalization by accepted event number for ana0503");
-      } else if (effFilePath.Contains("ana0423")){
-        hraw->SetName(Form("hCombinedNorm_%i",ic));
-        hraw->Scale(1./nEvents_ana0423[ic]);
-        Printf(":::: Normalization by accepted event number for ana0423");
-      } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc3sPtDep_tof3sveto5smism") || pid.Contains("tpc2sPtDep_tof4sveto5smism"))){
-        hraw->SetName(Form("hCombinedNorm_%i",ic));
-        hraw->Scale(1./nEvents_ana0414B[ic]);
-        Printf(":::: Normalization by accepted event number for ana0414B - pid %s", pid.Data());
-      } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc2sPtDep_tof3sveto"))){      
-        hraw->SetName(Form("hCombinedNorm_%i",ic));
-        hraw->Scale(1./nEvents_ana0414A[ic]);
-        Printf(":::: Normalization by accepted event number for ana0414A - pid %s", pid.Data());
-      }
     } else {
-      if (binning.Contains("A3") && (effFilePath.Contains("ana0406"))){
-      hraw->SetName(Form("hCombinedNorm_%i",ic));
-      hraw->Scale(1./nEvents_ana0406A3[ic]);
-      Printf(":::: Normalization by accepted event number for ana0406");
-    } else if (effFilePath.Contains("ana0221")){
-      hraw->SetName(Form("hCombinedNorm_%i",ic));
-      hraw->Scale(1./nEvents_ana0221[ic]);
-      Printf(":::: Normalization by accepted event number for ana0221");
-    } else if (effFilePath.Contains("ana0301")){
-      hraw->SetName(Form("hCombinedNorm_%i",ic));
-      hraw->Scale(1./nEvents_ana0301[ic]);
-      Printf(":::: Normalization by accepted event number for ana0301");
-    } else if (effFilePath.Contains("ana0406")){
-      hraw->SetName(Form("hCombinedNorm_%i",ic));
-      hraw->Scale(1./nEvents_ana0406[ic]);
-      Printf(":::: Normalization by accepted event number for ana0406");
-      } 
+        if (binning.Contains("C3")) {
+          if  (effFilePath.Contains("ana0503")){
+            hraw->SetName(Form("hCombinedNorm_%i",ic));
+            hraw->Scale(1./nEvents_ana0503[ic]);
+            Printf(":::: Normalization by accepted event number for ana0503");
+          } else if (effFilePath.Contains("ana0423")){
+            hraw->SetName(Form("hCombinedNorm_%i",ic));
+            hraw->Scale(1./nEvents_ana0423[ic]);
+            Printf(":::: Normalization by accepted event number for ana0423");
+          } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc3sPtDep_tof3sveto5smism") || pid.Contains("tpc2sPtDep_tof4sveto5smism"))){
+            hraw->SetName(Form("hCombinedNorm_%i",ic));
+            hraw->Scale(1./nEvents_ana0414B[ic]);
+            Printf(":::: Normalization by accepted event number for ana0414B - pid %s", pid.Data());
+          } else if (effFilePath.Contains("ana0414") && (pid.Contains("tpc2sPtDep_tof3sveto"))){      
+            hraw->SetName(Form("hCombinedNorm_%i",ic));
+            hraw->Scale(1./nEvents_ana0414A[ic]);
+            Printf(":::: Normalization by accepted event number for ana0414A - pid %s", pid.Data());
+          }
+        } else {
+          if (binning.Contains("A3") && (effFilePath.Contains("ana0406"))){
+          hraw->SetName(Form("hCombinedNorm_%i",ic));
+          hraw->Scale(1./nEvents_ana0406A3[ic]);
+          Printf(":::: Normalization by accepted event number for ana0406");
+        } else if (effFilePath.Contains("ana0221")){
+          hraw->SetName(Form("hCombinedNorm_%i",ic));
+          hraw->Scale(1./nEvents_ana0221[ic]);
+          Printf(":::: Normalization by accepted event number for ana0221");
+        } else if (effFilePath.Contains("ana0301")){
+          hraw->SetName(Form("hCombinedNorm_%i",ic));
+          hraw->Scale(1./nEvents_ana0301[ic]);
+          Printf(":::: Normalization by accepted event number for ana0301");
+        } else if (effFilePath.Contains("ana0406")){
+          hraw->SetName(Form("hCombinedNorm_%i",ic));
+          hraw->Scale(1./nEvents_ana0406[ic]);
+          Printf(":::: Normalization by accepted event number for ana0406");
+          } 
+        }
     }
     TH1F * hcorr = (TH1F*) hraw->Clone(Form("hCorrected_%i",ic));
     hcorr->GetYaxis()->SetTitle("1/N_{evt} d#it{N}/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");
@@ -147,7 +153,11 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
       Printf("CANNOT FIND EFF FILE!!!");
       return;
     }
-    TH1F * heff = (TH1F*) feff->Get(Form("%s%i", effHistName.Data(), ic));
+    TH1F * heff = 0x0;
+    if (binning.Contains("final") && ic>1)
+      heff = (TH1F*) feff->Get(Form("%s%i", effHistName.Data(), 2));
+    else 
+      heff = (TH1F*) feff->Get(Form("%s%i", effHistName.Data(), ic));
     if (!heff) { Printf("Invalid efficiency histogram name."); return;}
     heff->SetTitle(Form("Efficiency (%s)", centLabel.Data()));
     heff->SetName(Form("hEff_%i", ic));
@@ -172,7 +182,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     // }
   
     //correct for efficiency
-    if (hcorr->Divide(heff))  Printf(":::: Efficiency correction from file: %s/%s", effFilePath.Data(), feff->GetName());
+    if (hcorr->Divide(heff))  Printf(":::: Efficiency correction from file: %s/%s > %s", effFilePath.Data(), feff->GetName(), heff->GetName());
         
     //correct for BR
     if (correctBR) {

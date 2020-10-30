@@ -30,22 +30,22 @@ void SetLimitsFromBgOnlyFit(TF1 * fitBg = NULL, TF1 * fitFcn = NULL);
 Float_t GetResolutionFromFilePt(TFile * fileRes = NULL, Int_t centbin = 0, Int_t ptbin = 0, Int_t rangeOpt = 1, TString resType = "RMS", Bool_t returnErr = 0);
 
 //run all
-void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitDefaultAndSys(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString binning = "final", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit all - range and bg func
-void runDefault(TString pid = "tpc2sPtDep_tof3sveto", TString anaPath = " ~/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys", Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "C3", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runDefault(TString pid = "tpc2sPtDep_tof3sveto", TString anaPath = " ~/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys", Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, Float_t normLow = 1.07, Float_t normUp = 1.10, TString binning = "final", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runVoigtResLowHighLimit(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly1(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runFitRangeSysPoly2(Int_t selCentBin = -1, Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //params sys
-void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runAllParFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runAllParFreeSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runWidthResFixedSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //fit breit
-void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
-void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runBreitSysPoly1(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runBreitSysPoly2(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 //Run LikeSign fit (Voigt + poly1 and 2)
-void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_C3.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
+void runLikeSignFits(Int_t selCentBin = -1,  Int_t nCentBinsToProcess = 5, TString inName = "sub_final.root", Double_t integrationTolerance = 1.e-2, TString imgFormat = "eps");
 
 
 void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel, Float_t ptMin, Float_t ptMax);
@@ -53,7 +53,7 @@ void SaveFigureForApproval(TH1* histo, TF1* ftot, TF1* fitBg, TString centLabel,
 //TO DO: add customised fit ranges for each pt bin
 //TO DO: fix new implementation of summed functions
 
-TString fitPhiXeXe(TString inName = "sub_C3.root",
+TString fitPhiXeXe(TString inName = "sub_final.root",
 		   TString bgType = "Mixing", //alternative "Mixing"
 		   Double_t integrationTolerance = 1.0e-4,
 		   Int_t selCentBin = 0,
@@ -92,7 +92,7 @@ TString fitPhiXeXe(TString inName = "sub_C3.root",
   //-----------------------
   //open resolution file
   //-----------------------
-  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec/simulation/LHC17j7_3/res_C3_default_LowBdca.root";
+  TString resolFileName = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis/res_C3_default_LowBdca.root";
   // 24.6.2020 "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0423/simulation/res_C3_tpc2sPtDep_tof3sveto5smism.root";
     //PRELIM "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/sim/ana0221mc/res_C3_tpc2s_tof3sveto.root";
   TFile * finRes = TFile::Open(resolFileName.Data(),"read");
@@ -1090,7 +1090,7 @@ void runFitDefaultAndSys(Int_t selCentBin, Int_t nCentBinsToProcess, TString bin
   //
   TString inName = Form("sub_%s.root", binning.Data());
   //default
-  runDefault("default_LowBdca", "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec", selCentBin, nCentBinsToProcess, 1.07, 1.10, "C3", 1.e-2, "eps");
+  runDefault("default_LowBdca", "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis", selCentBin, nCentBinsToProcess, 1.07, 1.10, "final", 1.e-2, "eps");
   //fit range variations
   runFitRangeSysPoly1(selCentBin, nCentBinsToProcess, inName.Data(), 1.e-2, "eps");
   //bg fit function variation

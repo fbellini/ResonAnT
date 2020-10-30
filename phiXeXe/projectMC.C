@@ -13,9 +13,9 @@ Double_t Voigt( Double_t *x, Double_t * par);
 TF1 * GetVOIGT(Double_t fitMin, Double_t fitMax);
 
 int projectMC(TString nameData = "RsnOut.root",
-	       TString listName = "RsnOut_tpc2sPtDep_tof3sveto5smism",
-	       TString cutLabel  = "tpc2sPtDep_tof3sveto5smism",
-	       TString binning  = "C3",
+	       TString listName = "RsnOut_default_LowBdca",
+	       TString cutLabel  = "default_LowBdca",
+	       TString binning  = "final",
 	       Bool_t doEffOnly = 0,
 	       Color_t customColor = kBlack)
 {
@@ -43,10 +43,10 @@ int projectMC(TString nameData = "RsnOut.root",
     
   //Color_t color[]={kRed+1, kOrange+1, kSpring-5, kBlue+1, kBlack};
   //Color_t marker[]={20, 21, 24, 25, 28}; 
-  Color_t color[] = {kOrange, kSpring+5, kAzure+2, kBlue+1, kMagenta+3, kBlack};
-  Int_t  marker[] = {20, 21, 24, 25, 34, 1}; 
+  Color_t color[] = {kOrange, kSpring+5, kAzure+2, kBlue+1, kMagenta+2, kBlack};
+  Int_t  marker[] = {20, 21, 24, 25, 34, 33}; 
   Color_t histoColor = customColor;
-  const Int_t kNhistosData = 4;
+  //const Int_t kNhistosData = 4;
     
   // open input file  
   TFile * fileData = TFile::Open(nameData.Data());
@@ -90,6 +90,7 @@ int projectMC(TString nameData = "RsnOut.root",
   Double_t centB[] = {0.0, 5.0, 10.0, 30.0, 50.0, 70.0, 90.0};
   Double_t centC[] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};
   Double_t centD[] = {0.0, 30.0, 60.0, 90.0};
+  Double_t cento[] = {0.0, 10.0, 30.0, 90.0};
   Double_t   pt1[100]; 
   pt1[0] = 0.0; 
   for(int j = 1; j<100; j++){ pt1[j] = pt1[j-1]+0.1;}
@@ -106,6 +107,22 @@ int projectMC(TString nameData = "RsnOut.root",
   TAxis *centbins = 0;
   Double_t * selectedPtBinning;
   
+  if (binning.Contains("C")) {
+      ncent = sizeof(centC) / sizeof(centC[0]) - 1;
+      centbins = new TAxis(ncent, centC);
+    } else
+  if (binning.Contains("A")) {
+    ncent = sizeof(centA) / sizeof(centA[0]) - 1;
+    centbins = new TAxis(ncent, centA);
+  }  else
+    if (binning.Contains("B")) {
+      ncent = sizeof(centB) / sizeof(centB[0]) - 1;
+      centbins = new TAxis(ncent, centB);
+    } if (binning.Contains("final")) {
+      ncent = sizeof(cento) / sizeof(cento[0]) - 1;
+      centbins = new TAxis(ncent, cento);
+    } 
+
   if (binning.Contains("1")) {
     npt = sizeof(pt1) / sizeof(pt1[0]) - 1;
     ptbins = new TAxis(npt, pt1);
@@ -114,25 +131,13 @@ int projectMC(TString nameData = "RsnOut.root",
     npt = sizeof(pt2) / sizeof(pt2[0]) - 1;
     ptbins = new TAxis(npt, pt2);
     selectedPtBinning = pt2;
-  } else if (binning.Contains("3")) {
+  } else if (binning.Contains("3") || binning.Contains("final")) {
     npt = sizeof(pt3) / sizeof(pt3[0]) - 1;
     ptbins = new TAxis(npt, pt3);
     selectedPtBinning = pt3;
   }
 
-  if (binning.Contains("C")) {
-	      ncent = sizeof(centC) / sizeof(centC[0]) - 1;
-	      centbins = new TAxis(ncent, centC);
-      } else
-    if (binning.Contains("A")) {
-      ncent = sizeof(centA) / sizeof(centA[0]) - 1;
-      centbins = new TAxis(ncent, centA);
-    }  else
-      if (binning.Contains("B")) {
-        ncent = sizeof(centB) / sizeof(centB[0]) - 1;
-        centbins = new TAxis(ncent, centB);
-      } 
-
+  Printf(":::::::::::: Binning scheme: %s -- ncent = %i, npt = %i", binning.Data(), ncent, npt);
   //output file
   TString efffilename = Form("eff_%s_%s.root", binning.Data(), cutLabel.Data());
   TFile * efffile = new TFile(efffilename.Data(), "recreate");
@@ -162,6 +167,8 @@ int projectMC(TString nameData = "RsnOut.root",
     if (binning.Contains("A")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centA,  hInput[i], out);
     else if (binning.Contains("B")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centB,  hInput[i], out);
     else if (binning.Contains("C")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centC,  hInput[i], out);
+      //hack for final efficiency: 30-90% bins are merged to reduce statistical fluctuations, since effs are compatible
+    else if (binning.Contains("final")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, cento,  hInput[i], out);
     projector.SetPrefix(Form("%smb", hInput[i]->GetName()));
     projector.MultiProjPtCent(npt, selectedPtBinning, 1, minbias,  hInput[i], out);
   }
@@ -342,7 +349,7 @@ int projectMC(TString nameData = "RsnOut.root",
   cres->Divide(1,2);
 
   TCanvas * cresMethods = new TCanvas("cresMethods","resolution - methods", 900,1500);
-  cresMethods->Divide(2,3);
+  cresMethods->Divide(3,2);
 
   TCanvas * cresGausCent = new TCanvas("cresGausCent","mass resolution, Gaussian fit", 800,600);
   TCanvas * cresRMSCent = new TCanvas("cresRMSCent","mass resolution, RMS", 800,600);
@@ -355,28 +362,28 @@ int projectMC(TString nameData = "RsnOut.root",
   }
   
   //Get input
-  TH3F * hInputRes[4];
-  hInputRes[0] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_Res%s", cutLabel.Data()));
-  hInputRes[1] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResCent%s", cutLabel.Data()));
-  hInputRes[2] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResPt%s", cutLabel.Data()));
-  hInputRes[3] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResY%s", cutLabel.Data()));
+  TH3F * hInputRes[4] = {0x0, 0x0, 0x0, 0x0};
+  hInputRes[0] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResCent%s", cutLabel.Data()));
+  //hInputRes[1] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_Res%s", cutLabel.Data()));
+  //hInputRes[2] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResPt%s", cutLabel.Data()));
+  //hInputRes[3] =  (TH3F*) listData->FindObject(Form("PhiXeXeMC_ResY%s", cutLabel.Data()));
  
-  hInputRes[0]->SetName("MassRes");
-  hInputRes[1]->SetName("MassResC");
-  hInputRes[2]->SetName("PtRes");
-  hInputRes[3]->SetName("RapRes");
+  hInputRes[0]->SetName("MassResC");
+  //hInputRes[1]->SetName("MassRes");
+  //hInputRes[2]->SetName("PtRes");
+  //hInputRes[3]->SetName("RapRes");
 
   //project mass resolution vs pt and Y
   TFile * fres = new TFile(Form("res_%s_%s.root", binning.Data(), cutLabel.Data()),"recreate");
   TList * lResolution = new TList();
   lResolution->SetName(Form("Resolution_%s", cutLabel.Data()));
 
-  for (int ii = 0; ii<4; ii++) {
+  for (int ii = 0; ii<1; ii++) {
     if (ii == 1) {
       projector.SetPrefix(hInputRes[ii]->GetName());
       if (binning.Contains("A")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centA, hInputRes[ii], lResolution);
       else if (binning.Contains("B")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centB, hInputRes[ii], lResolution);
-      else if (binning.Contains("C")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centC, hInputRes[ii], lResolution);
+      else if (binning.Contains("C") || binning.Contains("final")) projector.MultiProjPtCent(npt, selectedPtBinning, ncent, centC, hInputRes[ii], lResolution);
       projector.SetPrefix(Form("%smb", hInputRes[ii]->GetName()));
       projector.MultiProjPtCent(npt, selectedPtBinning, 1, minbias,  hInputRes[ii], lResolution);
     } else {
@@ -393,15 +400,19 @@ int projectMC(TString nameData = "RsnOut.root",
   TH1F * htmp = NULL;
   Float_t sigmaAndErr[2] = {0., 0.};
   TString opt = "";
-  Color_t rescol[6] = {kRed+2, kOrange+1, kSpring-5, kAzure+4, kMagenta+4, kBlack};
+  Color_t rescol[6] = {kRed+1, kOrange, kSpring-5, kBlue+1, kMagenta+2, kBlack};
   Float_t massResolRange[4] = {0.002, 0.003, 0.004, 0.005};
   Float_t fitLowRange[4] = {1.008, 1.007, 1.006, 1.005};
   Float_t fitHighRange[4] = {1.032, 1.033, 1.034, 1.035};
 
   TF1* fitFcn = GetVOIGT(1.00, 1.1);// norm, mean, res, width
+  Printf("A");
   fitFcn->SetParLimits(1, 1.0, 1.030);
+  Printf("B");
   fitFcn->SetParLimits(2, 0.001, 0.01);//0.004266); // width fixed to the pdg value
+  Printf("C");
   fitFcn->SetParLimits(3, 0.001, 0.01);//0.004266); // width fixed to the pdg value
+  Printf("D");
   fitFcn->SetParameter(3, 0.004266); // width fixed to the pdg value
   if (!fitFcn) return 9;
   
@@ -563,7 +574,8 @@ int projectMC(TString nameData = "RsnOut.root",
   legResV->SetTextSize(0.025);
   cresVMCCent->Print("centDep_VMCRes.pdf");
   
-  //loop on rapidity bins
+//loop on rapidity bins
+/*
   for (Int_t irapbin = 0; irapbin<nrap;irapbin++){
     TString rapLabel = Form("(%2.1f < #it{y} < %2.1f)", rap[irapbin], rap[irapbin+1]);
     //pt and rapidity resolution
@@ -602,15 +614,12 @@ int projectMC(TString nameData = "RsnOut.root",
       hYResVsPtRMS->SetBinContent(iptbin, htmp->GetRMS());
       hYResVsPtRMS->SetBinError(iptbin, htmp->GetRMSError());
     }
-    
     //save to file
-    /*
-      fres->cd();
-      hPtResVsPt->Write();
-      hPtResVsPtRMS->Write();
-      hYResVsPt->Write();
-      hYResVsPtRMS->Write();
-    */
+    fres->cd();
+    hPtResVsPt->Write();
+    hPtResVsPtRMS->Write();
+    hYResVsPt->Write();
+    hYResVsPtRMS->Write();
     
     //show
     TString opt = ""; 
@@ -620,7 +629,7 @@ int projectMC(TString nameData = "RsnOut.root",
     cres->cd(2);
     hYResVsPt->Draw(opt.Data());
   }//end loop on rapidity bins
-
+*/
   return 0;
  
 }

@@ -4,10 +4,12 @@
 
 void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_fixW",
 		    Float_t fitLow = 0.994, Float_t fitUp = 1.070,
-		    TString binning = "C3",
+		    TString binning = "final",//C3
 		    Float_t normLow = 1.07, Float_t normUp = 1.10,
-		    TString anaPath = " ~/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys", //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec", //default
-        TString pid = "tpc2sPtDep_tof3sveto", //"default_LowBdca",//"tpc2sPtDep_tof3sveto5smism",
+		    TString anaPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis",
+        //" ~/alice/resonances/RsnAnaRun2/phiXeXe/ana0414pidSys", 
+        //"/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0503ec", //default
+        TString pid =  "default_LowBdca",//"tpc2sPtDep_tof3sveto5smism","tpc2sPtDep_tof3sveto",
 		    const Float_t ptmin = 0.0, const Float_t ptmax = 10.999,
 		    const Float_t cutChi2 = 4.0, Bool_t skipLastBin = 0,
 		    Short_t legendEntryStyle = -1)
@@ -250,7 +252,7 @@ void MakeRawSpectra(TString folderName = "fit_Mixing_VOIGTpoly1_fixW",
     mleg->AddEntry(hRawYieldVsPt[2], "30-60%", "p");
     mleg->AddEntry(hRawYieldVsPt[3], "60-90%", "p");
   } else {
-    if (binning.Contains("C3")) {
+    if (binning.Contains("C3")||binning.Contains("final") ) {
       mleg->AddEntry(hRawYieldVsPt[0], "0-10%", "p");
       mleg->AddEntry(hRawYieldVsPt[1], "10-30%", "p");
       mleg->AddEntry(hRawYieldVsPt[2], "30-50%", "p");

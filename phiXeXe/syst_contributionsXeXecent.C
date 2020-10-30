@@ -1,8 +1,8 @@
-#include "/Users/fbellini/alice/macros/MakeUp.C"
+#include "/Users/fbellini/alice/macros/cosmetics/MakeUp.C"
 void SmoothenSysPtRange(TH1F * hist, Float_t ptmin, Float_t ptmax);
 
 void syst_contributionsXeXecent(Int_t icent=0, 
-				TString date="01may18", 
+				TString date="16sep20", 
 				Bool_t smooth = 1,
 				Bool_t useReweigthed = 1)
 {
@@ -14,26 +14,29 @@ void syst_contributionsXeXecent(Int_t icent=0,
   gStyle->SetPadTopMargin(0.05);
   gStyle->SetPadBottomMargin(0.17);
   //set input name
-  TString fPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/systematics";
-  TString fPathCorr = "~/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
+  //PREL TString fPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/systematics";
+  //PREL TString fPathCorr = "~/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
+  TString fPath = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis/systematics";
+  TString fPathCorr = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis/phifinal_default_LowBdca/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
   TString corrFile = "CORRECTED_br_fitResult.root"; 
   TString hCorrYieldName = Form("hCorrected_%i",icent); 
 
   if (useReweigthed){
-    fPathCorr = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/spectra";
+    fPathCorr = "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis/phifinal_default_LowBdca/norm1.07-1.10/fit_Mixing_VOIGTpoly1_fixW/fit_r0.994-1.070";
+    //PREL "/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiA3_tpc2sPtDep_tof2sveto5smism/spectra";
     corrFile = "REWEIGHT_CORRECTED_br_fitResult.root";
   }
   
   //Binning for XeXe analysis - preliminary
-  Double_t cent[] = {0.0, 10.0, 30.0, 60.0, 90.0};   
+  Double_t cent[] = {0.0, 10.0, 30.0, 50.0, 70.0, 90.0};   
   Double_t pt[]   = {0.0, 0.3, 0.5, 0.7, 0.9, 1.10, 1.30, 1.50, 2.00, 3.00, 4.00, 5.0, 7.0, 10.0};  
   Int_t    npt    = sizeof(pt) / sizeof(pt[0]) - 1;   
   Int_t   ncent   = sizeof(cent) / sizeof(cent[0]) - 1;
   TString centLabel = Form("%3.0f-%3.0f%%",cent[icent], cent[icent+1]);
   
   //cosmetics  
-  Color_t color[4] = {kRed+1, kOrange, kSpring+5, kBlue+1};
-  Int_t  marker[4] = {20, 21, 34, 33}; 
+  Color_t color[5] = {kRed+1, kOrange, kSpring+5, kBlue+1, kMagenta+2};
+  Int_t  marker[5] = {20, 21, 34, 33, 22}; 
   
   //create axis to reproduce the binning
   TAxis *ptbins = new TAxis(npt, pt);
@@ -85,17 +88,10 @@ void syst_contributionsXeXecent(Int_t icent=0,
     branching->SetBinError(j, 0.0);
   }
 
-  for (int j=1; j<npt+1; j++){
-    pid->SetBinContent(j, 0.08);
-    pid->SetBinError(j, 0.0);
-  }
-  pid->SetTitle("PID");
-  pid->SetLineWidth(3);
-  pid->SetLineColor(kBlack);
-  pid->SetMarkerColor(kBlack);
-  pid->SetLineStyle(2);
-  pid->SetMarkerStyle(0); 
-
+  //for (int j=1; j<npt+1; j++){
+  //  pid->SetBinContent(j, 0.08);
+  //  pid->SetBinError(j, 0.0);
+  //}
   // TString PIDfile = Form("systematicsB1_PID_cent%i.root", icent);
   // sysHistoName = "hSystVsPtPercentageOfCentral_rms";
   // TFile * fPidSyst = TFile::Open(Form("%s/%s",fPath.Data(),PIDfile.Data()));
@@ -104,7 +100,22 @@ void syst_contributionsXeXecent(Int_t icent=0,
   //   dummyP = (TH1F*) fPidSyst->Get(sysHistoName.Data());
   //   pid = (TH1F*) dummyP->Clone("PID");
   // }
-  
+  TString pidfile = Form("systematicsB1_PID_cent%i.root", icent);
+  TFile * fPidSyst = TFile::Open(Form("%s/%s",fPath.Data(), pidfile.Data()));
+  //if (fPidSyst) {
+  TH1F * dummyPid = (TH1F*) fPidSyst->Get("hSystVsPtPercentageOfCentral_rms");
+  pid = (TH1F*) dummyPid->Clone("pid");
+  pid->SetTitle("PID");
+  pid->SetLineWidth(4);
+  pid->SetLineColor(kBlack);
+  pid->SetMarkerColor(kBlack);
+  pid->SetLineStyle(3);
+  pid->SetMarkerStyle(0);
+  if (smooth) SmoothenSysPtRange(pid, 0.5,1.0);
+  if (smooth) SmoothenSysPtRange(pid, 1.0,1.5);
+  if (smooth) SmoothenSysPtRange(pid, 1.5,3.0);
+  if (smooth) SmoothenSysPtRange(pid, 3.0,10.);
+
   //ITS TPC matching from
   //https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsTrackSystematicUncertaintyBookkeping
   //https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsTrackSystematicUncertainty  
@@ -152,9 +163,9 @@ void syst_contributionsXeXecent(Int_t icent=0,
   trackcuts->SetLineStyle(2);
   trackcuts->SetMarkerStyle(0); 
   
-  TString normfile = Form("systematics_Bg_norm_cent%i.root", icent);
+  TString normfile = Form("systematicsB1_Bg_norm_cent%i.root", icent);
   TFile * fBgNorm = TFile::Open(Form("%s/%s",fPath.Data(),normfile.Data()));
-  TH1F * dummyBN = (TH1F*) fBgNorm->Get("hSystVsPtPercentageOfCentral_max");
+  TH1F * dummyBN = (TH1F*) fBgNorm->Get("hSystVsPtPercentageOfCentral_rms");
   bgnorm = (TH1F*) dummyBN->Clone("bgNorm");
   bgnorm->SetTitle("MEB normalisation");
   bgnorm->SetLineWidth(2);
@@ -163,7 +174,7 @@ void syst_contributionsXeXecent(Int_t icent=0,
   bgnorm->SetLineStyle(8);
   bgnorm->SetMarkerStyle(0);
   
-  TString rangefile = Form("systematics_Fit_range_cent%i.root", icent);
+  TString rangefile = Form("systematicsB1_Fit_range_cent%i.root", icent);
   TFile * fRangeSyst = TFile::Open(Form("%s/%s",fPath.Data(),rangefile.Data()));
   TH1F * dummyR = 0x0;
   if (fRangeSyst) {
@@ -176,9 +187,11 @@ void syst_contributionsXeXecent(Int_t icent=0,
     range->SetLineStyle(1);
     range->SetMarkerStyle(0);
   }
-  if (smooth) SmoothenSysPtRange(range, 4.0,10.);
+  if (smooth) SmoothenSysPtRange(range, 1.0,1.5);
+  if (smooth) SmoothenSysPtRange(range, 1.5,3.0);
+  if (smooth) SmoothenSysPtRange(range, 3.0,10.);
 
-  TFile * fFuncSyst = TFile::Open(Form("%s/systematics_Bg_fit_cent%i.root", fPath.Data(), icent));
+  TFile * fFuncSyst = TFile::Open(Form("%s/systematicsB1_Bg_fit_cent%i.root", fPath.Data(), icent));
   TH1F * dummyF = 0x0;
   if (fFuncSyst) {
     dummyF = (TH1F*) fFuncSyst->Get("hSystVsPtPercentageOfCentral_rms");
@@ -190,6 +203,8 @@ void syst_contributionsXeXecent(Int_t icent=0,
     function->SetLineStyle(7);
     function->SetMarkerStyle(0); 
   }
+  if (smooth) SmoothenSysPtRange(function, 1.0,1.5);
+  if (smooth) SmoothenSysPtRange(function, 1.5,3.0);
   if (smooth) SmoothenSysPtRange(function, 3.0,10.);
 
   TFile * fParamSyst = TFile::Open(Form("%s/systematics_Fit_params_cent%i.root", fPath.Data(), icent));
@@ -204,7 +219,9 @@ void syst_contributionsXeXecent(Int_t icent=0,
     parameters->SetLineStyle(1);
     parameters->SetMarkerStyle(0); 
   }
+
   if (smooth) SmoothenSysPtRange(parameters, 0.5, 1.5);
+  if (smooth) SmoothenSysPtRange(parameters, 1.5,3.0);
   if (smooth) SmoothenSysPtRange(parameters, 3.0,10.);
 
   //sum all contributions in quadrature

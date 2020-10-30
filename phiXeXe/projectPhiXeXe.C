@@ -8,10 +8,8 @@ void runProject();
 
 void projectPhiXeXe( const char *nameData = "RsnOut.root",
 		     TString outName  = "phi",
-		     TString listNameSuffix = "tpc2sPtDep_tof3sveto5smism",
-		     TString binning  = "C3",
-		     Bool_t isMC = 0)		     
-         //Bool_t saveSeparatelyByCent = 0)
+		     TString listNameSuffix = "default_LowBdca",//"tpc2sPtDep_tof3sveto5smism",
+		     TString binning  = "final")		     
 {
   //graphics for display
   gStyle->SetOptStat("1111");
@@ -42,7 +40,7 @@ void projectPhiXeXe( const char *nameData = "RsnOut.root",
   } else if (binning.Contains("2")) {
     npt = sizeof(pt2) / sizeof(pt2[0]) - 1;
     ptbins = new TAxis(npt, pt2);
-  } else if (binning.Contains("3")) {
+  } else if (binning.Contains("3") || binning.Contains("final")) {
     npt = sizeof(pt3) / sizeof(pt3[0]) - 1;
     ptbins = new TAxis(npt, pt3);
   }
@@ -55,9 +53,9 @@ void projectPhiXeXe( const char *nameData = "RsnOut.root",
       ncent = sizeof(centB) / sizeof(centB[0]) - 1;
       centbins = new TAxis(ncent, centB);
     } else
-      if (binning.Contains("C")) {
-	ncent = sizeof(centC) / sizeof(centC[0]) - 1;
-	centbins = new TAxis(ncent, centC);
+      if (binning.Contains("C") || binning.Contains("final")) {
+	      ncent = sizeof(centC) / sizeof(centC[0]) - 1;
+	      centbins = new TAxis(ncent, centC);
       }
   
   
@@ -68,7 +66,7 @@ void projectPhiXeXe( const char *nameData = "RsnOut.root",
   if (!fileData || !fileData->IsOpen()) { Printf("Invalid file passed as input. Doing nothing."); return;}
   
   TList *listData = (TList*)fileData->Get(Form("RsnOut_%s", listNameSuffix.Data()));
-  if (!listData) { Printf("Invalid list passed as input. Doing nothing."); return;}
+  if (!listData) { Printf("Invalid list passed as input: %s. Doing nothing.", listData->GetName()); return;}
     
   //get input histograms
   TH3F* hInput[kNhistosData] = {0,0,0,0}; 
@@ -128,7 +126,7 @@ void projectPhiXeXe( const char *nameData = "RsnOut.root",
     else if (binning.Contains("C2")) projector.MultiProjPtCent(npt, pt2, ncent, centC,  hInput[i], out);
     else if (binning.Contains("A3")) projector.MultiProjPtCent(npt, pt3, ncent, centA,  hInput[i], out);
     else if (binning.Contains("B3")) projector.MultiProjPtCent(npt, pt3, ncent, centB,  hInput[i], out);
-    else if (binning.Contains("C3")) projector.MultiProjPtCent(npt, pt3, ncent, centC,  hInput[i], out);
+    else if (binning.Contains("C3")|| binning.Contains("final")) projector.MultiProjPtCent(npt, pt3, ncent, centC,  hInput[i], out);
   }
   Printf(":::: Projected according to binning strategy %s", binning.Data());
 

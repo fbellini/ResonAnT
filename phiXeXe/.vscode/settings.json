@@ -16,6 +16,25 @@
         "GetPlotRatio.C": "cpp",
         "PlotSpectraExtrapFits.C": "cpp",
         "MakeUp.C": "cpp",
-        "compareFinal2Prel.C": "cpp"
+        "compareFinal2Prel.C": "cpp",
+        "qaPhiXeXe.C": "cpp",
+        "AddMonitorOutput.C": "cpp",
+        "FitSpectrum.C": "cpp",
+        "MakeNormCorrSpectra.C": "cpp",
+        "AddTaskPhiXeXe.C": "cpp",
+        "rootlogonbkc.C": "cpp",
+        "systematicsPhiXeXe.C": "cpp",
+        "PlotSpectraPhiXeXe.C": "cpp",
+        "ConfigPhiXeXe.C": "cpp",
+        "AddMonitorOutputPhiXeXe.C": "cpp",
+        "SteerGrid.C": "cpp",
+        "syst_contributionsXeXecent.C": "cpp",
+        "GetSystFromIDspectra.C": "cpp",
+        "all_hadronicInt_relSysErr.C": "cpp",
+        "kaons_material_relSysErr.C": "cpp",
+        "functional": "cpp",
+        "GetPhiPhaseSpace.C": "cpp",
+        "dNdyAndMeanPt.C": "cpp",
+        "compareXe2Pb.C": "cpp"
     }
 }
