@@ -180,6 +180,30 @@ TF1 * FermiDirac(const Char_t *name, Double_t mass, Double_t T = 0.1, Double_t n
   return fFermiDirac;
 }
 
+Double_t BoseEinstein_Func(const Double_t* x, const Double_t* p)
+{
+  /* dN/dpt */
+
+  Double_t pt = x[0];
+  Double_t mass = p[0];
+  Double_t mt = TMath::Sqrt(pt * pt + mass * mass);
+  Double_t T = p[1];
+  Double_t norm = p[2];
+
+  return pt * norm * 1.0 / (TMath::Exp(mt / T) - 1) * (TMath::Exp(-mass / T) - 1);
+}
+
+TF1 * BoseEinstein(const Char_t *name, Double_t mass, Double_t T = 0.1, Double_t norm = 1.)
+{
+  
+  TF1 *fBoseEinstein = new TF1(name, BoseEinstein_Func, 0., 10., 3);
+  fBoseEinstein->SetParameters(mass, T, norm);
+  fBoseEinstein->SetParNames("mass", "T", "norm");
+  fBoseEinstein->FixParameter(0, mass);
+  return fBoseEinstein;
+}
+
+
 Double_t Boltzmann_Func(const Double_t* x, const Double_t* p)
 {
   /* dN/dpt */
