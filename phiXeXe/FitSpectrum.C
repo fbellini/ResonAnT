@@ -1,8 +1,8 @@
 #if !defined (__CINT__) || defined (__CLING__)
 #include "/Users/fbellini/alice/macros/ResonAnT/phiXeXe/functions.h"
 #include "/Users/fbellini/alice/macros/ResonAnT/phiXeXe/myYieldMean.C"
-#include "/Users/fbellini/alice/macros/SetStyle.C"
-#include "/Users/fbellini/alice/macros/Beautify.C"
+#include "/Users/fbellini/alice/macros/cosmetics/SetStyle.C"
+#include "/Users/fbellini/alice/macros/cosmetics/Beautify.C"
 #endif
 
 #include <stdio.h>
@@ -15,7 +15,7 @@ void PrintParams(TF1 * fitFunc = 0, TPaveText * paveFitParams = 0, Double_t * pa
 Float_t StatUncertFromData(TH1D * hStat = 0);
 Float_t SystUncertFromData(TH1D * hSyst = 0);
 
-void FitSpectrum(Int_t centrality = -1, TString function = "bgbw", Double_t rangefitMin = 0.5, Double_t rangefitMax = 10.0, TString date = "22jun20");
+void FitSpectrum(Int_t centrality = -1, TString function = "bgbw", Double_t rangefitMin = 0.5, Double_t rangefitMax = 10.0, TString date = "30oct20");
 
 TF1 * FitSpectrum(TH1D *data_stat = 0x0,
 	     TH1D *data_syst = 0x0,
@@ -24,35 +24,41 @@ TF1 * FitSpectrum(TH1D *data_stat = 0x0,
 	     TString function = "bgbw",
 	     Double_t rangefitMin = 0.5, //lower boundary of fit range
 	     Double_t rangefitMax = 10.0,//upper boundary of fit range
-	     Bool_t refitCentral = 0,
+	     Bool_t refitCentral =0,
 	     Bool_t useOfficialMacro = 0,
 	     TH1F * fitResults = 0);
 
-void FitSpectrum(Int_t centrality,
-		 TString function,
+void FitSpectrum(Int_t centrality = -1,
+     TString function,
 		 Double_t rangefitMin, //lower boundary of fit range
 		 Double_t rangefitMax,//upper boundary of fit range
 		 TString date //date of spectra
 		 )
 {
+//Fix to errors in tolerance:  
+//Error in <GSLError>: Error 18 in qags.c at 548 : cannot reach tolerance because of roundoff error
+//solution by L. Moneta
+//https://root-forum.cern.ch/t/tolerance-problem-in-integration-can-i-solve-it-with-functor/28675/4 
+  ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6); 
+
   const int ncentbins = 5;
-  Int_t centEdges[ncentbins] = {0, 10, 30, 50, 70, 90};
+  Int_t centEdges[ncentbins+1] = {0, 10, 30, 50, 70, 90};
   // fin[0] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_0.root");
   // fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
   // fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
   TH1F * fitResults[ncentbins];  
   TFile * fin[ncentbins];
   for (Int_t i = 0; i<ncentbins; i++){
-  fitResults[i] = new TH1F(Form("fitResults%i",i),"fitResults", 7, 0., 7.);
-  fitResults[i]->GetXaxis()->SetBinLabel(1, "dN/dy");
-  fitResults[i]->GetXaxis()->SetBinLabel(2,"stat");
-  fitResults[i]->GetXaxis()->SetBinLabel(3,"syst");
-  fitResults[i]->GetXaxis()->SetBinLabel(4, "extrap");
-  fitResults[i]->GetXaxis()->SetBinLabel(5, "<p_{T}>");
-  fitResults[i]->GetXaxis()->SetBinLabel(6,"mpt stat");
-  fitResults[i]->GetXaxis()->SetBinLabel(7,"mpt syst");
-  fin[i] = TFile::Open(Form("finalWsyst_smooth1_%s_%i.root",date.Data(), i));
-  if (!fin[i]) return;
+      fitResults[i] = new TH1F(Form("fitResults%i",i),"fitResults", 7, 0., 7.);
+      fitResults[i]->GetXaxis()->SetBinLabel(1, "dN/dy");
+      fitResults[i]->GetXaxis()->SetBinLabel(2,"stat");
+      fitResults[i]->GetXaxis()->SetBinLabel(3,"syst");
+      fitResults[i]->GetXaxis()->SetBinLabel(4, "extrap");
+      fitResults[i]->GetXaxis()->SetBinLabel(5, "<p_{T}>");
+      fitResults[i]->GetXaxis()->SetBinLabel(6,"mpt stat");
+      fitResults[i]->GetXaxis()->SetBinLabel(7,"mpt syst");
+      fin[i] = TFile::Open(Form("finalWsyst_smooth1_%s_%i.root",date.Data(), i));
+      if (!fin[i]) return;
   }
   
   TFile * fileres = new TFile(Form("FITSPECTRUM_%s_%3.1f-%3.1f_%s.root", function.Data(),rangefitMin,rangefitMax, date.Data()), "recreate");
@@ -65,6 +71,11 @@ void FitSpectrum(Int_t centrality,
     hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
     hsys[ic] = (TH1D *)  fin[ic]->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
+    if (ic==4) {
+      rangefitMin = 0.7;
+      rangefitMax = 7.0;
+      Printf("::::: Centrality bin 70-90: fit range restricted to 0.7-7.0 GeV/c");
+    }
     TF1 * fitFcn = (TF1*) FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), function.Data(), rangefitMin, rangefitMax, 1, 0, fitResults[ic]);
     fitFcn->SetName(Form("%s%i", function.Data(), ic));
     fileres->cd();
@@ -77,13 +88,13 @@ void FitSpectrum(Int_t centrality,
   Printf("::::: RESULTS dN/dy :::::");
   for (int ic =0; ic<ncentbins; ic++){
     Printf("dN/dy cent %i: %8.6f %8.6f %8.6f (%3.2f)", ic,
-	   fitResults[ic]->GetBinContent(1), fitResults[ic]->GetBinContent(2), fitResults[ic]->GetBinContent(3), fitResults[ic]->GetBinContent(4));
+	          fitResults[ic]->GetBinContent(1), fitResults[ic]->GetBinContent(2), fitResults[ic]->GetBinContent(3), fitResults[ic]->GetBinContent(4));
   }
   
   Printf("::::: RESULTS mean pT :::::");
   for (int ic =0; ic<ncentbins; ic++){
     Printf("<pT> cent %i: %8.6f %8.6f %8.6f", ic,
-	   fitResults[ic]->GetBinContent(5), fitResults[ic]->GetBinContent(6), fitResults[ic]->GetBinContent(7) );
+	          fitResults[ic]->GetBinContent(5), fitResults[ic]->GetBinContent(6), fitResults[ic]->GetBinContent(7) );
   }
   fileres->Close();
   return;
@@ -157,6 +168,7 @@ TF1 * FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sy
   TF1 * myBoltzmann = Boltzmann("boltz", pdgMass, temp, norm);
   TF1 * myBGBlastWave = BGBlastWave("bgbw", pdgMass, beta_max, temp, npar, norm);
   TF1 * myMTexp = MTExpdNdptTimesPtFunc("mT-exp", norm, temp, pdgMass);
+  TF1 * myBoseEinstein = BoseEinstein("Bose-Einstein", pdgMass, temp, norm);
   TF1 * myFermiDirac = FermiDirac("Fermi-Dirac", pdgMass, temp, norm);
   TF1 * myBylinkin = Bylinkin("Bylinkin", pdgMass);
   
@@ -185,6 +197,7 @@ TF1 * FitSpectrum(TH1D *data_stat, TH1D *data_syst, TString particle, TString sy
   if (function.Contains("boltz")) fitFunc = myBoltzmann;
   if (function.Contains("mtexp")) fitFunc = myMTexp;
   if (function.Contains("fermi")) fitFunc = myFermiDirac;
+  if (function.Contains("bose")) fitFunc = myBoseEinstein;
   if (function.Contains("bylinkin")) fitFunc = myBylinkin;
   if (function.Contains("bgbw")) { fitFunc = myBGBlastWave; nFcnPar = 4; }
 
