@@ -39,7 +39,7 @@ void FitSpectrum(Int_t centrality = -1,
 //Error in <GSLError>: Error 18 in qags.c at 548 : cannot reach tolerance because of roundoff error
 //solution by L. Moneta
 //https://root-forum.cern.ch/t/tolerance-problem-in-integration-can-i-solve-it-with-functor/28675/4 
-  ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-5); 
+  ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6); 
 
   const int ncentbins = 5;
   Int_t centEdges[ncentbins+1] = {0, 10, 30, 50, 70, 90};

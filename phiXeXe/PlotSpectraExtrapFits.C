@@ -10,11 +10,11 @@ void PlotSpectraExtrapFits()
     TFile fboltz("FITSPECTRUM_boltz_0.5-10.0_09may18.root", "read");
     TFile fmtexp("FITSPECTRUM_mtexp_0.5-10.0_09may18.root", "read");
 */
-    TFile fbgbw("FITSPECTRUM_bgbw_0.5-10.0_04dec20.root", "read");
-    TFile flevy("FITSPECTRUM_levy_0.5-10.0_04dec20.root", "read");
-    TFile fbose("FITSPECTRUM_bose_0.5-5.0_04dec20.root", "read");
-    TFile fboltz("FITSPECTRUM_boltz_0.5-5.0_04dec20.root", "read");
-    TFile fmtexp("FITSPECTRUM_mtexp_0.5-5.0_04dec20.root", "read");
+    TFile fbgbw("FITSPECTRUM_bgbw_0.5-10.0_30oct20.root", "read");
+    TFile flevy("FITSPECTRUM_levy_0.5-10.0_30oct20.root", "read");
+    TFile fbose("FITSPECTRUM_bose_0.5-10.0_30oct20.root", "read");
+    TFile fboltz("FITSPECTRUM_boltz_0.5-10.0_30oct20.root", "read");
+    TFile fmtexp("FITSPECTRUM_mtexp_0.5-10.0_30oct20.root", "read");
 
     TH1F * hphi_stat[5];
     TH1F * hphi_syst[5];
