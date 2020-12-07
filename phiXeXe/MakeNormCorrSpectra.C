@@ -34,7 +34,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
   const TString effHistName = "hEffVsPt";
   Float_t trgAndVtxEff_pPbMinBias = 1.0; //trigger and vertex reco efficiency for pPb 0-100%
   Float_t trgAndVtxEff_80to100 = 1.0;
-  Float_t branchingRatio = 0.489; // BR = 0.489 ± 0.005;
+  Float_t branchingRatio = 0.492; // BR = 0.489 ± 0.005; 0.492
     
   Float_t nEvents_ana0221[3] = { 2.866550e+05, 2.870050e+05, 2.872150e+05}; //ana0221
   Float_t nEvents_ana0301[3] = { 2.361130e+05, 2.354870e+05, 2.359310e+05};
@@ -71,7 +71,7 @@ void MakeNormCorrSpectra(TString spectraFileName = "RAW_fitResult.root",
     TString centLabel = Form("%i-%i%%",centBinning[ic], centBinning[ic+1]);
     Printf("\n\n\n*************************\n Spectra %s \n*************************",centLabel.Data());
     
-    TString effFileName = Form("eff_final_%s.root", pid.Data()); 
+    TString effFileName = Form("eff_%s_%s.root", binning.Data(), pid.Data()); 
     if (binning.Contains("A3")) effFileName.ReplaceAll("C3", "A3");
     
     TString spectraHistName(Form("hRawYieldVsPt_%i",ic));

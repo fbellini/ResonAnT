@@ -47,7 +47,10 @@ void FitSpectrum(Int_t centrality = -1,
   // fin[1] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_1.root");
   // fin[2] = TFile::Open("/Users/fbellini/alice/resonances/RsnAnaRun2/phiXeXe/ana0406esd710/phiC3_tpc2sPtDep_tof2sveto5smism/blastWaveFit/finalWsyst_smooth1_25apr18_2.root");
   TH1F * fitResults[ncentbins];  
-  TFile * fin[ncentbins];
+  //TFile * fin[ncentbins];
+  TFile * fin = TFile::Open("~/alice/resonances/RsnAnaRun2/phiXeXe/final/results/FINAL_Spectra_phi_XeXe544TeV.root");
+  if (!fin) return;
+  
   for (Int_t i = 0; i<ncentbins; i++){
       fitResults[i] = new TH1F(Form("fitResults%i",i),"fitResults", 7, 0., 7.);
       fitResults[i]->GetXaxis()->SetBinLabel(1, "dN/dy");
@@ -57,8 +60,8 @@ void FitSpectrum(Int_t centrality = -1,
       fitResults[i]->GetXaxis()->SetBinLabel(5, "<p_{T}>");
       fitResults[i]->GetXaxis()->SetBinLabel(6,"mpt stat");
       fitResults[i]->GetXaxis()->SetBinLabel(7,"mpt syst");
-      fin[i] = TFile::Open(Form("finalWsyst_smooth1_%s_%i.root",date.Data(), i));
-      if (!fin[i]) return;
+      //fin[i] = TFile::Open(Form("finalWsyst_smooth1_%s_%i.root",date.Data(), i));
+      //if (!fin[i]) return;
   }
   
   TFile * fileres = new TFile(Form("FITSPECTRUM_%s_%3.1f-%3.1f_%s.root", function.Data(),rangefitMin,rangefitMax, date.Data()), "recreate");
@@ -68,12 +71,15 @@ void FitSpectrum(Int_t centrality = -1,
   
   for (int ic =0; ic<ncentbins; ic++){
     if (centrality>=0 && ic!=centrality) continue;
-    hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
+    //hstat[ic] = (TH1D *) fin[ic]->Get(Form("hCorrected_%i", ic));
+    hstat[ic] = (TH1D *) fin->Get(Form("hCorrected_%i", ic));
     if (!hstat[ic]) return;
-    hsys[ic] = (TH1D *)  fin[ic]->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
+    //hsys[ic] = (TH1D *)  fin[ic]->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
+        hsys[ic] = (TH1D *)  fin->Get(Form("hCorrected_%i%i_syst", ic, ic)); 
+
     if (ic==4) {
       rangefitMin = 0.7;
-      rangefitMax = 7.0;
+      if (rangefitMax>7.) rangefitMax = 7.0;
       Printf("::::: Centrality bin 70-90: fit range restricted to 0.7-7.0 GeV/c");
     }
     TF1 * fitFcn = (TF1*) FitSpectrum(hstat[ic], hsys[ic], "phi", Form("XeXe_%i%i", centEdges[ic], centEdges[ic+1]), function.Data(), rangefitMin, rangefitMax, 1, 0, fitResults[ic]);

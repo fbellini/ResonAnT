@@ -134,7 +134,7 @@ Int_t subtractPhiXeXe(TString projectionFile="proj_C3.root",
     
       //display all cent and all pt
       if (icent<0 && ipt<0) {
-	cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",cc,prefix[j]), Form("%sB - cent bin %i", prefix[j], cc), 800, 1500);
+	cdisplay[j][cc] = new TCanvas(Form("cent%i_%s",cc,prefix[j]), Form("%sB - cent bin %i", prefix[j], cc), 1000, 1500);
 	cdisplay[j][cc]->Divide(3,4);
       }
       

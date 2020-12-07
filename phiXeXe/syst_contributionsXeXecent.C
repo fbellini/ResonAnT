@@ -2,9 +2,9 @@
 void SmoothenSysPtRange(TH1F * hist, Float_t ptmin, Float_t ptmax);
 
 void syst_contributionsXeXecent(Int_t icent=0, 
-				TString date="16sep20", 
+				TString date="04dec20", 
 				Bool_t smooth = 1,
-				Bool_t useReweigthed = 1)
+				Bool_t useReweigthed = 0)
 {
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -111,11 +111,16 @@ void syst_contributionsXeXecent(Int_t icent=0,
   pid->SetMarkerColor(kBlack);
   pid->SetLineStyle(3);
   pid->SetMarkerStyle(0);
-  if (smooth) SmoothenSysPtRange(pid, 0.5,1.0);
-  if (smooth) SmoothenSysPtRange(pid, 1.0,1.5);
-  if (smooth) SmoothenSysPtRange(pid, 1.5,3.0);
-  if (smooth) SmoothenSysPtRange(pid, 3.0,10.);
+  
+  float smallq = 0.001;
 
+  if (smooth) {
+    SmoothenSysPtRange(pid, 0.5+smallq,1.0-smallq);
+    SmoothenSysPtRange(pid, 1.0+smallq,1.5-smallq);
+    SmoothenSysPtRange(pid, 1.5+smallq,3.0-smallq);
+    if (icent==4) SmoothenSysPtRange(pid, 3.0+smallq, 7.-smallq);
+    else SmoothenSysPtRange(pid, 3.0+smallq, 7.-smallq);
+  }
   //ITS TPC matching from
   //https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsTrackSystematicUncertaintyBookkeping
   //https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsTrackSystematicUncertainty  
@@ -173,7 +178,13 @@ void syst_contributionsXeXecent(Int_t icent=0,
   bgnorm->SetMarkerColor(kPink+8);
   bgnorm->SetLineStyle(8);
   bgnorm->SetMarkerStyle(0);
-  
+  if (smooth) {
+    SmoothenSysPtRange(bgnorm, 0.5+smallq,1.3-smallq);
+    SmoothenSysPtRange(bgnorm, 1.3+smallq, 3.0-smallq);
+    if (icent==4) SmoothenSysPtRange(bgnorm, 3.0+smallq, 7.0-smallq);
+    else SmoothenSysPtRange(bgnorm, 3.0+smallq, 10.0-smallq);
+  }
+
   TString rangefile = Form("systematicsB1_Fit_range_cent%i.root", icent);
   TFile * fRangeSyst = TFile::Open(Form("%s/%s",fPath.Data(),rangefile.Data()));
   TH1F * dummyR = 0x0;
@@ -187,9 +198,16 @@ void syst_contributionsXeXecent(Int_t icent=0,
     range->SetLineStyle(1);
     range->SetMarkerStyle(0);
   }
-  if (smooth) SmoothenSysPtRange(range, 1.0,1.5);
-  if (smooth) SmoothenSysPtRange(range, 1.5,3.0);
-  if (smooth) SmoothenSysPtRange(range, 3.0,10.);
+  if (smooth) {
+    SmoothenSysPtRange(range, 1.5+smallq,3.0-smallq);
+    if (icent==4) {
+      SmoothenSysPtRange(range, 0.7+smallq,1.5-smallq);
+      SmoothenSysPtRange(range, 3.0+smallq,7.-smallq);
+    } else { 
+      SmoothenSysPtRange(range, 0.5+smallq,1.5-smallq);
+      SmoothenSysPtRange(range, 3.0+smallq,10.-smallq);
+    }
+  }
 
   TFile * fFuncSyst = TFile::Open(Form("%s/systematicsB1_Bg_fit_cent%i.root", fPath.Data(), icent));
   TH1F * dummyF = 0x0;
@@ -203,11 +221,14 @@ void syst_contributionsXeXecent(Int_t icent=0,
     function->SetLineStyle(7);
     function->SetMarkerStyle(0); 
   }
-  if (smooth) SmoothenSysPtRange(function, 1.0,1.5);
-  if (smooth) SmoothenSysPtRange(function, 1.5,3.0);
-  if (smooth) SmoothenSysPtRange(function, 3.0,10.);
+  if (smooth) { 
+    SmoothenSysPtRange(function, 1.0+smallq,1.5-smallq);
+    SmoothenSysPtRange(function, 1.5+smallq,3.0-smallq);
+    if (icent==4) SmoothenSysPtRange(function, 3.0+smallq,7.-smallq);
+    else SmoothenSysPtRange(function, 3.0+smallq,10.-smallq);
+  }
 
-  TFile * fParamSyst = TFile::Open(Form("%s/systematics_Fit_params_cent%i.root", fPath.Data(), icent));
+  TFile * fParamSyst = TFile::Open(Form("%s/systematicsB1_Fit_params_cent%i.root", fPath.Data(), icent));
   TH1F * dummyPar = 0x0;
   if (fParamSyst) {
     dummyPar = (TH1F*) fParamSyst->Get("hSystVsPtPercentageOfCentral_rms");
@@ -220,10 +241,13 @@ void syst_contributionsXeXecent(Int_t icent=0,
     parameters->SetMarkerStyle(0); 
   }
 
-  if (smooth) SmoothenSysPtRange(parameters, 0.5, 1.5);
-  if (smooth) SmoothenSysPtRange(parameters, 1.5,3.0);
-  if (smooth) SmoothenSysPtRange(parameters, 3.0,10.);
-
+  if (smooth) {
+    if (icent==4) SmoothenSysPtRange(parameters, 0.7+smallq, 1.5-smallq);
+    else if (icent==1) SmoothenSysPtRange(parameters, 0.5+smallq, 3.0-smallq);
+    else SmoothenSysPtRange(parameters, 0.5+smallq, 1.5-smallq);
+    SmoothenSysPtRange(parameters, 3.0+smallq, 7.0-smallq);
+  }
+  
   //sum all contributions in quadrature
   Double_t syst_sum2 = 0.; 
   
@@ -386,11 +410,20 @@ void SmoothenSysPtRange(TH1F * hist, Float_t ptmin, Float_t ptmax)
   if (ptmax<=ptmin) return;
   Int_t nmin = hist->GetXaxis()->FindBin(ptmin);
   Int_t nmax = hist->GetXaxis()->FindBin(ptmax);
-  Printf("Smoothing %i bins, from %f to %f GeV/c", nmax-nmin, ptmin, ptmax);
-  TF1 * f1 = new TF1("f1","pol0", ptmin, ptmax);
-  TFitResultPtr fitresult = hist->Fit(f1,"R0SQWL","", ptmin, ptmax);
+  //calculate average over bins
+  Float_t avg = 0.0;
   for (int j = nmin; j < nmax; j++) {
-    hist->SetBinContent(j, f1->GetParameter(0));
+    Printf("(bin=%i - y=%f)", hist->GetBinContent(j));
+    avg += hist->GetBinContent(j); 
+    }
+  avg = avg/(nmax-nmin);
+  Printf("Smoothing %i bins of %s, from %f to %f GeV/c: result avg %5.2f", nmax-nmin, hist->GetName(), ptmin, ptmax, avg);
+  //TF1 * f1 = new TF1("f1","pol0", ptmin, ptmax);
+  //TFitResultPtr fitresult = hist->Fit(f1,"R0SQWL","", ptmin, ptmax);
+  //avg = f1->GetParameter(0);
+  //set
+  for (int j = nmin; j <= nmax; j++) {
+    hist->SetBinContent(j, avg);
     hist->SetBinError(j, 0.0);
   }
   return;

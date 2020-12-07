@@ -87,7 +87,7 @@ void PlotSpectraPhiXeXe(Bool_t isPreliminary = false)
   TGraphErrors * gSyst[5];
   Float_t multiplyingScalingFactor[5] = {2., 1., 1., 1.0, 1.0};
 
-  TFile * fout = new TFile("Spectra_phi_XeXe544TeV.root", "recreate");
+  TFile * fout = new TFile("FINAL_Spectra_phi_XeXe544TeV.root", "recreate");
   for (int ic = 0; ic < 5; ic++){
     hStat[ic] = (TH1F*) GetPhiXeXeSpectrumCent(ic, 0);
     hSyst[ic] = (TH1F*) GetPhiXeXeSpectrumCent(ic, 1);
@@ -122,7 +122,7 @@ void PlotSpectraPhiXeXe(Bool_t isPreliminary = false)
   
   TString nameimg = "PhiXeXe_Spectra";
   if (isPreliminary) nameimg.Prepend("PREL_");
-  else nameimg.Prepend("FINAL");
+  else nameimg.Prepend("FINAL_");
   c1->Print(Form("%s.eps",nameimg.Data()));
   c1->Print(Form("%s.pdf",nameimg.Data()));
 	   
@@ -139,7 +139,7 @@ TH1F * GetPhiXeXeSpectrumCent(Int_t cent, Bool_t sys)
   //
   TH1F * hist = 0x0;
   //PREL
-  TFile * fin = TFile::Open(Form("~/alice/resonances/RsnAnaRun2/phiXeXe/final/analysis/systematics/finalWsyst_smooth1_30oct20_%i.root", cent));
+  TFile * fin = TFile::Open(Form("~/alice/resonances/RsnAnaRun2/phiXeXe/final/systematics/finalWsyst_smooth1_04dec20_%i.root", cent));
   if (!fin) return hist;
   if (sys) hist = (TH1F*) fin->Get(Form("hCorrected_%i%i_syst",cent, cent));
   else hist = (TH1F*) fin->Get(Form("hCorrected_%i",cent));
